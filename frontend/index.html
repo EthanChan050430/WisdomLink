@@ -189,6 +189,20 @@
                             </div>
                         </div>
                         
+                        <!-- 专家选择器 -->
+                        <div class="expert-selector" id="expertSelector" style="display: none;">
+                            <div class="selector-header">
+                                <i class="fas fa-user-graduate"></i>
+                                <span>选择分析专家</span>
+                            </div>
+                            <div class="expert-dropdown">
+                                <select id="expertSelect" class="expert-select">
+                                    <option value="">选择专家角色...</option>
+                                    <!-- 专家选项将通过JavaScript动态加载 -->
+                                </select>
+                            </div>
+                        </div>
+                        
                         <div class="upload-actions">
                             <button class="btn-primary" id="startAnalysisBtn">
                                 <i class="fas fa-paper-plane"></i>
@@ -234,6 +248,20 @@
 
                     <!-- 输入区域 -->
                     <div class="chat-input-container">
+                        <!-- 聊天模式专家选择器 -->
+                        <div class="chat-expert-selector" id="chatExpertSelector" style="display: none;">
+                            <div class="chat-expert-header">
+                                <i class="fas fa-user-graduate"></i>
+                                <span>当前分析专家</span>
+                            </div>
+                            <div class="chat-expert-dropdown">
+                                <select id="chatExpertSelect" class="chat-expert-select">
+                                    <option value="">选择专家角色...</option>
+                                    <!-- 专家选项将通过JavaScript动态加载 -->
+                                </select>
+                            </div>
+                        </div>
+                        
                         <div class="input-area">
                             <textarea 
                                 id="searchInput"

@@ -326,16 +326,26 @@ class ChatManager {
                     }
                     break;
             }
+        }
 
-            // 添加专家角色（如果是大师分析）
-            if (this.currentFunction === 'expert-analysis') {
-                const role = await this.selectExpertRole();
-                if (role) {
-                    data.role = role;
-                } else {
+        // 添加专家角色（如果是大师分析）
+        if (this.currentFunction === 'expert-analysis') {
+            let role;
+            if (isInitial) {
+                // 初始分析时弹出角色选择模态框
+                role = await this.selectExpertRole();
+                if (!role) {
                     throw new Error('请选择分析角色');
                 }
+            } else {
+                // 继续聊天时从聊天界面的专家选择器获取当前角色
+                const chatExpertSelect = document.getElementById('chatExpertSelect');
+                role = chatExpertSelect?.value;
+                if (!role) {
+                    throw new Error('请先选择分析专家角色');
+                }
             }
+            data.role = role;
         }
 
         return data;

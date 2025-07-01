@@ -24,19 +24,31 @@ def start_fact_checking():
         # 提取内容（与之前相同的逻辑）
         if content_type == 'url':
             urls = [url.strip() for url in content_data.split('\n') if url.strip()]
+            if not urls:
+                return jsonify({'success': False, 'message': '请提供有效的网址'})
+                
             results = web_crawler.extract_text_from_multiple_urls(urls)
             
+            successful_extractions = 0
             for result in results:
                 if result['success']:
                     extracted_content += f"\n\n=== {result['title']} ===\n{result['content']}"
+                    successful_extractions += 1
                 else:
                     extracted_content += f"\n\n错误：无法提取 {result['url']} 的内容：{result['error']}"
+            
+            # 如果所有URL都失败了，返回错误
+            if successful_extractions == 0:
+                return jsonify({'success': False, 'message': '无法获取任何网页内容，请检查网址是否有效或网络连接'})
         
         elif content_type == 'text':
             extracted_content = content_data
         
         elif content_type == 'file':
             files = request.files.getlist('files')
+            if not files:
+                return jsonify({'success': False, 'message': '未检测到上传的文件'})
+                
             saved_paths = save_uploaded_files(files)
             
             for file_path in saved_paths:
@@ -46,6 +58,9 @@ def start_fact_checking():
         
         elif content_type == 'image':
             images = request.files.getlist('images')
+            if not images:
+                return jsonify({'success': False, 'message': '未检测到上传的图片'})
+                
             saved_paths = ocr_service.save_uploaded_images(images)
             ocr_results = ocr_service.extract_text_from_multiple_images(saved_paths)
             
@@ -56,7 +71,7 @@ def start_fact_checking():
                     extracted_content += f"\n\n错误：无法识别图片文字：{result['error']}"
         
         if not extracted_content.strip():
-            return jsonify({'success': False, 'message': '没有提取到任何内容'})
+            return jsonify({'success': False, 'message': '没有提取到任何有效内容，请检查上传的内容'})
         
         # 生成会话ID
         session_id = str(uuid.uuid4())
@@ -90,22 +105,60 @@ def generate_fact_checking_analysis(content, session_id):
     try:
         yield f"data: {json.dumps({'type': 'session_id', 'session_id': session_id})}\n\n"
         
+        # 调试信息
+        print(f"=== 真伪鉴定调试 ===")
+        print(f"内容长度: {len(content)}")
+        print(f"内容前200字符: {content[:200]}")
+        print(f"==================")
+        
+        # 检查内容是否为空或包含爬虫错误
+        if not content.strip():
+            yield f"data: {json.dumps({'type': 'error', 'message': '内容为空，无法进行分析'})}\n\n"
+            return
+            
+        if "错误：无法提取" in content:
+            yield f"data: {json.dumps({'type': 'error', 'message': '网页内容提取失败，请检查链接是否有效'})}\n\n"
+            return
+            
+        if "没有提取到任何内容" in content:
+            yield f"data: {json.dumps({'type': 'error', 'message': '没有提取到任何有效内容，请重新尝试'})}\n\n"
+            return
+        
         # 第一步：文章解析
         yield f"data: {json.dumps({'type': 'step_start', 'step': 1, 'name': '文章解析', 'description': '分析文章内容和结构'})}\n\n"
         
-        parsing_prompt = f"""请对以下内容进行结构化解析：
+        parsing_prompt = f"""我是一个专业的事实核查分析助手。我已经接收到了需要进行真伪鉴定的内容，现在开始进行结构化解析。
 
+**待分析内容：**
 {content}
 
-请提供：
-1. 文章主要声明和观点
-2. 具体的事实陈述
-3. 数据、时间、地点等关键信息
-4. 引用的资料或来源
-5. 作者的推论和结论
+**分析任务：**
+请对上述内容进行结构化解析，重点识别需要验证的事实信息：
+
+## 1. 文章主要声明和观点
+- 识别文章中的主要论断
+- 提取作者的核心观点
+
+## 2. 具体的事实陈述
+- 列出文章中的具体事实声明
+- 识别可能存在争议的陈述
+
+## 3. 数据、时间、地点等关键信息
+- 提取具体的数字、日期、地点
+- 识别统计数据和量化信息
+
+## 4. 引用的资料或来源
+- 找出文章引用的资料和来源
+- 分析引用的可信度
+
+## 5. 作者的推论和结论
+- 区分事实和推论
+- 识别逻辑推理过程
+
+请直接开始分析，不要询问或说明缺少内容。
 
 <think>
-我需要仔细分析这篇文章，识别出其中的事实陈述、观点和可能需要验证的信息。
+我已经收到了完整的内容，现在开始进行详细的事实分析。我需要仔细识别出其中的事实陈述、观点和可能需要验证的信息，专注于找出可能存在争议或需要核实的具体内容。
 </think>"""
         
         parsed_content = ""

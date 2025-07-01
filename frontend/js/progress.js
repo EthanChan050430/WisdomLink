@@ -203,8 +203,28 @@ class ProgressManager {
      * @param {number} index - 步骤索引
      */
     getStepStatus(index) {
-        if (index < this.activeStep) return 'completed';
-        if (index === this.activeStep) return 'processing';
+        const stepId = index + 1;
+        
+        // 如果步骤数据中标记为完成，则显示完成状态
+        if (this.currentStepData[stepId]?.complete) {
+            console.log(`步骤 ${stepId} (索引 ${index}) 状态: completed (数据标记)`);
+            return 'completed';
+        }
+        
+        // 如果是当前正在处理的步骤
+        if (index === this.activeStep) {
+            console.log(`步骤 ${stepId} (索引 ${index}) 状态: processing (活跃步骤)`);
+            return 'processing';
+        }
+        
+        // 如果步骤索引小于当前活跃步骤，则为完成状态
+        if (index < this.activeStep) {
+            console.log(`步骤 ${stepId} (索引 ${index}) 状态: completed (小于活跃步骤)`);
+            return 'completed';
+        }
+        
+        // 其他情况为等待状态
+        console.log(`步骤 ${stepId} (索引 ${index}) 状态: pending`);
         return 'pending';
     }
 
@@ -239,8 +259,29 @@ class ProgressManager {
      * @param {number} index - 步骤索引
      */
     getStepProgress(index) {
-        if (index < this.activeStep) return 100;
-        if (index === this.activeStep) return 50;
+        const stepId = index + 1;
+        
+        // 如果步骤数据中标记为完成，则100%
+        if (this.currentStepData[stepId]?.complete) {
+            return 100;
+        }
+        
+        // 如果是当前正在处理的步骤且有内容，则显示50%
+        if (index === this.activeStep && this.currentStepData[stepId]?.content) {
+            return 75;
+        }
+        
+        // 如果是当前正在处理的步骤但没有内容，则显示25%
+        if (index === this.activeStep) {
+            return 25;
+        }
+        
+        // 如果步骤索引小于当前活跃步骤，则为100%
+        if (index < this.activeStep) {
+            return 100;
+        }
+        
+        // 其他情况为0%
         return 0;
     }
 
@@ -251,6 +292,8 @@ class ProgressManager {
      * @param {string} type - 内容类型 ('content', 'thinking', 'complete')
      */
     updateStep(stepId, content, type = 'content') {
+        console.log(`更新步骤 ${stepId}, 类型: ${type}, 内容长度: ${content.length}`);
+        
         if (!this.currentStepData[stepId]) {
             this.currentStepData[stepId] = {
                 content: '',
@@ -265,6 +308,7 @@ class ProgressManager {
             this.currentStepData[stepId].thinking += content;
         } else if (type === 'complete') {
             this.currentStepData[stepId].complete = true;
+            console.log(`步骤 ${stepId} 标记为完成，当前步骤数据:`, this.currentStepData[stepId]);
         }
 
         // 更新UI
@@ -275,10 +319,24 @@ class ProgressManager {
      * 完成当前步骤，进入下一步
      */
     completeCurrentStep() {
+        // 标记当前步骤为完成状态
+        const currentStepId = this.activeStep + 1;
+        console.log(`完成当前步骤: ${currentStepId}, 总步骤数: ${this.currentSteps.length}, 当前活跃步骤: ${this.activeStep}`);
+        
+        if (this.currentStepData[currentStepId]) {
+            this.currentStepData[currentStepId].complete = true;
+        }
+        
+        // 只有当不是最后一步时才推进到下一步
         if (this.activeStep < this.currentSteps.length - 1) {
             this.activeStep++;
-            this.renderSteps();
+            console.log(`推进到下一步: ${this.activeStep + 1}`);
+        } else {
+            console.log(`已到达最后一步，不再推进`);
         }
+        
+        // 重新渲染步骤
+        this.renderSteps();
     }
 
     /**
@@ -349,6 +407,15 @@ class ProgressManager {
 
         // 显示模态框
         document.getElementById('stepDetailModal').style.display = 'flex';
+        
+        // 重新初始化代码高亮
+        if (typeof hljs !== 'undefined') {
+            setTimeout(() => {
+                contentContainer.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            }, 100);
+        }
     }
 
     /**
@@ -365,10 +432,59 @@ class ProgressManager {
      * @param {string} content - 原始内容
      */
     renderMarkdown(content) {
+        console.log('渲染Markdown内容，原始长度:', content.length);
+        console.log('marked可用:', typeof marked !== 'undefined');
+        console.log('content前100字符:', content.substring(0, 100));
+        
         if (typeof marked !== 'undefined') {
-            return marked.parse(content);
+            try {
+                // 尝试不同的marked API
+                let rendered;
+                if (typeof marked.parse === 'function') {
+                    rendered = marked.parse(content);
+                } else if (typeof marked === 'function') {
+                    rendered = marked(content);
+                } else {
+                    console.error('marked API不可用');
+                    return this.simpleMarkdownParse(content);
+                }
+                
+                console.log('Markdown渲染成功，HTML长度:', rendered.length);
+                console.log('rendered前100字符:', rendered.substring(0, 100));
+                return rendered;
+            } catch (error) {
+                console.error('Markdown渲染失败:', error);
+                return this.simpleMarkdownParse(content);
+            }
         }
-        return content.replace(/\n/g, '<br>');
+        console.log('marked不可用，使用简单Markdown解析');
+        return this.simpleMarkdownParse(content);
+    }
+
+    /**
+     * 简单的Markdown解析器（后备方案）
+     * @param {string} content - 原始内容
+     */
+    simpleMarkdownParse(content) {
+        return content
+            // 标题
+            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+            // 粗体
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            // 斜体
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            // 代码块
+            .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+            // 行内代码
+            .replace(/`(.*?)`/g, '<code>$1</code>')
+            // 列表项
+            .replace(/^- (.*$)/gim, '<li>$1</li>')
+            // 换行
+            .replace(/\n/g, '<br>')
+            // 包装列表项
+            .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
     }
 
     /**
@@ -404,34 +520,53 @@ class ProgressManager {
      * @param {Object} data - 响应数据
      */
     handleStreamData(data) {
+        console.log('进度管理器收到数据:', data);
+        
         switch (data.type) {
             case 'step_start':
+                console.log(`开始步骤 ${data.step}`);
                 this.activeStep = data.step - 1;
                 this.renderSteps();
                 break;
                 
             case 'content':
+                console.log(`步骤 ${data.step || this.activeStep + 1} 收到内容`);
                 this.updateStep(data.step || this.activeStep + 1, data.content, 'content');
                 break;
                 
             case 'thinking':
+                console.log(`步骤 ${data.step || this.activeStep + 1} 收到思考内容`);
                 this.updateStep(data.step || this.activeStep + 1, data.content, 'thinking');
                 break;
                 
             case 'step_complete':
-                this.updateStep(data.step || this.activeStep + 1, '', 'complete');
+                console.log(`步骤 ${data.step || this.activeStep + 1} 完成`);
+                const completedStepId = data.step || this.activeStep + 1;
+                this.updateStep(completedStepId, '', 'complete');
+                
+                // 推进到下一步（如果不是最后一步）
                 this.completeCurrentStep();
                 break;
                 
             case 'analysis_complete':
             case 'verification_complete':
-                // 分析完成
+                console.log('分析完成');
+                // 确保最后一步也标记为完成
+                const lastStepId = this.currentSteps.length;
+                if (!this.currentStepData[lastStepId]?.complete) {
+                    this.updateStep(lastStepId, '', 'complete');
+                    this.renderSteps();
+                }
                 showNotification('分析完成！点击步骤查看详细结果', 'success');
                 break;
                 
             case 'error':
+                console.error('分析过程中出现错误:', data.message);
                 showNotification(data.message || '分析过程中出现错误', 'error');
                 break;
+                
+            default:
+                console.log('未处理的数据类型:', data.type);
         }
     }
 }

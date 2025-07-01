@@ -58,6 +58,24 @@ class UploadManager {
         if (expertSelect) {
             expertSelect.addEventListener('change', (e) => {
                 this.currentExpert = e.target.value;
+                // 同步到聊天界面的专家选择器
+                const chatExpertSelect = document.getElementById('chatExpertSelect');
+                if (chatExpertSelect) {
+                    chatExpertSelect.value = e.target.value;
+                }
+            });
+        }
+
+        // 聊天界面专家选择器
+        const chatExpertSelect = document.getElementById('chatExpertSelect');
+        if (chatExpertSelect) {
+            chatExpertSelect.addEventListener('change', (e) => {
+                this.currentExpert = e.target.value;
+                // 同步到上传界面的专家选择器
+                const expertSelect = document.getElementById('expertSelect');
+                if (expertSelect) {
+                    expertSelect.value = e.target.value;
+                }
             });
         }
 
@@ -115,12 +133,20 @@ class UploadManager {
     updateExpertSelector() {
         const expertSelector = document.getElementById('expertSelector');
         const expertSelect = document.getElementById('expertSelect');
+        const chatExpertSelector = document.getElementById('chatExpertSelector');
+        const chatExpertSelect = document.getElementById('chatExpertSelect');
 
+        // 上传界面的专家选择器
         if (expertSelector) {
             expertSelector.style.display = this.currentFeature === 'expert-analysis' ? 'block' : 'none';
         }
 
-        if (expertSelect && this.currentFeature === 'expert-analysis') {
+        // 聊天界面的专家选择器
+        if (chatExpertSelector) {
+            chatExpertSelector.style.display = this.currentFeature === 'expert-analysis' ? 'block' : 'none';
+        }
+
+        if (this.currentFeature === 'expert-analysis') {
             this.loadExperts();
         }
     }
@@ -132,21 +158,37 @@ class UploadManager {
         try {
             const response = await utils.get(`${utils.API_BASE_URL}/expert-analysis/get-personas`);
             if (response.success) {
+                // 更新上传界面的专家选择器
                 const expertSelect = document.getElementById('expertSelect');
-                expertSelect.innerHTML = '';
-                
-                for (const [key, persona] of Object.entries(response.personas)) {
-                    const option = document.createElement('option');
-                    option.value = key;
-                    option.textContent = `${persona.name} - ${persona.description}`;
-                    expertSelect.appendChild(option);
+                if (expertSelect) {
+                    this.populateExpertSelect(expertSelect, response.personas);
                 }
                 
-                expertSelect.value = this.currentExpert;
+                // 更新聊天界面的专家选择器
+                const chatExpertSelect = document.getElementById('chatExpertSelect');
+                if (chatExpertSelect) {
+                    this.populateExpertSelect(chatExpertSelect, response.personas);
+                }
             }
         } catch (error) {
             console.error('Failed to load experts:', error);
         }
+    }
+
+    /**
+     * 填充专家选择器选项
+     */
+    populateExpertSelect(selectElement, personas) {
+        selectElement.innerHTML = '<option value="">选择专家角色...</option>';
+        
+        for (const [key, persona] of Object.entries(personas)) {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = `${persona.name} - ${persona.description}`;
+            selectElement.appendChild(option);
+        }
+        
+        selectElement.value = this.currentExpert;
     }
 
     /**

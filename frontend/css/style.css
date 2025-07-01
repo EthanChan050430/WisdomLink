@@ -487,6 +487,63 @@ body {
   color: var(--text-muted);
 }
 
+/* 专家选择器样式 */
+.expert-selector {
+  margin: var(--spacing-lg) 0;
+  padding: var(--spacing-lg);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.selector-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.selector-header i {
+  color: var(--primary-color);
+  font-size: 1.125rem;
+}
+
+.expert-dropdown {
+  position: relative;
+}
+
+.expert-select {
+  width: 100%;
+  padding: var(--spacing-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: var(--font-sans);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.expert-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.expert-select:hover {
+  border-color: var(--primary-color);
+}
+
+.expert-select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: var(--spacing-sm);
+}
+
 .upload-actions {
   display: flex;
   justify-content: center;
@@ -921,6 +978,75 @@ body {
   padding: var(--spacing-lg);
   background: var(--bg-tertiary);
   border-top: 1px solid var(--border-color);
+}
+
+/* 聊天模式专家选择器样式 */
+.chat-expert-selector {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  animation: slideDown 0.3s ease-out;
+}
+
+.chat-expert-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.chat-expert-header i {
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+
+.chat-expert-dropdown {
+  position: relative;
+}
+
+.chat-expert-select {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-family: var(--font-sans);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.chat-expert-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+.chat-expert-select:hover {
+  border-color: var(--primary-color);
+}
+
+.chat-expert-select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: var(--spacing-sm);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .input-area {
