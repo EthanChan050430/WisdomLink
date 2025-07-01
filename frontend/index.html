@@ -203,6 +203,36 @@
                             </div>
                         </div>
                         
+                        <!-- 主页模型选择器 -->
+                        <div class="welcome-model-selector" id="welcomeModelSelector">
+                            <button class="selector-button model-button" id="welcomeModelSelectorBtn">
+                                <i class="fas fa-brain"></i>
+                                <span id="welcomeModelButtonText">GLM-4-Flash</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="selector-dropdown" id="welcomeModelDropdown" style="display: none;">
+                                <select id="welcomeModelSelect" class="hidden-select">
+                                    <option value="GLM-4-Flash">GLM-4-Flash（快速响应）</option>
+                                    <option value="GLM-Z1-Flash">GLM-Z1-Flash（推理优化）</option>
+                                    <option value="DeepSeek-R1-Distill-Qwen-7B">DeepSeek-R1-Distill-Qwen-7B（深度分析）</option>
+                                </select>
+                                <div class="dropdown-options" id="welcomeModelOptions">
+                                    <div class="dropdown-option" data-value="GLM-4-Flash">
+                                        <span class="option-name">GLM-4-Flash</span>
+                                        <span class="option-desc">快速响应</span>
+                                    </div>
+                                    <div class="dropdown-option" data-value="GLM-Z1-Flash">
+                                        <span class="option-name">GLM-Z1-Flash</span>
+                                        <span class="option-desc">推理优化</span>
+                                    </div>
+                                    <div class="dropdown-option" data-value="DeepSeek-R1-Distill-Qwen-7B">
+                                        <span class="option-name">DeepSeek-R1-Distill-Qwen-7B</span>
+                                        <span class="option-desc">深度分析</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="upload-actions">
                             <button class="btn-primary" id="startAnalysisBtn">
                                 <i class="fas fa-paper-plane"></i>
@@ -250,15 +280,49 @@
                     <div class="chat-input-container">
                         <!-- 聊天模式专家选择器 -->
                         <div class="chat-expert-selector" id="chatExpertSelector" style="display: none;">
-                            <div class="chat-expert-header">
+                            <button class="selector-button expert-button" id="expertSelectorBtn">
                                 <i class="fas fa-user-graduate"></i>
-                                <span>当前分析专家</span>
-                            </div>
-                            <div class="chat-expert-dropdown">
-                                <select id="chatExpertSelect" class="chat-expert-select">
+                                <span id="expertButtonText">选择分析专家</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="selector-dropdown" id="expertDropdown" style="display: none;">
+                                <select id="chatExpertSelect" class="hidden-select">
                                     <option value="">选择专家角色...</option>
                                     <!-- 专家选项将通过JavaScript动态加载 -->
                                 </select>
+                                <div class="dropdown-options" id="expertOptions">
+                                    <!-- 选项将通过JavaScript动态生成 -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 模型选择器 -->
+                        <div class="chat-model-selector" id="chatModelSelector" style="display: none;">
+                            <button class="selector-button model-button" id="modelSelectorBtn">
+                                <i class="fas fa-brain"></i>
+                                <span id="modelButtonText">GLM-4-Flash</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="selector-dropdown" id="modelDropdown" style="display: none;">
+                                <select id="chatModelSelect" class="hidden-select">
+                                    <option value="GLM-4-Flash">GLM-4-Flash（快速响应）</option>
+                                    <option value="GLM-Z1-Flash">GLM-Z1-Flash（推理优化）</option>
+                                    <option value="DeepSeek-R1-Distill-Qwen-7B">DeepSeek-R1-Distill-Qwen-7B（深度分析）</option>
+                                </select>
+                                <div class="dropdown-options" id="modelOptions">
+                                    <div class="dropdown-option" data-value="GLM-4-Flash">
+                                        <span class="option-name">GLM-4-Flash</span>
+                                        <span class="option-desc">快速响应</span>
+                                    </div>
+                                    <div class="dropdown-option" data-value="GLM-Z1-Flash">
+                                        <span class="option-name">GLM-Z1-Flash</span>
+                                        <span class="option-desc">推理优化</span>
+                                    </div>
+                                    <div class="dropdown-option" data-value="DeepSeek-R1-Distill-Qwen-7B">
+                                        <span class="option-name">DeepSeek-R1-Distill-Qwen-7B</span>
+                                        <span class="option-desc">深度分析</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
@@ -331,7 +395,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="authTitle">登录</h3>
-                <button class="close-btn" onclick="window.authManager?.hideAuthModal()">
+                <button class="close-btn" id="closeAuthModal">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -375,11 +439,42 @@
     <!-- JavaScript文件 -->
     <script src="js/utils.js"></script>
     <script src="js/theme.js"></script>
+    <script src="js/selector.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/upload.js"></script>
     <script src="js/progress.js"></script>
     <script src="js/chat.js"></script>
     <script src="js/history.js"></script>
     <script src="js/app.js"></script>
+    
+    <!-- 调试脚本 -->
+    <script>
+        // 延迟执行调试
+        setTimeout(() => {
+            console.log('=== 调试信息 ===');
+            console.log('authManager 存在:', !!window.authManager);
+            console.log('DOM元素检查:');
+            console.log('- authModal:', !!document.getElementById('authModal'));
+            console.log('- authSwitchLink:', !!document.getElementById('authSwitchLink'));
+            console.log('- loginBtn:', !!document.getElementById('loginBtn'));
+            
+            // 手动测试切换
+            window.testSwitch = function() {
+                console.log('手动测试切换...');
+                if (window.authManager) {
+                    window.authManager.showAuthModal('login');
+                    setTimeout(() => {
+                        const link = document.getElementById('authSwitchLink');
+                        if (link) {
+                            link.click();
+                            console.log('已点击切换链接');
+                        }
+                    }, 500);
+                }
+            };
+            
+            console.log('可以在控制台运行 testSwitch() 来测试');
+        }, 2000);
+    </script>
 </body>
 </html>

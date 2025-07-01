@@ -71,13 +71,28 @@ class HistoryManager {
 
             if (response.ok) {
                 const data = await response.json();
-                this.sessions = data.chat_list || [];
-                this.renderSessionList();
+                if (data.success) {
+                    this.sessions = data.chats || [];
+                    this.renderSessionList();
+                } else {
+                    // 处理未登录等情况
+                    this.sessions = [];
+                    this.renderSessionList();
+                    if (data.message && data.message.includes('未登录')) {
+                        console.log('未登录状态，显示空历史列表');
+                    } else {
+                        showNotification(data.message || '加载历史记录失败', 'warning');
+                    }
+                }
             } else {
                 showNotification('加载历史记录失败', 'error');
+                this.sessions = [];
+                this.renderSessionList();
             }
         } catch (error) {
             console.error('加载历史记录错误:', error);
+            this.sessions = [];
+            this.renderSessionList();
             showNotification('加载历史记录失败', 'error');
         } finally {
             hideLoading();
@@ -92,10 +107,14 @@ class HistoryManager {
         if (!sessionList) return;
 
         if (this.sessions.length === 0) {
+            // 检查是否为未登录状态
+            const isLoggedIn = window.authManager && window.authManager.isLoggedIn();
+            
             sessionList.innerHTML = `
                 <div class="empty-history">
                     <i class="fas fa-history"></i>
-                    <p>暂无聊天记录</p>
+                    <p>${isLoggedIn ? '暂无聊天记录' : '登录后可查看聊天历史'}</p>
+                    ${!isLoggedIn ? '<p class="hint">当前为访客模式，对话不会保存</p>' : ''}
                 </div>
             `;
             return;
@@ -146,22 +165,27 @@ class HistoryManager {
 
             if (response.ok) {
                 const data = await response.json();
-                this.currentSessionId = data.chat_id;
-                
-                // 只有在明确要求时才清空当前聊天内容
-                if (clearChat) {
-                    const chatMessages = document.getElementById('chatMessages');
-                    if (chatMessages) {
-                        chatMessages.innerHTML = '';
+                if (data.success) {
+                    this.currentSessionId = data.chat_id;
+                    
+                    // 只有在明确要求时才清空当前聊天内容
+                    if (clearChat) {
+                        const chatMessages = document.getElementById('chatMessages');
+                        if (chatMessages) {
+                            chatMessages.innerHTML = '';
+                        }
                     }
-                }
 
-                // 重新加载会话列表
-                await this.loadChatSessions();
-                
-                // 只有在清空聊天时才显示创建成功的通知
-                if (clearChat) {
-                    showNotification('新对话已创建', 'success');
+                    // 重新加载会话列表
+                    await this.loadChatSessions();
+                    
+                    // 只有在清空聊天时才显示创建成功的通知
+                    if (clearChat) {
+                        const message = data.message || '新对话已创建';
+                        showNotification(message, data.message && data.message.includes('未登录') ? 'info' : 'success');
+                    }
+                } else {
+                    showNotification(data.message || '创建新对话失败', 'error');
                 }
             } else {
                 showNotification('创建新对话失败', 'error');

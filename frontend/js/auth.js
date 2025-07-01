@@ -4,9 +4,19 @@ class AuthManager {
     constructor() {
         this.currentUser = null;
         this.isAuthModalOpen = false;
-        this.initializeAuth();
-        this.bindEvents();
-        this.bindModalEvents();
+        this.isProcessingSwitch = false; // 添加处理状态标志
+        // 延迟初始化，确保DOM已加载
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.initializeAuth();
+                this.bindEvents();
+                this.bindModalEvents();
+            });
+        } else {
+            this.initializeAuth();
+            this.bindEvents();
+            this.bindModalEvents();
+        }
     }
 
     /**
@@ -94,6 +104,8 @@ class AuthManager {
         const authSwitchLink = document.getElementById('authSwitchLink');
 
         if (closeAuthModal) {
+            // 移除可能存在的旧事件监听器
+            closeAuthModal.removeEventListener('click', this.hideAuthModal);
             closeAuthModal.addEventListener('click', () => this.hideAuthModal());
         }
 
@@ -113,10 +125,15 @@ class AuthManager {
         }
 
         if (authSwitchLink) {
-            authSwitchLink.addEventListener('click', (e) => {
+            // 使用事件委托避免重复绑定
+            authSwitchLink.removeEventListener('click', this.handleSwitchClick);
+            this.handleSwitchClick = (e) => {
+                console.log('切换链接被点击');
                 e.preventDefault();
+                e.stopPropagation();
                 this.switchAuthMode();
-            });
+            };
+            authSwitchLink.addEventListener('click', this.handleSwitchClick);
         }
 
         // ESC键关闭模态框
@@ -132,28 +149,50 @@ class AuthManager {
      * @param {string} mode - 模式 ('login' | 'register')
      */
     showAuthModal(mode = 'login') {
+        console.log('showAuthModal 被调用，模式:', mode);
         const modal = document.getElementById('authModal');
         const title = document.getElementById('authTitle');
         const submitBtn = document.getElementById('authSubmitBtn');
         const switchText = document.getElementById('authSwitchText');
         const switchLink = document.getElementById('authSwitchLink');
 
-        if (!modal) return;
-
-        // 设置模态框内容
-        if (mode === 'login') {
-            title.textContent = '登录';
-            submitBtn.textContent = '登录';
-            switchText.textContent = '还没有账号？';
-            switchLink.textContent = '立即注册';
-        } else {
-            title.textContent = '注册';
-            submitBtn.textContent = '注册';
-            switchText.textContent = '已有账号？';
-            switchLink.textContent = '立即登录';
+        if (!modal) {
+            console.error('未找到认证模态框元素');
+            return;
         }
 
-        modal.dataset.mode = mode;
+        // 检查是否需要更新内容（避免不必要的DOM操作）
+        const currentMode = modal.dataset.mode;
+        if (currentMode !== mode) {
+            // 设置模态框内容
+            if (mode === 'login') {
+                if (title) title.textContent = '登录';
+                if (submitBtn) submitBtn.textContent = '登录';
+                if (switchText) switchText.textContent = '还没有账号？';
+                if (switchLink) switchLink.textContent = '立即注册';
+                
+                // 隐藏邮箱字段
+                const emailGroup = document.getElementById('authEmailGroup');
+                if (emailGroup) {
+                    emailGroup.style.display = 'none';
+                }
+            } else {
+                if (title) title.textContent = '注册';
+                if (submitBtn) submitBtn.textContent = '注册';
+                if (switchText) switchText.textContent = '已有账号？';
+                if (switchLink) switchLink.textContent = '立即登录';
+                
+                // 显示邮箱字段（可选）
+                const emailGroup = document.getElementById('authEmailGroup');
+                if (emailGroup) {
+                    emailGroup.style.display = 'block';
+                }
+            }
+            
+            modal.dataset.mode = mode;
+        }
+
+        // 显示模态框
         modal.style.display = 'flex';
         setTimeout(() => {
             modal.classList.add('show');
@@ -179,6 +218,7 @@ class AuthManager {
             modal.style.display = 'none';
         }, 300);
         this.isAuthModalOpen = false;
+        this.isProcessingSwitch = false; // 重置处理状态
 
         // 清空表单
         const form = document.getElementById('authForm');
@@ -191,12 +231,29 @@ class AuthManager {
      * 切换认证模式
      */
     switchAuthMode() {
+        console.log('switchAuthMode 被调用');
+        
+        // 防止重复快速点击
+        if (this.isProcessingSwitch) {
+            console.log('正在处理切换，跳过');
+            return;
+        }
+        
+        this.isProcessingSwitch = true;
+        
         const modal = document.getElementById('authModal');
         const currentMode = modal.dataset.mode;
         const newMode = currentMode === 'login' ? 'register' : 'login';
         
-        this.hideAuthModal();
-        setTimeout(() => this.showAuthModal(newMode), 150);
+        console.log('当前模式:', currentMode, '新模式:', newMode);
+        
+        // 直接切换模式，不隐藏模态框
+        this.showAuthModal(newMode);
+        
+        // 延迟重置处理状态
+        setTimeout(() => {
+            this.isProcessingSwitch = false;
+        }, 300);
     }
 
     /**

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>爬虫结果折叠框测试</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="dark-theme">
+    <div style="padding: 2rem;">
+        <h1>爬虫结果折叠框测试</h1>
+        <div id="testContainer"></div>
+        
+        <button onclick="testCrawlerResults()">测试爬虫结果折叠框</button>
+    </div>
+
+    <script>
+    function testCrawlerResults() {
+        const testResults = [
+            {
+                success: true,
+                title: "MSN新闻标题测试",
+                content: "这是一个测试内容，用来验证爬虫结果的显示。内容包含一些文字，用于测试内容预览功能。这个内容会被截断显示前300个字符。",
+                images: [],
+                url: "https://www.msn.cn/zh-cn/news/other/test",
+                word_count: 100
+            },
+            {
+                success: false,
+                title: "",
+                content: "",
+                images: [],
+                url: "https://example.com/failed",
+                error: "无法访问该网站，可能是网络问题或反爬虫保护"
+            }
+        ];
+        
+        addCrawlerResultsCollapse(testResults);
+    }
+    
+    function addCrawlerResultsCollapse(results) {
+        console.log('添加爬虫结果折叠框:', results);
+        
+        // 创建折叠框容器
+        const collapseContainer = document.createElement('div');
+        collapseContainer.className = 'crawler-results-collapse';
+        collapseContainer.innerHTML = `
+            <div class="collapse-header" onclick="this.parentElement.classList.toggle('expanded')">
+                <div class="collapse-title">
+                    <i class="fas fa-spider"></i>
+                    <span>网页抓取结果详情</span>
+                    <span class="collapse-count">(${results.length} 个链接)</span>
+                </div>
+                <i class="fas fa-chevron-down collapse-icon"></i>
+            </div>
+            <div class="collapse-content">
+                ${results.map((result, index) => `
+                    <div class="crawler-result-item">
+                        <div class="result-header">
+                            <div class="result-status ${result.success ? 'success' : 'error'}">
+                                <i class="fas ${result.success ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                <span>${result.success ? '成功' : '失败'}</span>
+                            </div>
+                            <div class="result-url">
+                                <a href="${result.url}" target="_blank" rel="noopener">${result.url}</a>
+                            </div>
+                        </div>
+                        <div class="result-details">
+                            ${result.success ? `
+                                <div class="result-title">
+                                    <strong>标题:</strong> ${result.title || '无标题'}
+                                </div>
+                                <div class="result-content">
+                                    <strong>内容长度:</strong> ${result.content ? result.content.length : 0} 字符
+                                    ${result.content ? `
+                                        <div class="content-preview">
+                                            <strong>内容预览:</strong>
+                                            <div class="content-text">${result.content.substring(0, 300)}${result.content.length > 300 ? '...' : ''}</div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                ${result.images && result.images.length > 0 ? `
+                                    <div class="result-images">
+                                        <strong>图片:</strong> ${result.images.length} 张
+                                    </div>
+                                ` : ''}
+                            ` : `
+                                <div class="result-error">
+                                    <strong>错误:</strong> ${result.error || '未知错误'}
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        // 将折叠框添加到测试容器中
+        const testContainer = document.getElementById('testContainer');
+        if (testContainer) {
+            testContainer.appendChild(collapseContainer);
+        }
+    }
+    </script>
+</body>
+</html>

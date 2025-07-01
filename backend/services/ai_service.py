@@ -58,23 +58,27 @@ class AIService:
         except Exception as e:
             yield f"错误：{str(e)}"
     
-    def simple_chat(self, prompt: str, system_prompt: str = None) -> Generator[str, None, None]:
+    def simple_chat(self, prompt: str, system_prompt: str = None, model: str = None) -> Generator[str, None, None]:
         """简单任务聊天（使用GLM-4-Flash）"""
         messages = []
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
         
-        return self._make_request(messages, self.simple_model)
+        # 如果指定了模型就使用指定的模型，否则使用默认的简单模型
+        selected_model = model if model else self.simple_model
+        return self._make_request(messages, selected_model)
     
-    def complex_chat(self, prompt: str, system_prompt: str = None) -> Generator[str, None, None]:
+    def complex_chat(self, prompt: str, system_prompt: str = None, model: str = None) -> Generator[str, None, None]:
         """复杂任务聊天（使用GLM-4V-Flash）"""
         messages = []
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
         
-        return self._make_request(messages, self.complex_model)
+        # 如果指定了模型就使用指定的模型，否则使用默认的复杂模型
+        selected_model = model if model else self.complex_model
+        return self._make_request(messages, selected_model)
     
     def extract_thinking(self, content: str) -> tuple[str, str]:
         """提取思考内容和显示内容"""
@@ -88,11 +92,17 @@ class AIService:
         
         return thinking_content, display_content
     
-    def continue_conversation(self, messages: list, new_message: str, use_complex: bool = False) -> Generator[str, None, None]:
+    def continue_conversation(self, messages: list, new_message: str, use_complex: bool = False, model: str = None) -> Generator[str, None, None]:
         """继续对话"""
         messages.append({"role": "user", "content": new_message})
-        model = self.complex_model if use_complex else self.simple_model
-        return self._make_request(messages, model)
+        
+        # 模型选择优先级：指定模型 > use_complex参数 > 默认简单模型
+        if model:
+            selected_model = model
+        else:
+            selected_model = self.complex_model if use_complex else self.simple_model
+            
+        return self._make_request(messages, selected_model)
 
 # 全局AI服务实例
 ai_service = AIService()

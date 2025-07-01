@@ -132,9 +132,9 @@ class UploadManager {
      */
     updateExpertSelector() {
         const expertSelector = document.getElementById('expertSelector');
-        const expertSelect = document.getElementById('expertSelect');
         const chatExpertSelector = document.getElementById('chatExpertSelector');
-        const chatExpertSelect = document.getElementById('chatExpertSelect');
+        const chatModelSelector = document.getElementById('chatModelSelector');
+        const welcomeModelSelector = document.getElementById('welcomeModelSelector');
 
         // 上传界面的专家选择器
         if (expertSelector) {
@@ -144,6 +144,16 @@ class UploadManager {
         // 聊天界面的专家选择器
         if (chatExpertSelector) {
             chatExpertSelector.style.display = this.currentFeature === 'expert-analysis' ? 'block' : 'none';
+        }
+
+        // 聊天界面的模型选择器 - 智能伴读和大师分析都显示
+        if (chatModelSelector) {
+            chatModelSelector.style.display = (this.currentFeature === 'intelligent-reading' || this.currentFeature === 'expert-analysis') ? 'block' : 'none';
+        }
+
+        // 主页的模型选择器 - 智能伴读和大师分析都显示
+        if (welcomeModelSelector) {
+            welcomeModelSelector.style.display = (this.currentFeature === 'intelligent-reading' || this.currentFeature === 'expert-analysis') ? 'block' : 'none';
         }
 
         if (this.currentFeature === 'expert-analysis') {
@@ -548,6 +558,17 @@ class UploadManager {
             // 添加功能和专家信息
             if (this.currentFeature === 'expert-analysis') {
                 formData.append('persona', this.currentExpert);
+            }
+
+            // 添加模型选择（智能伴读和大师分析）
+            if (this.currentFeature === 'intelligent-reading' || this.currentFeature === 'expert-analysis') {
+                // 优先使用主页的模型选择器，如果不存在则使用聊天界面的
+                const welcomeModelSelect = document.getElementById('welcomeModelSelect');
+                const chatModelSelect = document.getElementById('chatModelSelect');
+                const selectedModel = welcomeModelSelect?.value || chatModelSelect?.value;
+                if (selectedModel) {
+                    formData.append('model', selectedModel);
+                }
             }
 
             // 根据功能类型选择不同的处理方式

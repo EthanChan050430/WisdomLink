@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>认证测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            padding: 20px;
+            width: 400px;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .auth-switch {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .auth-switch a {
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>认证功能测试</h1>
+    
+    <div class="test-section">
+        <h2>AuthManager 测试</h2>
+        <button onclick="testAuthManager()">测试 AuthManager 是否存在</button>
+        <button onclick="testShowLoginModal()">显示登录模态框</button>
+        <button onclick="testShowRegisterModal()">显示注册模态框</button>
+        <button onclick="testSwitchMode()">切换认证模式</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>DOM 元素测试</h2>
+        <button onclick="testDOMElements()">检查DOM元素</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>注册流程测试</h2>
+        <button onclick="testRegisterFlow()">模拟注册流程</button>
+    </div>
+    
+    <div id="log" class="log">测试日志将在这里显示...</div>
+
+    <!-- 认证模态框 -->
+    <div class="modal-overlay" id="authModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="authTitle">登录</h3>
+                <button class="close-btn" id="closeAuthModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="authForm">
+                    <div class="form-group">
+                        <label for="authUsername">用户名</label>
+                        <input type="text" id="authUsername" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="authPassword">密码</label>
+                        <input type="password" id="authPassword" name="password" required>
+                    </div>
+                    <div class="form-group" id="authEmailGroup" style="display: none;">
+                        <label for="authEmail">邮箱</label>
+                        <input type="email" id="authEmail" name="email">
+                    </div>
+                    <button type="submit" class="btn-primary" id="authSubmitBtn">登录</button>
+                </form>
+                <div class="auth-switch">
+                    <span id="authSwitchText">还没有账号？</span>
+                    <a href="#" id="authSwitchLink">立即注册</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+        }
+
+        function testAuthManager() {
+            log('测试 AuthManager...');
+            log('window.authManager 存在: ' + (!!window.authManager));
+            if (window.authManager) {
+                log('AuthManager 方法: ' + Object.getOwnPropertyNames(Object.getPrototypeOf(window.authManager)));
+            }
+        }
+
+        function testShowLoginModal() {
+            log('测试显示登录模态框...');
+            if (window.authManager) {
+                window.authManager.showAuthModal('login');
+                log('调用 showAuthModal("login")');
+            } else {
+                log('错误: authManager 不存在');
+            }
+        }
+
+        function testShowRegisterModal() {
+            log('测试显示注册模态框...');
+            if (window.authManager) {
+                window.authManager.showAuthModal('register');
+                log('调用 showAuthModal("register")');
+            } else {
+                log('错误: authManager 不存在');
+            }
+        }
+
+        function testSwitchMode() {
+            log('测试切换认证模式...');
+            if (window.authManager) {
+                window.authManager.switchAuthMode();
+                log('调用 switchAuthMode()');
+            } else {
+                log('错误: authManager 不存在');
+            }
+        }
+
+        function testDOMElements() {
+            log('检查DOM元素...');
+            const elements = {
+                'authModal': document.getElementById('authModal'),
+                'authTitle': document.getElementById('authTitle'),
+                'authSubmitBtn': document.getElementById('authSubmitBtn'),
+                'authSwitchText': document.getElementById('authSwitchText'),
+                'authSwitchLink': document.getElementById('authSwitchLink'),
+                'authForm': document.getElementById('authForm'),
+                'closeAuthModal': document.getElementById('closeAuthModal')
+            };
+            
+            for (const [name, element] of Object.entries(elements)) {
+                log(name + ': ' + (element ? '存在' : '不存在'));
+            }
+        }
+
+        function testRegisterFlow() {
+            log('模拟注册流程...');
+            
+            // 1. 显示登录模态框
+            if (window.authManager) {
+                log('1. 显示登录模态框');
+                window.authManager.showAuthModal('login');
+                
+                setTimeout(() => {
+                    log('2. 点击"立即注册"链接');
+                    const switchLink = document.getElementById('authSwitchLink');
+                    if (switchLink) {
+                        switchLink.click();
+                        log('已点击注册链接');
+                    } else {
+                        log('错误: 找不到注册链接');
+                    }
+                }, 1000);
+            } else {
+                log('错误: authManager 不存在');
+            }
+        }
+
+        // 页面加载完成后自动运行测试
+        window.addEventListener('load', () => {
+            log('页面加载完成');
+            setTimeout(testAuthManager, 100);
+            setTimeout(testDOMElements, 200);
+        });
+    </script>
+
+    <!-- 引入主要的JavaScript文件 -->
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

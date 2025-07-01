@@ -348,6 +348,22 @@ class ChatManager {
             data.role = role;
         }
 
+        // 添加模型选择（智能伴读和大师分析）
+        if (this.currentFunction === 'intelligent-reading' || this.currentFunction === 'expert-analysis') {
+            // 优先使用聊天界面的模型选择器，如果不存在则使用主页的
+            const chatModelSelect = document.getElementById('chatModelSelect');
+            const welcomeModelSelect = document.getElementById('welcomeModelSelect');
+            const selectedModel = chatModelSelect?.value || welcomeModelSelect?.value;
+            if (selectedModel) {
+                data.model = selectedModel;
+            }
+        }
+
+        // 添加内容上下文（如果是智能伴读且有解析过的内容）
+        if (this.currentFunction === 'intelligent-reading' && !isInitial && this.currentContentContext) {
+            data.content_context = this.currentContentContext;
+        }
+
         return data;
     }
 
@@ -557,6 +573,16 @@ class ChatManager {
                                     }
                                     break;
 
+                                case 'crawler_results':
+                                    console.log('收到爬虫结果:', data.results);
+                                    this.addCrawlerResultsCollapse(data.results);
+                                    break;
+
+                                case 'content_parsed':
+                                    console.log('收到内容解析结果:', data.result);
+                                    this.handleContentParsed(data.result);
+                                    break;
+
                                 case 'status':
                                     console.log('收到状态消息:', data.message);
                                     showLoading(data.message);
@@ -687,6 +713,84 @@ class ChatManager {
             // 保存到历史记录
             this.saveMessageToHistory('assistant', data.response);
         }
+    }
+
+    /**
+     * 处理内容解析完成
+     */
+    handleContentParsed(result) {
+        console.log('处理内容解析结果:', result);
+        
+        // 存储解析结果供后续聊天使用
+        this.currentContentContext = result.full_content;
+        
+        // 添加内容解析结果卡片
+        this.addContentParseCard(result);
+        
+        // 滚动到底部
+        this.scrollToBottom();
+    }
+
+    /**
+     * 添加内容解析结果卡片
+     */
+    addContentParseCard(result) {
+        const cardContainer = document.createElement('div');
+        cardContainer.className = 'content-parse-card';
+        cardContainer.innerHTML = `
+            <div class="parse-card-header">
+                <div class="parse-icon">
+                    <i class="fas fa-file-text"></i>
+                </div>
+                <div class="parse-title">
+                    <span>内容解析完成</span>
+                    <div class="parse-type">${this.getContentTypeLabel(result.content_type)}</div>
+                </div>
+            </div>
+            <div class="parse-card-content">
+                <div class="parse-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">字符数</span>
+                        <span class="stat-value">${result.char_count.toLocaleString()}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">词数</span>
+                        <span class="stat-value">${result.word_count.toLocaleString()}</span>
+                    </div>
+                </div>
+                <div class="content-preview">
+                    <div class="preview-header" onclick="this.parentElement.classList.toggle('expanded')">
+                        <span>内容预览</span>
+                        <button class="preview-toggle">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="preview-text">${result.content_preview}</div>
+                    <div class="preview-full" style="display: none;">
+                        <div class="full-content">${result.full_content}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // 将卡片添加到聊天容器中
+        const chatContainer = document.getElementById('chatContainer');
+        if (chatContainer) {
+            chatContainer.appendChild(cardContainer);
+        }
+    }
+
+    /**
+     * 获取内容类型标签
+     */
+    getContentTypeLabel(contentType) {
+        const labels = {
+            'url': '网页链接',
+            'text': '文本内容',
+            'file': '文件上传',
+            'image': '图片OCR'
+        };
+        return labels[contentType] || '未知类型';
     }
 
     /**
@@ -1236,6 +1340,74 @@ class ChatManager {
             }
         } catch (error) {
             console.error('创建分析会话错误:', error);
+        }
+    }
+
+    /**
+     * 添加爬虫结果折叠框
+     */
+    addCrawlerResultsCollapse(results) {
+        console.log('添加爬虫结果折叠框:', results);
+        
+        // 创建折叠框容器
+        const collapseContainer = document.createElement('div');
+        collapseContainer.className = 'crawler-results-collapse';
+        collapseContainer.innerHTML = `
+            <div class="collapse-header" onclick="this.parentElement.classList.toggle('expanded')">
+                <div class="collapse-title">
+                    <i class="fas fa-spider"></i>
+                    <span>网页抓取结果详情</span>
+                    <span class="collapse-count">(${results.length} 个链接)</span>
+                </div>
+                <i class="fas fa-chevron-down collapse-icon"></i>
+            </div>
+            <div class="collapse-content">
+                ${results.map((result, index) => `
+                    <div class="crawler-result-item">
+                        <div class="result-header">
+                            <div class="result-status ${result.success ? 'success' : 'error'}">
+                                <i class="fas ${result.success ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                <span>${result.success ? '成功' : '失败'}</span>
+                            </div>
+                            <div class="result-url">
+                                <a href="${result.url}" target="_blank" rel="noopener">${result.url}</a>
+                            </div>
+                        </div>
+                        <div class="result-details">
+                            ${result.success ? `
+                                <div class="result-title">
+                                    <strong>标题:</strong> ${result.title || '无标题'}
+                                </div>
+                                <div class="result-content">
+                                    <strong>内容长度:</strong> ${result.content ? result.content.length : 0} 字符
+                                    ${result.content ? `
+                                        <div class="content-preview">
+                                            <strong>内容预览:</strong>
+                                            <div class="content-text">${result.content.substring(0, 300)}${result.content.length > 300 ? '...' : ''}</div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                ${result.images && result.images.length > 0 ? `
+                                    <div class="result-images">
+                                        <strong>图片:</strong> ${result.images.length} 张
+                                    </div>
+                                ` : ''}
+                            ` : `
+                                <div class="result-error">
+                                    <strong>错误:</strong> ${result.error || '未知错误'}
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        // 将折叠框添加到聊天容器中
+        const chatContainer = document.getElementById('chatContainer');
+        if (chatContainer) {
+            chatContainer.appendChild(collapseContainer);
+            this.scrollToBottom();
         }
     }
 

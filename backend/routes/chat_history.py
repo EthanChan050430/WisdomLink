@@ -20,7 +20,8 @@ def list_chat_history():
     """获取用户的聊天记录列表"""
     user = session.get('user')
     if not user:
-        return jsonify({'success': False, 'message': '请先登录'})
+        # 未登录用户返回空列表，不阻止使用功能
+        return jsonify({'success': True, 'chat_list': [], 'message': '未登录，无法获取聊天记录'})
     
     try:
         chat_folder = get_user_chat_folder(user['username'])
@@ -63,7 +64,9 @@ def create_new_chat():
     """创建新的聊天记录"""
     user = session.get('user')
     if not user:
-        return jsonify({'success': False, 'message': '请先登录'})
+        # 未登录用户生成临时chat_id，但不保存
+        chat_id = str(uuid.uuid4())
+        return jsonify({'success': True, 'chat_id': chat_id, 'message': '未登录，对话不会保存'})
     
     try:
         data = request.get_json()
@@ -101,7 +104,17 @@ def get_chat_history(chat_id):
     """获取特定聊天记录的详细内容"""
     user = session.get('user')
     if not user:
-        return jsonify({'success': False, 'message': '请先登录'})
+        # 未登录用户返回空的聊天记录
+        return jsonify({
+            'success': True, 
+            'chat': {
+                'chat_id': chat_id,
+                'title': '临时对话',
+                'feature': 'intelligent_reading',
+                'messages': []
+            },
+            'message': '未登录，无法获取聊天历史'
+        })
     
     try:
         file_path = get_chat_file_path(user['username'], chat_id)
@@ -122,7 +135,8 @@ def save_chat_message():
     """保存聊天消息"""
     user = session.get('user')
     if not user:
-        return jsonify({'success': False, 'message': '请先登录'})
+        # 未登录用户不保存聊天记录，但返回成功，不阻止功能使用
+        return jsonify({'success': True, 'message': '未登录，消息未保存'})
     
     try:
         data = request.get_json()
@@ -177,7 +191,8 @@ def delete_chat_history(chat_id):
     """删除聊天记录"""
     user = session.get('user')
     if not user:
-        return jsonify({'success': False, 'message': '请先登录'})
+        # 未登录用户无聊天记录可删除，但不阻止操作
+        return jsonify({'success': True, 'message': '未登录，无聊天记录可删除'})
     
     try:
         file_path = get_chat_file_path(user['username'], chat_id)
@@ -196,7 +211,8 @@ def update_chat_title():
     """更新聊天记录标题"""
     user = session.get('user')
     if not user:
-        return jsonify({'success': False, 'message': '请先登录'})
+        # 未登录用户无聊天记录可更新，但不阻止操作
+        return jsonify({'success': True, 'message': '未登录，无聊天记录可更新'})
     
     try:
         data = request.get_json()
@@ -231,7 +247,8 @@ def export_chat_history(chat_id):
     """导出聊天记录"""
     user = session.get('user')
     if not user:
-        return jsonify({'success': False, 'message': '请先登录'})
+        # 未登录用户无聊天记录可导出
+        return jsonify({'success': True, 'content': '# 临时对话\n\n未登录用户，无聊天记录可导出。', 'title': '临时对话'})
     
     try:
         file_path = get_chat_file_path(user['username'], chat_id)
@@ -273,7 +290,8 @@ def save_message():
     """保存消息到指定会话"""
     user = session.get('user')
     if not user:
-        return jsonify({'success': False, 'message': '请先登录'})
+        # 未登录用户不保存消息，但不阻止功能使用
+        return jsonify({'success': True, 'message': '未登录，消息未保存'})
     
     try:
         data = request.get_json()

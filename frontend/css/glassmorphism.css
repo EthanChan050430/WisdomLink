@@ -81,31 +81,6 @@
     background: rgba(45, 55, 72, 0.9);
 }
 
-/* 消息气泡毛玻璃效果 */
-.message.user .message-content {
-    background: rgba(102, 126, 234, 0.1);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(102, 126, 234, 0.2);
-}
-
-.message.assistant .message-content {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-[data-theme="dark"] .message.user .message-content {
-    background: rgba(102, 126, 234, 0.2);
-    border: 1px solid rgba(102, 126, 234, 0.3);
-}
-
-[data-theme="dark"] .message.assistant .message-content {
-    background: rgba(45, 55, 72, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
 /* 进度步骤毛玻璃效果 */
 .progress-step {
     background: rgba(255, 255, 255, 0.08);
