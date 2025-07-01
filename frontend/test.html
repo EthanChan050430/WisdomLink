@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端功能测试</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-output {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border: 1px solid #555;
+            font-family: 'Consolas', monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body>
+    <h1>智链AI阅读助手 - 前端功能测试</h1>
+    
+    <div class="test-section">
+        <h2>Markdown渲染测试</h2>
+        <button class="test-button" onclick="testMarkdown()">测试Markdown渲染</button>
+        <div id="markdownOutput" class="test-output"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>API连接测试</h2>
+        <button class="test-button" onclick="testAPIConnection()">测试API连接</button>
+        <div id="apiOutput" class="test-output"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>主题切换测试</h2>
+        <button class="test-button" onclick="testThemeSwitch()">测试主题切换</button>
+        <div id="themeOutput" class="test-output"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>文件上传测试</h2>
+        <input type="file" id="testFile" accept=".txt,.md,.pdf">
+        <button class="test-button" onclick="testFileUpload()">测试文件上传</button>
+        <div id="uploadOutput" class="test-output"></div>
+    </div>
+
+    <script>
+        // 配置marked
+        if (typeof marked !== 'undefined') {
+            marked.setOptions({
+                highlight: function(code, lang) {
+                    if (typeof hljs !== 'undefined' && lang && hljs.getLanguage(lang)) {
+                        try {
+                            return hljs.highlight(code, { language: lang }).value;
+                        } catch (ex) {}
+                    }
+                    return code;
+                },
+                breaks: true,
+                gfm: true
+            });
+        }
+
+        function testMarkdown() {
+            const markdownText = `# 测试标题
+## 二级标题
+
+这是一段**粗体**文字和*斜体*文字。
+
+- 列表项1
+- 列表项2
+- 列表项3
+
+\`\`\`javascript
+function helloWorld() {
+    console.log("Hello, World!");
+}
+\`\`\`
+
+> 这是一个引用块
+
+| 表格列1 | 表格列2 |
+|---------|---------|
+| 单元格1 | 单元格2 |
+| 单元格3 | 单元格4 |`;
+
+            const output = document.getElementById('markdownOutput');
+            if (typeof marked !== 'undefined') {
+                output.innerHTML = '<div class="success">✅ Markdown渲染成功:</div>' + marked.parse(markdownText);
+                // 高亮代码
+                if (typeof hljs !== 'undefined') {
+                    output.querySelectorAll('pre code').forEach((block) => {
+                        hljs.highlightElement(block);
+                    });
+                }
+            } else {
+                output.innerHTML = '<div class="error">❌ marked.js 未加载</div>';
+            }
+        }
+
+        async function testAPIConnection() {
+            const output = document.getElementById('apiOutput');
+            output.innerHTML = '<div class="warning">⏳ 正在测试API连接...</div>';
+
+            try {
+                const response = await fetch('/api/auth/check', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    output.innerHTML = '<div class="success">✅ API连接成功</div>' + 
+                                     '<div>响应数据: ' + JSON.stringify(data, null, 2) + '</div>';
+                } else {
+                    output.innerHTML = '<div class="warning">⚠️ API连接成功，但返回错误状态: ' + response.status + '</div>';
+                }
+            } catch (error) {
+                output.innerHTML = '<div class="error">❌ API连接失败: ' + error.message + '</div>';
+            }
+        }
+
+        function testThemeSwitch() {
+            const output = document.getElementById('themeOutput');
+            const body = document.body;
+            
+            // 模拟主题切换
+            if (body.style.background === 'rgb(26, 26, 26)' || body.style.background === '#1a1a1a') {
+                body.style.background = '#ffffff';
+                body.style.color = '#000000';
+                output.innerHTML = '<div class="success">✅ 已切换到浅色主题</div>';
+            } else {
+                body.style.background = '#1a1a1a';
+                body.style.color = '#ffffff';
+                output.innerHTML = '<div class="success">✅ 已切换到深色主题</div>';
+            }
+        }
+
+        async function testFileUpload() {
+            const output = document.getElementById('uploadOutput');
+            const fileInput = document.getElementById('testFile');
+            
+            if (!fileInput.files.length) {
+                output.innerHTML = '<div class="warning">⚠️ 请先选择文件</div>';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            output.innerHTML = '<div class="warning">⏳ 正在上传文件...</div>';
+
+            try {
+                const response = await fetch('/api/intelligent-reading/upload', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    output.innerHTML = '<div class="success">✅ 文件上传成功</div>' + 
+                                     '<div>文件名: ' + file.name + '</div>' +
+                                     '<div>文件大小: ' + (file.size / 1024).toFixed(2) + ' KB</div>' +
+                                     '<div>响应数据: ' + JSON.stringify(data, null, 2) + '</div>';
+                } else {
+                    output.innerHTML = '<div class="error">❌ 文件上传失败: ' + response.status + '</div>';
+                }
+            } catch (error) {
+                output.innerHTML = '<div class="error">❌ 文件上传错误: ' + error.message + '</div>';
+            }
+        }
+
+        // 页面加载时运行基础测试
+        window.addEventListener('load', function() {
+            console.log('前端测试页面已加载');
+            
+            // 检查依赖
+            const checks = [];
+            checks.push(typeof marked !== 'undefined' ? '✅ marked.js' : '❌ marked.js');
+            checks.push(typeof hljs !== 'undefined' ? '✅ highlight.js' : '❌ highlight.js');
+            
+            console.log('依赖检查:', checks.join(', '));
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+# 智链AI阅读助手配置文件示例
+# 请复制此文件为 config.py 并填入您的实际配置
+
+# =================
+# GLM API配置
+# =================
+# 在 https://open.bigmodel.cn/ 获取您的API密钥
+GLM_API_KEY = "your_glm_api_key_here"
+GLM_BASE_URL = "https://open.bigmodel.cn/api/paas/v4/"
+
+# GLM模型配置
+GLM_MODELS = {
+    "text": "glm-4-flash",      # 文本对话模型
+    "vision": "glm-4v-flash"   # 图像理解模型
+}
+
+# =================
+# 服务器配置
+# =================
+DEBUG = True                    # 开发模式，生产环境请设为False
+HOST = "0.0.0.0"               # 监听地址
+PORT = 80                      # 监听端口
+
+# =================
+# 文件上传配置
+# =================
+MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 最大上传大小：10MB
+UPLOAD_FOLDER = "data/uploads"          # 上传文件存储目录
+
+# 支持的文件类型
+ALLOWED_EXTENSIONS = {
+    # 文档类型
+    'txt', 'md', 'pdf', 'docx', 'doc',
+    # 图片类型  
+    'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'
+}
+
+# =================
+# 用户数据配置
+# =================
+USER_DATA_DIR = "data/users"           # 用户数据目录
+CHAT_HISTORY_DIR = "data/chat_history" # 聊天历史目录
+USER_CSV_FILE = "data/users/user.csv"  # 用户信息文件
+
+# =================
+# 会话配置
+# =================
+SESSION_TIMEOUT = 3600                 # 会话超时时间（秒）
+MAX_CHAT_HISTORY = 100                 # 最大聊天历史条数
+AUTO_SAVE_INTERVAL = 30                # 自动保存间隔（秒）
+
+# =================
+# OCR配置
+# =================
+OCR_LANGUAGES = ['ch_sim', 'en']       # OCR识别语言
+OCR_GPU = False                        # 是否使用GPU加速
+
+# =================
+# 爬虫配置
+# =================
+CRAWLER_TIMEOUT = 30                   # 爬虫超时时间（秒）
+CRAWLER_MAX_CONTENT = 50000            # 最大内容长度
+CRAWLER_USER_AGENT = "AIReader/1.0 (AI Reading Assistant)"
+
+# =================
+# 安全配置
+# =================
+SECRET_KEY = "your_secret_key_here"    # Flask密钥，请更改为随机字符串
+CORS_ORIGINS = ["http://localhost"]    # 跨域允许的源
+
+# =================
+# 日志配置
+# =================
+LOG_LEVEL = "INFO"                     # 日志级别：DEBUG, INFO, WARNING, ERROR
+LOG_FILE = "data/logs/app.log"         # 日志文件路径
+LOG_MAX_SIZE = 10 * 1024 * 1024       # 日志文件最大大小：10MB
+LOG_BACKUP_COUNT = 5                   # 日志备份文件数量
+
+# =================
+# 缓存配置
+# =================
+CACHE_TYPE = "simple"                  # 缓存类型
+CACHE_DEFAULT_TIMEOUT = 300            # 默认缓存时间（秒）
+
+# =================
+# 开发配置
+# =================
+# 是否启用API文档
+ENABLE_API_DOCS = True
+
+# 是否启用性能监控
+ENABLE_PROFILING = False
+
+# 是否启用详细错误页面
+SHOW_ERROR_DETAILS = True
+
+# =================
+# 生产环境配置建议
+# =================
+"""
+生产环境部署时建议修改以下配置：
+
+1. 安全设置：
+   - DEBUG = False
+   - SECRET_KEY 设置为强随机字符串
+   - 使用HTTPS
+
+2. 性能设置：
+   - 使用Gunicorn或uWSGI
+   - 配置Nginx反向代理
+   - 启用文件缓存
+
+3. 数据库：
+   - 考虑使用PostgreSQL/MySQL替代文件存储
+   - 配置数据库连接池
+
+4. 监控：
+   - 配置日志系统
+   - 添加性能监控
+   - 设置错误报告
+
+5. 备份：
+   - 定期备份用户数据
+   - 设置自动备份策略
+"""
+
+# =================
+# API限制配置
+# =================
+# 请求频率限制（每分钟最大请求数）
+RATE_LIMIT_PER_MINUTE = 60
+
+# 每用户每日最大请求数
+DAILY_REQUEST_LIMIT = 1000
+
+# 并发请求限制
+MAX_CONCURRENT_REQUESTS = 10
+
+# =================
+# 功能开关
+# =================
+# 功能模块开关
+FEATURES = {
+    "intelligent_reading": True,       # 智能伴读
+    "comprehensive_analysis": True,    # 全面总结
+    "expert_analysis": True,          # 大师分析
+    "fact_checking": True,            # 真伪鉴定
+    "chat_history": True,             # 聊天历史
+    "file_upload": True,              # 文件上传
+    "url_crawling": True,             # 网页爬取
+    "ocr_processing": True,           # OCR识别
+}
+
+# =================
+# 实验性功能
+# =================
+# 实验性功能开关（谨慎启用）
+EXPERIMENTAL_FEATURES = {
+    "advanced_analysis": False,       # 高级分析模式
+    "multi_model_support": False,     # 多模型支持
+    "voice_interaction": False,       # 语音交互
+    "collaborative_mode": False,      # 协作模式
+}

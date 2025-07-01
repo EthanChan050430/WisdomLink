@@ -1,0 +1,12 @@
+Flask==2.3.3
+Flask-CORS==4.0.0
+requests==2.31.0
+Pillow==10.0.1
+pytesseract==0.3.10
+beautifulsoup4==4.12.2
+lxml==4.9.3
+openai==0.28.1
+numpy==1.24.3
+opencv-python==4.8.1.78
+python-dotenv==1.0.0
+gunicorn==21.2.0

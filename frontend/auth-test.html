@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>认证测试</title>
+</head>
+<body>
+    <h1>认证状态测试</h1>
+    <div id="status">检查中...</div>
+    <button id="checkBtn">检查认证状态</button>
+    <div id="result"></div>
+
+    <script>
+        const API_BASE_URL = '/api';
+        
+        async function checkAuth() {
+            try {
+                console.log('开始检查认证状态...');
+                const response = await fetch(`${API_BASE_URL}/auth/check`);
+                console.log('响应状态:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('响应数据:', data);
+                    document.getElementById('result').innerHTML = `
+                        <p>状态: ${response.status}</p>
+                        <p>成功: ${data.success}</p>
+                        <p>用户: ${JSON.stringify(data.user || 'null')}</p>
+                        <p>消息: ${data.message || 'none'}</p>
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <p>HTTP错误: ${response.status}</p>
+                    `;
+                }
+            } catch (error) {
+                console.error('请求失败:', error);
+                document.getElementById('result').innerHTML = `
+                    <p>网络错误: ${error.message}</p>
+                `;
+            }
+        }
+
+        document.getElementById('checkBtn').addEventListener('click', checkAuth);
+        
+        // 页面加载时自动检查
+        checkAuth();
+    </script>
+</body>
+</html>

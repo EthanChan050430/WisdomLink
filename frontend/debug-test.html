@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智链 - 功能调试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #5855eb;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        #log {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>智链 AI 阅读助手 - 功能调试</h1>
+    
+    <div class="debug-section">
+        <h2>测试文本分析</h2>
+        <textarea id="testText" placeholder="输入要测试的文本内容...">这是一段测试文本，用于验证智能伴读功能是否正常工作。人工智能正在改变我们的生活方式。</textarea>
+        <br>
+        <button class="btn" onclick="testTextAnalysis()">测试文本分析</button>
+        <button class="btn" onclick="testUrlAnalysis()">测试URL分析</button>
+        <button class="btn" onclick="clearLog()">清空日志</button>
+    </div>
+    
+    <div class="debug-section">
+        <h2>服务器状态检查</h2>
+        <button class="btn" onclick="checkServerStatus()">检查服务器状态</button>
+        <button class="btn" onclick="testAuthEndpoint()">测试认证端点</button>
+    </div>
+    
+    <div class="debug-section">
+        <h2>调试日志</h2>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+        }
+
+        async function checkServerStatus() {
+            try {
+                log('检查服务器状态...');
+                const response = await fetch('/', { method: 'GET' });
+                log(`服务器响应: ${response.status} ${response.statusText}`);
+                if (response.ok) {
+                    log('✅ 服务器运行正常');
+                } else {
+                    log('❌ 服务器响应异常');
+                }
+            } catch (error) {
+                log(`❌ 服务器连接失败: ${error.message}`);
+            }
+        }
+
+        async function testAuthEndpoint() {
+            try {
+                log('测试认证端点...');
+                const response = await fetch('/api/auth/check', { 
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                log(`认证端点响应: ${response.status}`);
+                const data = await response.json();
+                log(`认证数据: ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`❌ 认证端点测试失败: ${error.message}`);
+            }
+        }
+
+        async function testTextAnalysis() {
+            const text = document.getElementById('testText').value;
+            if (!text.trim()) {
+                log('❌ 请输入测试文本');
+                return;
+            }
+
+            try {
+                log('开始测试文本分析...');
+                log(`输入文本: ${text.substring(0, 50)}...`);
+                
+                const formData = new FormData();
+                formData.append('content_type', 'text');
+                formData.append('content_data', text);
+                
+                log('发送请求到 /api/intelligent-reading/start');
+                
+                const response = await fetch('/api/intelligent-reading/start', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                log(`响应状态: ${response.status} ${response.statusText}`);
+                log(`Content-Type: ${response.headers.get('content-type')}`);
+
+                if (response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    
+                    if (contentType?.includes('text/plain')) {
+                        log('✅ 接收到流式响应，开始读取...');
+                        
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder();
+                        
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) {
+                                log('✅ 流读取完成');
+                                break;
+                            }
+                            
+                            const chunk = decoder.decode(value, { stream: true });
+                            const lines = chunk.split('\n');
+                            
+                            for (const line of lines) {
+                                if (line.startsWith('data: ')) {
+                                    const jsonStr = line.slice(6).trim();
+                                    if (jsonStr && jsonStr !== '[DONE]') {
+                                        try {
+                                            const data = JSON.parse(jsonStr);
+                                            log(`📨 收到数据: ${data.type} - ${JSON.stringify(data).substring(0, 100)}...`);
+                                        } catch (e) {
+                                            log(`⚠️ JSON解析错误: ${jsonStr.substring(0, 100)}...`);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        reader.releaseLock();
+                    } else {
+                        const text = await response.text();
+                        log(`响应内容: ${text.substring(0, 200)}...`);
+                    }
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ 请求失败: ${errorText}`);
+                }
+            } catch (error) {
+                log(`❌ 测试失败: ${error.message}`);
+                console.error('详细错误:', error);
+            }
+        }
+
+        async function testUrlAnalysis() {
+            try {
+                log('开始测试URL分析...');
+                
+                const formData = new FormData();
+                formData.append('content_type', 'url');
+                formData.append('content_data', 'https://www.example.com');
+                
+                const response = await fetch('/api/intelligent-reading/start', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                log(`URL分析响应: ${response.status} ${response.statusText}`);
+                
+                if (response.ok) {
+                    log('✅ URL分析请求成功发送');
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ URL分析失败: ${errorText}`);
+                }
+            } catch (error) {
+                log(`❌ URL分析测试失败: ${error.message}`);
+            }
+        }
+
+        // 页面加载时自动检查服务器状态
+        window.addEventListener('load', () => {
+            log('🚀 调试页面已加载');
+            checkServerStatus();
+        });
+    </script>
+</body>
+</html>
