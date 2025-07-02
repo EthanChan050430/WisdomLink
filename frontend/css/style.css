@@ -879,6 +879,21 @@ body {
   border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
+/* 专家头像样式 */
+.expert-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: none;
+}
+
+/* 有专家头像时，移除背景渐变 */
+.message.assistant .message-avatar.has-expert-avatar {
+  background: none;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
 .message-content {
   flex: 1;
   max-width: 80%;
@@ -2757,7 +2772,7 @@ body.mobile-menu-open {
   background-clip: text;
   border-left: 4px solid var(--info-color);
   padding-left: var(--spacing-lg);
-  margin: var(--spacing-xl) 0;
+  margin: var(--spacing-xl)  0;
 }
 
 .data-statistics {
@@ -2822,5 +2837,254 @@ body.mobile-menu-open {
   .step-thinking-header::before {
     font-size: 0.8rem;
   }
+}
+
+/* ================================
+   聊天输入区域样式
+   ================================ */
+
+/* 简化输入区域 */
+.simplified-input-area {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+/* 功能菜单容器 */
+.function-menu-container {
+  position: relative;
+}
+
+/* 功能菜单按钮 */
+.btn-function-menu {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 18px;
+}
+
+.btn-function-menu:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  transform: scale(1.05);
+}
+
+/* 功能菜单下拉框 */
+.function-menu-dropdown {
+  position: absolute;
+  bottom: 60px;
+  left: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  min-width: 280px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.2s ease;
+}
+
+.function-menu-dropdown[style*="block"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* 菜单部分 */
+.menu-section {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.menu-section:last-child {
+  border-bottom: none;
+}
+
+.menu-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.menu-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.menu-option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.menu-option:hover {
+  background: var(--bg-tertiary);
+}
+
+.menu-option.selected {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary-color);
+}
+
+.option-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.option-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.option-check {
+  color: var(--primary-color);
+}
+
+/* 输入框包装器 */
+.input-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.input-wrapper textarea {
+  width: 100%;
+  min-height: 48px;
+  max-height: 120px;
+  padding: var(--spacing-md);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5;
+  resize: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.input-wrapper textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.input-wrapper textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* 发送按钮 */
+.btn-send {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-color);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+.btn-send:hover {
+  background: var(--primary-hover);
+  transform: scale(1.05);
+}
+
+.btn-send:active {
+  transform: scale(0.95);
+}
+
+.btn-send:disabled {
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 聊天输入容器 */
+.chat-input-container {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+  position: relative; /* 确保桌面端使用相对定位 */
+}
+
+/* 桌面端样式 */
+@media (min-width: 769px) {
+  .chat-input-container {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    z-index: auto !important;
+  }
+  
+  .chat-messages {
+    padding-bottom: 0 !important; /* 桌面端不需要底部padding */
+  }
+  
+  .simplified-input-area {
+    padding: var(--spacing-lg) !important;
+  }
+  
+  .btn-function-menu {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 18px !important;
+  }
+  
+  .btn-send {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 16px !important;
+  }
+  
+  .input-wrapper textarea {
+    min-height: 48px !important;
+    max-height: 120px !important;
+    padding: var(--spacing-md) !important;
+    font-size: 1rem !important;
+  }
+}
+
+/* 隐藏的选择器 */
+.hidden-selectors {
+  display: none !important;
+}
+
+.hidden-select {
+  opacity: 0;
+  visibility: hidden;
+  position: absolute;
+  pointer-events: none;
 }
 

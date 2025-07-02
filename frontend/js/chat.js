@@ -633,6 +633,23 @@ class ChatManager {
                                     }
                                     break;
 
+                                case 'persona':
+                                    console.log('收到专家角色信息:', data);
+                                    // 保存当前专家角色信息，用于头像显示
+                                    this.currentExpertInfo = {
+                                        name: data.name,
+                                        description: data.description
+                                    };
+                                    break;
+
+                                case 'expert_name':
+                                    console.log('收到专家名称:', data.name);
+                                    // 保存专家名称信息，用于继续聊天时的头像显示
+                                    this.currentExpertInfo = {
+                                        name: data.name
+                                    };
+                                    break;
+
                                 case 'crawler_results':
                                     console.log('收到爬虫结果:', data.results);
                                     this.addCrawlerResultsCollapse(data.results);
@@ -854,6 +871,58 @@ class ChatManager {
     }
 
     /**
+     * 获取专家角色头像
+     */
+    getExpertAvatar(expertId) {
+        const avatarMap = {
+            'luxun': 'headshots_鲁迅.jpg',
+            'hushi': 'headshots_胡适.jpg',
+            'keli': 'headshots_可莉.jpg',
+            'hoshino': 'headshot_星野.png',
+            'shakespeare': 'headshots_莎士比亚.jpg',
+            'einstein': 'headshots_爱因斯坦.jpg'
+        };
+        return avatarMap[expertId] || null;
+    }
+
+    /**
+     * 获取当前选择的专家角色ID
+     */
+    getCurrentExpertId() {
+        if (this.currentFunction !== 'expert-analysis') {
+            return null;
+        }
+        
+        let selectedExpert = null;
+        
+        // 如果有保存的专家信息，根据名字反推ID
+        if (this.currentExpertInfo && this.currentExpertInfo.name) {
+            const nameToIdMap = {
+                '鲁迅': 'luxun',
+                '胡适': 'hushi',
+                '可莉': 'keli',
+                '星野': 'hoshino',
+                '莎士比亚': 'shakespeare',
+                '爱因斯坦': 'einstein'
+            };
+            selectedExpert = nameToIdMap[this.currentExpertInfo.name];
+        }
+        
+        // 如果没有，尝试从功能菜单获取
+        if (!selectedExpert && window.chatFunctionMenu) {
+            selectedExpert = window.chatFunctionMenu.getCurrentExpert();
+        }
+        
+        // 如果还没有，从选择器获取
+        if (!selectedExpert) {
+            const chatExpertSelect = document.getElementById('chatExpertSelect');
+            selectedExpert = chatExpertSelect?.value;
+        }
+        
+        return selectedExpert;
+    }
+
+    /**
      * 添加消息到界面
      */
     addMessage(role, content, isStreaming = false) {
@@ -868,9 +937,27 @@ class ChatManager {
             minute: '2-digit' 
         });
 
+        // 获取头像内容
+        let avatarContent = '';
+        let avatarClass = 'message-avatar';
+        if (role === 'user') {
+            avatarContent = '<i class="fas fa-user"></i>';
+        } else {
+            // assistant角色
+            const expertId = this.getCurrentExpertId();
+            const avatarFile = this.getExpertAvatar(expertId);
+            
+            if (avatarFile) {
+                avatarContent = `<img src="images/${avatarFile}" alt="${expertId}" class="expert-avatar" />`;
+                avatarClass += ' has-expert-avatar';
+            } else {
+                avatarContent = '<i class="fas fa-robot"></i>';
+            }
+        }
+
         messageElement.innerHTML = `
-            <div class="message-avatar">
-                <i class="fas ${role === 'user' ? 'fa-user' : 'fa-robot'}"></i>
+            <div class="${avatarClass}">
+                ${avatarContent}
             </div>
             <div class="message-content">
                 <div class="message-bubble" data-message-content>
@@ -1217,11 +1304,18 @@ class ChatManager {
      * 保存消息到历史记录
      */
     saveMessageToHistory(role, content) {
-        this.messageHistory.push({
+        const message = {
             role: role,
             content: content,
             timestamp: Date.now()
-        });
+        };
+
+        // 如果是assistant消息且是大师分析，保存专家角色信息
+        if (role === 'assistant' && this.currentFunction === 'expert-analysis' && this.currentExpertInfo) {
+            message.expert = this.currentExpertInfo.name;
+        }
+
+        this.messageHistory.push(message);
 
         // 限制历史记录长度
         if (this.messageHistory.length > 50) {
@@ -1230,11 +1324,18 @@ class ChatManager {
 
         // 保存到服务器（如果有会话ID）
         if (this.currentSessionId && historyManager) {
-            historyManager.saveMessage({
+            const serverMessage = {
                 role: role,
                 content: content,
                 timestamp: new Date().toISOString()
-            });
+            };
+
+            // 添加专家信息到服务器消息
+            if (role === 'assistant' && this.currentFunction === 'expert-analysis' && this.currentExpertInfo) {
+                serverMessage.expert = this.currentExpertInfo.name;
+            }
+
+            historyManager.saveMessage(serverMessage);
         }
     }
 

@@ -242,10 +242,56 @@ class HistoryManager {
 
         chatMessages.innerHTML = messages.map(message => {
             const isUser = message.role === 'user';
+            
+            // 获取头像内容
+            let avatarContent = '';
+            let avatarClass = 'message-avatar';
+            
+            if (isUser) {
+                avatarContent = '<i class="fas fa-user"></i>';
+            } else {
+                // 对于assistant消息
+                if (message.expert) {
+                    // 如果消息中有专家信息，使用对应头像
+                    const nameToIdMap = {
+                        '鲁迅': 'luxun',
+                        '胡适': 'hushi', 
+                        '可莉': 'keli',
+                        '星野': 'hoshino',
+                        '莎士比亚': 'shakespeare',
+                        '爱因斯坦': 'einstein'
+                    };
+                    
+                    const expertId = nameToIdMap[message.expert];
+                    const avatarMap = {
+                        'luxun': 'headshots_鲁迅.jpg',
+                        'hushi': 'headshots_胡适.jpg',
+                        'keli': 'headshots_可莉.jpg',
+                        'hoshino': 'headshot_星野.png',
+                        'shakespeare': 'headshots_莎士比亚.jpg',
+                        'einstein': 'headshots_爱因斯坦.jpg'
+                    };
+                    
+                    const avatarFile = avatarMap[expertId];
+                    if (avatarFile) {
+                        avatarContent = `<img src="images/${avatarFile}" alt="${expertId}" class="expert-avatar" />`;
+                        avatarClass += ' has-expert-avatar';
+                    } else {
+                        avatarContent = '<i class="fas fa-robot"></i>';
+                    }
+                } else if (this.currentChat && this.currentChat.feature === 'expert-analysis') {
+                    // 如果是大师分析功能但没有专家信息，使用默认大师头像
+                    avatarContent = '<img src="images/headshots_鲁迅.jpg" alt="master" class="expert-avatar" />';
+                    avatarClass += ' has-expert-avatar';
+                } else {
+                    avatarContent = '<i class="fas fa-robot"></i>';
+                }
+            }
+            
             return `
                 <div class="message ${isUser ? 'user' : 'assistant'}">
-                    <div class="message-avatar">
-                        <i class="fas ${isUser ? 'fa-user' : 'fa-robot'}"></i>
+                    <div class="${avatarClass}">
+                        ${avatarContent}
                     </div>
                     <div class="message-content">
                         <div class="message-text">${this.formatMessageContent(message.content)}</div>
