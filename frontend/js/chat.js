@@ -35,9 +35,39 @@ class ChatManager {
                 },
                 breaks: true,
                 gfm: true,
-                sanitize: false
+                sanitize: false,
+                headerIds: true,
+                mangle: false
             });
         }
+    }
+
+    /**
+     * 增强markdown渲染，特别是分析内容
+     */
+    enhanceMarkdownForAnalysis(content) {
+        // 预处理：为特定模式添加样式标记
+        let processed = content;
+
+        // 处理深度分析标题
+        processed = processed.replace(
+            /^#\s*([^#]*深度分析[^#]*)/gim,
+            '# <span class="analysis-title-marker">$1</span>'
+        );
+
+        // 处理编号分析点
+        processed = processed.replace(
+            /^##\s*(\d+\..*)/gim,
+            '## <span class="analysis-section-marker">$1</span>'
+        );
+
+        // 处理破折号要点
+        processed = processed.replace(
+            /^-\s*([^:]+):\s*(.*)/gim,
+            '<div class="analysis-point"><strong>$1:</strong> $2</div>'
+        );
+
+        return processed;
     }
 
     /**
@@ -955,13 +985,17 @@ class ChatManager {
     formatMessageContent(content) {
         if (!content) return '';
 
-        // 使用更简单直接的方法：先处理markdown，再处理think标签
-        let processedContent = content;
+        // 预处理：增强分析内容的markdown
+        let processedContent = this.enhanceMarkdownForAnalysis(content);
 
         // 如果有markdown解析器，先进行markdown解析
         if (typeof marked !== 'undefined') {
             try {
                 processedContent = marked.parse(processedContent);
+                
+                // 后处理：为渲染后的HTML添加样式类
+                processedContent = this.postProcessAnalysisHTML(processedContent);
+                
             } catch (error) {
                 console.error('Markdown解析错误:', error);
                 processedContent = this.escapeHtml(content).replace(/\n/g, '<br>');
@@ -975,6 +1009,40 @@ class ChatManager {
         processedContent = this.processThinkTagsInHtml(processedContent);
 
         return processedContent;
+    }
+
+    /**
+     * 后处理分析HTML，添加样式类
+     */
+    postProcessAnalysisHTML(html) {
+        // 为分析标题添加样式
+        html = html.replace(
+            /<h1[^>]*><span class="analysis-title-marker">([^<]+)<\/span><\/h1>/gi,
+            '<h1 class="analysis-main-title">$1</h1>'
+        );
+
+        // 为分析段落添加样式
+        html = html.replace(
+            /<h2[^>]*><span class="analysis-section-marker">([^<]+)<\/span><\/h2>/gi,
+            '<div class="analysis-section"><h2>$1</h2>'
+        );
+
+        // 为真伪鉴定结果添加整体容器
+        if (html.includes('真伪') || html.includes('鉴定') || html.includes('事实核查')) {
+            html = `<div class="fact-check-container">${html}</div>`;
+        }
+
+        // 为全面总结添加容器
+        if (html.includes('全面') && html.includes('总结')) {
+            html = `<div class="comprehensive-container">${html}</div>`;
+        }
+
+        // 为专家分析添加容器
+        if (html.includes('专家') || html.includes('大师')) {
+            html = `<div class="expert-container">${html}</div>`;
+        }
+
+        return html;
     }
 
     /**

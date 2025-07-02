@@ -172,8 +172,8 @@ def generate_fact_checking_analysis(content, session_id):
         
         yield f"data: {json.dumps({'type': 'step_complete', 'step': 1})}\n\n"
         
-        # 第二步：关键词提取
-        yield f"data: {json.dumps({'type': 'step_start', 'step': 2, 'name': '关键词提取', 'description': '提取需要验证的关键信息'})}\n\n"
+        # 第二步：关键词提取和搜索
+        yield f"data: {json.dumps({'type': 'step_start', 'step': 2, 'name': '搜索结果', 'description': '提取关键信息并搜索验证资料'})}\n\n"
         
         keyword_prompt = f"""基于文章解析结果：
 {parsed_content}
@@ -181,68 +181,143 @@ def generate_fact_checking_analysis(content, session_id):
 原文：
 {content}
 
-请提取需要事实核查的关键词和关键信息，包括：
-1. 具体的人名、地名、机构名
-2. 时间、日期、数字
-3. 重要的事件或现象
-4. 科学数据或统计信息
-5. 可验证的具体声明
+请提取需要事实核查的关键词，用于搜索验证。要求：
+- 提取5个最重要的关键词或短语
+- 选择具体的、可验证的信息点
+- 包括人名、地名、机构名、重要事件等
 
-请列出5-10个最重要的关键词或短语，用于后续搜索验证。
-
-<think>
-我需要从文章中提取最关键的、可以通过搜索验证的信息点。
-</think>"""
+请只返回关键词，每行一个，不要其他解释。例如：
+福岛核污染水
+东京电力公司
+IAEA报告
+海洋污染"""
         
         keywords_content = ""
-        keywords_list = []
         for chunk in ai_service.simple_chat(keyword_prompt):
             thinking, display = ai_service.extract_thinking(chunk)
             if thinking:
                 yield f"data: {json.dumps({'type': 'thinking', 'step': 2, 'content': thinking})}\n\n"
             if display:
                 keywords_content += display
-                yield f"data: {json.dumps({'type': 'content', 'step': 2, 'content': display})}\n\n"
+        
+        # 解析关键词
+        keywords = [kw.strip() for kw in keywords_content.split('\n') if kw.strip() and not kw.startswith('#')]
+        keywords = keywords[:5]  # 最多5个关键词
+        
+        # 美化关键词显示
+        keywords_display = "## 🎯 提取的验证关键词\\n\\n"
+        for i, kw in enumerate(keywords, 1):
+            keywords_display += f"**{i}.** `{kw}`\\n\\n"
+        keywords_display += "\\n正在基于这些关键词搜索验证资料...\\n\\n"
+        
+        yield f"data: {json.dumps({'type': 'content', 'step': 2, 'content': keywords_display})}\n\n"
+        
+        # 执行搜索
+        search_results = []
+        for keyword in keywords:
+            yield f"data: {json.dumps({'type': 'thinking', 'step': 2, 'content': f'正在搜索关键词: {keyword}'})}\n\n"
+            
+            search_result = search_information(keyword)
+            if 'error' not in search_result:
+                search_results.append({
+                    'keyword': keyword,
+                    'results': search_result
+                })
                 
-                # 尝试提取关键词列表
-                lines = display.split('\n')
-                for line in lines:
-                    line = line.strip()
-                    if line and (line.startswith('-') or line.startswith('•') or line[0].isdigit()):
-                        # 清理关键词
-                        keyword = line.lstrip('-•0123456789. ').strip()
-                        if keyword and len(keyword) > 2:
-                            keywords_list.append(keyword)
+                # 显示搜索结果
+                result_content = f"\\n\\n### 🔍 关键词: {keyword}\\n\\n"
+                
+                if 'results' in search_result and search_result['results']:
+                    for i, item in enumerate(search_result['results'][:3], 1):  # 显示前3个结果
+                        title = item.get('title', '无标题')
+                        url = item.get('url', '')
+                        snippet = item.get('snippet', item.get('description', '无描述'))
+                        
+                        # 使用简洁的文本格式
+                        result_content += f"{i}. **{title}**\\n"
+                        if snippet and snippet != '无描述':
+                            result_content += f"   {snippet}\\n"
+                        if url:
+                            result_content += f"   链接: {url}\\n"
+                        result_content += "\\n"
+                else:
+                    result_content += "未找到相关搜索结果\\n\\n"
+                
+                yield f"data: {json.dumps({'type': 'content', 'step': 2, 'content': result_content})}\n\n"
+            else:
+                error_msg = search_result.get('error', '未知错误')
+                yield f"data: {json.dumps({'type': 'thinking', 'step': 2, 'content': f'搜索 {keyword} 失败: {error_msg}'})}\n\n"
+        
+        # 总结搜索结果
+        summary_content = f"\\n\\n## 📊 搜索结果总结\\n\\n"
+        summary_content += f"- 成功搜索关键词: {len(search_results)}/{len(keywords)}\\n"
+        summary_content += f"- 总共获取到 {sum(len(sr['results'].get('results', [])) for sr in search_results)} 条验证资料\\n"
+        
+        if search_results:
+            summary_content += "\\n这些搜索结果将用于下一步的事实验证和真伪鉴定分析。"
+        
+        yield f"data: {json.dumps({'type': 'content', 'step': 2, 'content': summary_content})}\n\n"
         
         yield f"data: {json.dumps({'type': 'step_complete', 'step': 2})}\n\n"
         
-        # 第三步：资料查阅
-        yield f"data: {json.dumps({'type': 'step_start', 'step': 3, 'name': '资料查阅', 'description': '搜索相关资料进行对比'})}\n\n"
+        # 第三步：深度分析
+        yield f"data: {json.dumps({'type': 'step_start', 'step': 3, 'name': '深度分析', 'description': '对比搜索结果与原文进行深度分析'})}\n\n"
         
-        search_results = {}
-        all_search_content = ""
+        # 将搜索结果整理为文本
+        search_context = ""
+        for sr in search_results:
+            search_context += f"关键词 '{sr['keyword']}' 的搜索结果：\n"
+            if 'results' in sr['results'] and sr['results']['results']:
+                for item in sr['results']['results'][:2]:  # 每个关键词取前2个结果
+                    title = item.get('title', '无标题')
+                    snippet = item.get('snippet', item.get('description', ''))
+                    search_context += f"- {title}: {snippet}\n"
+            search_context += "\n"
         
-        # 搜索关键词
-        for i, keyword in enumerate(keywords_list[:5]):  # 限制搜索数量
-            yield f"data: {json.dumps({'type': 'search_progress', 'step': 3, 'keyword': keyword, 'progress': i+1, 'total': min(len(keywords_list), 5)})}\n\n"
-            
-            search_result = search_information(keyword)
-            search_results[keyword] = search_result
-            
-            if 'error' not in search_result:
-                search_content = f"\n\n=== 搜索「{keyword}」的结果 ===\n"
-                if 'results' in search_result:
-                    for j, result in enumerate(search_result['results'][:3]):  # 取前3个结果
-                        search_content += f"\n{j+1}. {result.get('title', '无标题')}\n{result.get('snippet', '无摘要')}\n来源：{result.get('url', '未知')}\n"
-                else:
-                    search_content += "未找到相关结果\n"
-                
-                all_search_content += search_content
-                yield f"data: {json.dumps({'type': 'content', 'step': 3, 'content': search_content})}\n\n"
-            else:
-                error_content = f"\n搜索「{keyword}」时出错：{search_result['error']}\n"
-                all_search_content += error_content
-                yield f"data: {json.dumps({'type': 'content', 'step': 3, 'content': error_content})}\n\n"
+        # 第四步：真伪鉴定
+        yield f"data: {json.dumps({'type': 'step_start', 'step': 4, 'name': '真伪鉴定', 'description': '基于搜索结果进行真伪分析'})}\n\n"
+        
+        analysis_prompt = f"""基于文章解析和搜索结果进行深度分析：
+
+文章解析：
+{parsed_content}
+
+原文：
+{content}
+
+搜索得到的验证资料：
+{search_context}
+
+请结合搜索到的资料对原文进行深度分析：
+
+## 1. 信息对比分析
+- 原文声明与搜索资料的一致性分析
+- 发现的矛盾或不一致之处
+
+## 2. 可信度评估
+- 基于搜索资料评估原文信息的可信度
+- 识别可能的误导性信息
+
+## 3. 补充信息
+- 搜索资料中的额外背景信息
+- 原文未提及的重要相关信息
+
+## 4. 争议点分析
+- 识别存在争议的观点
+- 分析不同来源的观点差异
+
+<think>
+我需要仔细对比原文和搜索到的资料，找出事实的准确性，识别可能的偏见或错误信息。
+</think>"""
+        
+        analysis_content = ""
+        for chunk in ai_service.complex_chat(analysis_prompt):
+            thinking, display = ai_service.extract_thinking(chunk)
+            if thinking:
+                yield f"data: {json.dumps({'type': 'thinking', 'step': 3, 'content': thinking})}\n\n"
+            if display:
+                analysis_content += display
+                yield f"data: {json.dumps({'type': 'content', 'step': 3, 'content': display})}\n\n"
         
         yield f"data: {json.dumps({'type': 'step_complete', 'step': 3})}\n\n"
         
@@ -260,16 +335,33 @@ def generate_fact_checking_analysis(content, session_id):
 提取的关键词：
 {keywords_content}
 
-搜索得到的参考资料：
-{all_search_content}
+搜索得到的验证资料：
+{search_context}
+
+深度分析结果：
+{analysis_content}
 
 请进行综合分析并提供：
-1. 对文章中各个声明的真实性评估
-2. 与搜索结果的对比分析
-3. 发现的矛盾或不一致之处
-4. 可信度评级（高/中/低）
-5. 需要进一步核实的信息
-6. 总体结论和建议
+
+## 1. 真实性评估
+- 对文章中各个声明的真实性评估
+- 基于搜索结果的事实核查
+
+## 2. 对比分析
+- 原文与搜索结果的一致性分析
+- 发现的矛盾或不一致之处
+
+## 3. 可信度评级
+- 整体可信度评级（高/中/低）
+- 具体声明的可信度分析
+
+## 4. 风险提示
+- 需要进一步核实的信息
+- 可能的误导性内容
+
+## 5. 总体结论
+- 客观的真伪判定结论
+- 对读者的建议
 
 请客观、严谨地进行分析，避免绝对化的判断。
 
@@ -288,6 +380,7 @@ def generate_fact_checking_analysis(content, session_id):
         yield f"data: {json.dumps({'type': 'verification_complete'})}\n\n"
         
     except Exception as e:
+        yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
         yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
 
 @fact_checking_bp.route('/chat', methods=['POST'])

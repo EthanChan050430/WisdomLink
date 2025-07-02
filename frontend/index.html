@@ -268,8 +268,8 @@
                                         <i class="fas fa-cloud-upload-alt"></i>
                                     </div>
                                     <p class="upload-text">拖拽文件到此处或<span class="click-to-upload">点击选择</span></p>
-                                    <p class="upload-hint">支持 PDF、DOCX、TXT 格式，最大 10MB</p>
-                                    <input type="file" id="fileInput" accept=".pdf,.docx,.txt" multiple style="display: none;">
+                                    <p class="upload-hint">支持 PDF、DOCX、DOC、TXT、MD、CSV 格式，最大 10MB</p>
+                                    <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt,.md,.csv" multiple style="display: none;">
                                 </div>
                                 <div class="file-list" id="fileList"></div>
                             </div>
@@ -495,26 +495,28 @@
                     </div>
                     
                     <!-- 新的步骤界面设计 -->
-                    <div class="analysis-steps-container" id="analysisSteps">
+                    <div class="progress-steps" id="progressSteps">
                         <!-- 步骤卡片将动态生成 -->
                     </div>
-                    
-                    <!-- 步骤详情模态框 -->
-                    <div class="step-detail-modal" id="stepDetailModal" style="display: none;">
-                        <div class="modal-backdrop" onclick="closeStepDetail()"></div>
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h3 id="stepDetailTitle">步骤详情</h3>
-                                <button class="close-btn" onclick="closeStepDetail()">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                </div>
+            </div>
+
+            <!-- 步骤详情弹窗 -->
+            <div class="step-detail-modal" id="stepDetailModal">
+                <div class="step-detail-content">
+                    <div class="step-detail-header">
+                        <h3 class="step-detail-title" id="stepDetailTitle">
+                            <div class="step-icon" id="stepDetailIcon">
+                                <i class="fas fa-search"></i>
                             </div>
-                            <div class="modal-body">
-                                <div id="stepDetailContent" class="step-content">
-                                    <!-- 详细内容将在这里显示 -->
-                                </div>
-                            </div>
-                        </div>
+                            <span id="stepDetailName">步骤详情</span>
+                        </h3>
+                        <button class="step-detail-close" onclick="closeStepDetail()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="step-detail-body" id="stepDetailContent">
+                        <!-- 详细内容将在这里显示 -->
                     </div>
                 </div>
             </div>

@@ -237,8 +237,8 @@ class UploadManager {
      * 绑定文件拖拽事件
      */
     bindFileDropEvents() {
-        const fileDropZone = document.getElementById('fileDropZone');
-        const imageDropZone = document.getElementById('imageDropZone');
+        const fileDropZone = document.getElementById('fileUploadArea');
+        const imageDropZone = document.getElementById('imageUploadArea');
 
         // 文件拖拽
         if (fileDropZone) {
@@ -261,9 +261,12 @@ class UploadManager {
      * @param {Function} onDrop - 拖拽完成回调
      */
     bindDropEvents(element, onDrop) {
+        console.log('绑定拖拽事件到元素:', element.id);
+        
         element.addEventListener('dragover', (e) => {
             e.preventDefault();
             element.classList.add('dragover');
+            console.log('文件拖拽到元素上方:', element.id);
         });
 
         element.addEventListener('dragleave', (e) => {
@@ -276,6 +279,11 @@ class UploadManager {
             element.classList.remove('dragover');
             
             const files = Array.from(e.dataTransfer.files);
+            console.log('文件拖拽完成，文件数量:', files.length);
+            files.forEach((file, index) => {
+                console.log(`文件 ${index + 1}: ${file.name}, 类型: ${file.type}, 大小: ${file.size}`);
+            });
+            
             onDrop(files);
         });
     }
@@ -286,13 +294,23 @@ class UploadManager {
     bindFileSelectEvents() {
         const fileInput = document.getElementById('fileInput');
         const imageInput = document.getElementById('imageInput');
-        const fileDropZone = document.getElementById('fileDropZone');
-        const imageDropZone = document.getElementById('imageDropZone');
+        const fileDropZone = document.getElementById('fileUploadArea');
+        const imageDropZone = document.getElementById('imageUploadArea');
+
+        console.log('绑定文件选择事件:');
+        console.log('- fileInput:', fileInput ? 'found' : 'not found');
+        console.log('- imageInput:', imageInput ? 'found' : 'not found');
+        console.log('- fileDropZone:', fileDropZone ? 'found' : 'not found');
+        console.log('- imageDropZone:', imageDropZone ? 'found' : 'not found');
 
         // 文件输入
         if (fileInput) {
             fileInput.addEventListener('change', (e) => {
                 const files = Array.from(e.target.files);
+                console.log('文件输入变更，文件数量:', files.length);
+                files.forEach((file, index) => {
+                    console.log(`选择的文件 ${index + 1}: ${file.name}`);
+                });
                 this.addFiles(files);
             });
         }
@@ -301,6 +319,10 @@ class UploadManager {
         if (imageInput) {
             imageInput.addEventListener('change', (e) => {
                 const files = Array.from(e.target.files);
+                console.log('图片输入变更，文件数量:', files.length);
+                files.forEach((file, index) => {
+                    console.log(`选择的图片 ${index + 1}: ${file.name}`);
+                });
                 this.addImages(files);
             });
         }
@@ -308,13 +330,23 @@ class UploadManager {
         // 点击拖拽区域触发文件选择
         if (fileDropZone) {
             fileDropZone.addEventListener('click', () => {
-                fileInput.click();
+                console.log('点击文件上传区域');
+                if (fileInput) {
+                    fileInput.click();
+                } else {
+                    console.error('fileInput 元素不存在');
+                }
             });
         }
 
         if (imageDropZone) {
             imageDropZone.addEventListener('click', () => {
-                imageInput.click();
+                console.log('点击图片上传区域');
+                if (imageInput) {
+                    imageInput.click();
+                } else {
+                    console.error('imageInput 元素不存在');
+                }
             });
         }
     }
@@ -325,16 +357,25 @@ class UploadManager {
      */
     addFiles(files) {
         const allowedTypes = ['txt', 'md', 'docx', 'pdf', 'csv', 'doc'];
-        const validFiles = files.filter(file => {
+        const validFiles = [];
+        
+        for (const file of files) {
             const isValid = utils.isFileTypeAllowed(file.name, allowedTypes);
             if (!isValid) {
                 utils.showNotification(`不支持的文件类型: ${file.name}`, 'warning');
+                console.log(`文件类型检查失败: ${file.name}, 类型: ${file.type}`);
+            } else {
+                validFiles.push(file);
+                console.log(`文件添加成功: ${file.name}, 大小: ${file.size} bytes`);
             }
-            return isValid;
-        });
+        }
 
         this.selectedFiles.push(...validFiles);
         this.updateFileList();
+        
+        if (validFiles.length > 0) {
+            utils.showNotification(`成功添加 ${validFiles.length} 个文件`, 'success');
+        }
     }
 
     /**
@@ -343,16 +384,25 @@ class UploadManager {
      */
     addImages(files) {
         const allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff'];
-        const validImages = files.filter(file => {
+        const validImages = [];
+        
+        for (const file of files) {
             const isValid = utils.isFileTypeAllowed(file.name, allowedTypes);
             if (!isValid) {
                 utils.showNotification(`不支持的图片类型: ${file.name}`, 'warning');
+                console.log(`图片类型检查失败: ${file.name}, 类型: ${file.type}`);
+            } else {
+                validImages.push(file);
+                console.log(`图片添加成功: ${file.name}, 大小: ${file.size} bytes`);
             }
-            return isValid;
-        });
+        }
 
         this.selectedImages.push(...validImages);
         this.updateImagePreview();
+        
+        if (validImages.length > 0) {
+            utils.showNotification(`成功添加 ${validImages.length} 张图片`, 'success');
+        }
     }
 
     /**
@@ -551,21 +601,30 @@ class UploadManager {
             const formData = new FormData();
             formData.append('content_type', content.type);
             
+            console.log('=== FormData构造调试 ===');
+            console.log('内容类型:', content.type);
+            
             if (content.type === 'url' || content.type === 'text') {
                 formData.append('content_data', content.data);
+                console.log('添加文本数据，长度:', content.data.length);
             } else if (content.type === 'file') {
-                content.files.forEach(file => {
+                console.log('添加文件，数量:', content.files.length);
+                content.files.forEach((file, index) => {
                     formData.append('files', file);
+                    console.log(`文件 ${index + 1}: ${file.name}, 大小: ${file.size}`);
                 });
             } else if (content.type === 'image') {
-                content.files.forEach(file => {
+                console.log('添加图片，数量:', content.files.length);
+                content.files.forEach((file, index) => {
                     formData.append('images', file);
+                    console.log(`图片 ${index + 1}: ${file.name}, 大小: ${file.size}`);
                 });
             }
 
             // 添加功能和专家信息
             if (this.currentFeature === 'expert-analysis') {
                 formData.append('persona', this.currentExpert);
+                console.log('添加专家信息:', this.currentExpert);
             }
 
             // 添加模型选择（智能伴读和大师分析）
@@ -606,6 +665,16 @@ class UploadManager {
                 } else {
                     console.warn('未能获取到模型选择，使用默认模型');
                     formData.append('model', 'GLM-4-Flash');
+                }
+            }
+            
+            console.log('=== FormData构造完成 ===');
+            console.log('FormData包含的键值对:');
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    console.log(`  ${key}: File(${value.name}, ${value.size} bytes)`);
+                } else {
+                    console.log(`  ${key}: ${value}`);
                 }
             }
 

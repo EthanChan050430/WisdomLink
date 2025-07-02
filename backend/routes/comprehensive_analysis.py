@@ -215,7 +215,13 @@ def generate_comprehensive_analysis(content, session_id):
         keywords = [kw.strip() for kw in keywords_content.split('\n') if kw.strip() and not kw.startswith('#')]
         keywords = keywords[:5]  # 最多5个关键词
         
-        yield f"data: {json.dumps({'type': 'content', 'step': 2, 'content': f'## 提取的搜索关键词\\n\\n' + '\\n'.join([f'- {kw}' for kw in keywords])})}\n\n"
+        # 美化关键词显示
+        keywords_display = "## 🎯 提取的搜索关键词\\n\\n"
+        for i, kw in enumerate(keywords, 1):
+            keywords_display += f"**{i}.** `{kw}`\\n\\n"
+        keywords_display += "\\n正在基于这些关键词搜索相关资料...\\n\\n"
+        
+        yield f"data: {json.dumps({'type': 'content', 'step': 2, 'content': keywords_display})}\n\n"
         
         # 执行搜索
         search_results = []
@@ -233,16 +239,17 @@ def generate_comprehensive_analysis(content, session_id):
                 result_content = f"\\n\\n### 🔍 关键词: {keyword}\\n\\n"
                 
                 if 'results' in search_result and search_result['results']:
-                    for i, item in enumerate(search_result['results'][:3], 1):  # 只显示前3个结果
+                    for i, item in enumerate(search_result['results'][:3], 1):  # 显示前3个结果
                         title = item.get('title', '无标题')
                         url = item.get('url', '')
                         snippet = item.get('snippet', item.get('description', '无描述'))
                         
-                        result_content += f"**{i}. {title}**\\n"
+                        # 使用简洁的文本格式，避免复杂嵌套
+                        result_content += f"{i}. **{title}**\\n"
+                        if snippet and snippet != '无描述':
+                            result_content += f"   {snippet}\\n"
                         if url:
-                            result_content += f"   - 链接: {url}\\n"
-                        if snippet:
-                            result_content += f"   - 摘要: {snippet}\\n"
+                            result_content += f"   链接: {url}\\n"
                         result_content += "\\n"
                 else:
                     result_content += "未找到相关搜索结果\\n\\n"
