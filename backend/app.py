@@ -8,6 +8,7 @@ from routes.comprehensive_analysis import comprehensive_analysis_bp
 from routes.expert_analysis import expert_analysis_bp
 from routes.fact_checking import fact_checking_bp
 from routes.chat_history import chat_history_bp
+from routes.tts import tts_bp
 
 app = Flask(__name__, static_folder='../frontend')
 app.secret_key = 'your-secret-key-here'  # 在生产环境中请使用更安全的密钥
@@ -25,6 +26,8 @@ app.register_blueprint(comprehensive_analysis_bp, url_prefix='/api/comprehensive
 app.register_blueprint(expert_analysis_bp, url_prefix='/api/expert-analysis')
 app.register_blueprint(fact_checking_bp, url_prefix='/api/fact-checking')
 app.register_blueprint(chat_history_bp, url_prefix='/api/chat-history')
+app.register_blueprint(tts_bp, url_prefix='/api/tts')
+
 
 @app.route('/')
 def index():

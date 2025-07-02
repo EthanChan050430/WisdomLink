@@ -969,6 +969,9 @@ class ChatManager {
                         <button class="btn-icon copy-btn" title="复制">
                             <i class="fas fa-copy"></i>
                         </button>
+                        <button class="btn-icon read-btn" title="朗读">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
                     </div>
                 ` : ''}
             </div>
@@ -979,6 +982,14 @@ class ChatManager {
         if (copyBtn) {
             copyBtn.addEventListener('click', () => {
                 this.copyMessageContent(messageElement);
+            });
+        }
+
+        // 绑定朗读按钮
+        const readBtn = messageElement.querySelector('.read-btn');
+        if (readBtn) {
+            readBtn.addEventListener('click', () => {
+                this.readMessageContent(messageElement);
             });
         }
 
@@ -1282,133 +1293,416 @@ class ChatManager {
         // 获取纯文本内容
         const textContent = contentElement.innerText || contentElement.textContent;
         
-        navigator.clipboard.writeText(textContent).then(() => {
-            showNotification('内容已复制到剪贴板', 'success', 2000);
-            
-            // 视觉反馈
-            const copyBtn = messageElement.querySelector('.copy-btn i');
-            if (copyBtn) {
-                const originalClass = copyBtn.className;
-                copyBtn.className = 'fas fa-check';
-                setTimeout(() => {
-                    copyBtn.className = originalClass;
-                }, 1000);
-            }
-        }).catch(err => {
-            console.error('复制失败:', err);
-            showNotification('复制失败', 'error');
-        });
+        // 检查是否支持现代剪贴板API
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textContent).then(() => {
+                showNotification('内容已复制到剪贴板', 'success', 2000);
+                
+                // 视觉反馈
+                const copyBtn = messageElement.querySelector('.copy-btn i');
+                if (copyBtn) {
+                    const originalClass = copyBtn.className;
+                    copyBtn.className = 'fas fa-check';
+                    setTimeout(() => {
+                        copyBtn.className = originalClass;
+                    }, 1000);
+                }
+            }).catch(err => {
+                console.error('复制失败:', err);
+                // 降级到传统方法
+                this.fallbackCopyToClipboard(textContent, messageElement);
+            });
+        } else {
+            // 使用传统的复制方法
+            this.fallbackCopyToClipboard(textContent, messageElement);
+        }
     }
 
     /**
-     * 保存消息到历史记录
+     * 传统的复制到剪贴板方法（降级方案）
      */
-    saveMessageToHistory(role, content) {
-        const message = {
-            role: role,
-            content: content,
-            timestamp: Date.now()
-        };
+    fallbackCopyToClipboard(text, messageElement) {
+        try {
+            // 创建临时文本区域
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            
+            // 选择并复制
+            textArea.focus();
+            textArea.select();
+            
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            if (successful) {
+                showNotification('内容已复制到剪贴板', 'success', 2000);
+                
+                // 视觉反馈
+                const copyBtn = messageElement.querySelector('.copy-btn i');
+                if (copyBtn) {
+                    const originalClass = copyBtn.className;
+                    copyBtn.className = 'fas fa-check';
+                    setTimeout(() => {
+                        copyBtn.className = originalClass;
+                    }, 1000);
+                }
+            } else {
+                throw new Error('复制命令执行失败');
+            }
+        } catch (err) {
+            console.error('传统复制方法也失败:', err);
+            // 最后的降级方案：提示用户手动复制
+            this.showManualCopyDialog(text);
+        }
+    }
 
-        // 如果是assistant消息且是大师分析，保存专家角色信息
-        if (role === 'assistant' && this.currentFunction === 'expert-analysis' && this.currentExpertInfo) {
-            message.expert = this.currentExpertInfo.name;
+    /**
+     * 显示手动复制对话框
+     */
+    showManualCopyDialog(text) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay show';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>复制内容</h3>
+                    <button class="close-btn" onclick="this.closest('.modal-overlay').remove();">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>请手动选择并复制以下内容：</p>
+                    <textarea readonly style="width: 100%; height: 200px; margin-top: 10px; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-family: inherit;">${text}</textarea>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-primary" onclick="this.closest('.modal-overlay').remove();">确定</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // 自动选择文本
+        const textarea = modal.querySelector('textarea');
+        if (textarea) {
+            setTimeout(() => {
+                textarea.focus();
+                textarea.select();
+            }, 100);
+        }
+    }
+
+    /**
+     * 朗读消息内容
+     */
+    async readMessageContent(messageElement) {
+        const contentElement = messageElement.querySelector('[data-message-content]');
+        if (!contentElement) return;
+
+        // 获取纯文本内容，过滤掉思考过程
+        let textContent = this.extractReadableContent(contentElement);
+        
+        if (!textContent || textContent.trim().length === 0) {
+            showNotification('没有可朗读的内容', 'warning');
+            return;
         }
 
-        this.messageHistory.push(message);
+        const readBtn = messageElement.querySelector('.read-btn');
+        const readIcon = readBtn?.querySelector('i');
+        if (!readBtn || !readIcon) return;
 
-        // 限制历史记录长度
-        if (this.messageHistory.length > 50) {
-            this.messageHistory = this.messageHistory.slice(-50);
+        // 保存原始图标类名
+        const originalClass = readIcon.className;
+
+        try {
+            // 获取音色配置
+            const voiceConfig = this.getVoiceConfigForCurrentFunction();
+            
+            // 更新按钮状态为加载中
+            readIcon.className = 'fas fa-spinner fa-spin';
+            readBtn.classList.add('loading');
+            readBtn.disabled = true;
+            
+            // 首先尝试后端TTS服务
+            try {
+                const response = await fetch('/api/tts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        text: textContent,
+                        voice_type: voiceConfig.type,
+                        voice_id: voiceConfig.id
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.audio_url) {
+                    // 后端TTS成功，使用音频播放
+                    await this.playAudioFromUrl(data.audio_url, readBtn, readIcon, originalClass, data.voice_name || voiceConfig.name);
+                    return;
+                } else {
+                    // 后端TTS失败，使用浏览器语音合成作为降级方案
+                    console.log('后端TTS不可用，使用浏览器语音合成');
+                    await this.useBrowserSpeechSynthesis(textContent, readBtn, readIcon, originalClass);
+                    return;
+                }
+            } catch (error) {
+                console.log('后端TTS请求失败，使用浏览器语音合成:', error);
+                // 后端请求失败，使用浏览器语音合成作为降级方案
+                await this.useBrowserSpeechSynthesis(textContent, readBtn, readIcon, originalClass);
+                return;
+            }
+            
+        } catch (error) {
+            console.error('朗读失败:', error);
+            readIcon.className = originalClass;
+            readBtn.classList.remove('playing', 'loading');
+            readBtn.disabled = false;
+            showNotification('朗读失败: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * 使用浏览器语音合成API朗读
+     */
+    async useBrowserSpeechSynthesis(textContent, readBtn, readIcon, originalClass) {
+        // 检查浏览器是否支持语音合成
+        if (!('speechSynthesis' in window)) {
+            readIcon.className = originalClass;
+            readBtn.classList.remove('playing', 'loading');
+            readBtn.disabled = false;
+            showNotification('浏览器不支持语音合成功能', 'error');
+            return;
         }
 
-        // 保存到服务器（如果有会话ID）
-        if (this.currentSessionId && historyManager) {
-            const serverMessage = {
-                role: role,
-                content: content,
-                timestamp: new Date().toISOString()
+        try {
+            // 停止任何正在进行的语音合成
+            speechSynthesis.cancel();
+
+            // 创建语音合成实例
+            const utterance = new SpeechSynthesisUtterance(textContent);
+            
+            // 设置语音参数
+            utterance.lang = 'zh-CN';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+
+            // 尝试使用中文语音
+            const voices = speechSynthesis.getVoices();
+            const chineseVoice = voices.find(voice => 
+                voice.lang.includes('zh') || voice.lang.includes('Chinese')
+            );
+            if (chineseVoice) {
+                utterance.voice = chineseVoice;
+            }
+
+            // 更新按钮为播放状态
+            readIcon.className = 'fas fa-pause';
+            readBtn.classList.remove('loading');
+            readBtn.classList.add('playing');
+            readBtn.disabled = false;
+            showNotification('开始朗读（浏览器语音）...', 'info', 2000);
+
+            // 绑定事件
+            utterance.onend = () => {
+                readIcon.className = originalClass;
+                readBtn.classList.remove('playing', 'loading');
+                readBtn.disabled = false;
+                showNotification('朗读完成', 'success', 2000);
             };
 
-            // 添加专家信息到服务器消息
-            if (role === 'assistant' && this.currentFunction === 'expert-analysis' && this.currentExpertInfo) {
-                serverMessage.expert = this.currentExpertInfo.name;
+            utterance.onerror = (event) => {
+                console.error('语音合成错误:', event);
+                readIcon.className = originalClass;
+                readBtn.classList.remove('playing', 'loading');
+                readBtn.disabled = false;
+                showNotification('语音合成失败', 'error');
+            };
+
+            // 如果用户点击暂停按钮
+            const pauseHandler = () => {
+                speechSynthesis.cancel();
+                readIcon.className = originalClass;
+                readBtn.classList.remove('playing', 'loading');
+                readBtn.disabled = false;
+                showNotification('朗读已停止', 'info', 2000);
+            };
+
+            readBtn.addEventListener('click', pauseHandler, { once: true });
+
+            // 开始语音合成
+            speechSynthesis.speak(utterance);
+
+        } catch (error) {
+            console.error('浏览器语音合成失败:', error);
+            readIcon.className = originalClass;
+            readBtn.classList.remove('playing', 'loading');
+            readBtn.disabled = false;
+            showNotification('语音合成失败: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * 播放来自URL的音频
+     */
+    async playAudioFromUrl(audioUrl, readBtn, readIcon, originalClass, voiceName) {
+        try {
+            // 创建音频元素并播放
+            const audio = new Audio(audioUrl);
+            
+            // 更新按钮为播放状态
+            readIcon.className = 'fas fa-pause';
+            readBtn.classList.remove('loading');
+            readBtn.classList.add('playing');
+            readBtn.disabled = false;
+            showNotification(`开始朗读... (${voiceName})`, 'info', 2000);
+            
+            // 播放音频
+            await audio.play();
+            
+            // 监听播放结束
+            audio.addEventListener('ended', () => {
+                readIcon.className = originalClass;
+                readBtn.classList.remove('playing', 'loading');
+                readBtn.disabled = false;
+                showNotification('朗读完成', 'success', 2000);
+            });
+            
+            // 监听播放错误
+            audio.addEventListener('error', (e) => {
+                console.error('音频播放错误:', e);
+                readIcon.className = originalClass;
+                readBtn.classList.remove('playing', 'loading');
+                readBtn.disabled = false;
+                showNotification('音频播放失败', 'error');
+            });
+            
+            // 如果用户点击暂停
+            const pauseHandler = () => {
+                audio.pause();
+                readIcon.className = originalClass;
+                readBtn.classList.remove('playing', 'loading');
+                readBtn.disabled = false;
+                showNotification('朗读已停止', 'info', 2000);
+            };
+            
+            readBtn.addEventListener('click', pauseHandler, { once: true });
+            
+        } catch (error) {
+            console.error('音频播放失败:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 提取可朗读的内容，过滤掉思考过程
+     */
+    extractReadableContent(contentElement) {
+        // 克隆元素避免影响原始内容
+        const clonedElement = contentElement.cloneNode(true);
+        
+        // 移除思考过程相关的元素
+        const thinkingElements = clonedElement.querySelectorAll('.thinking-content, .think-container, [class*="think"]');
+        thinkingElements.forEach(el => el.remove());
+        
+        // 移除HTML标签，获取纯文本
+        let textContent = clonedElement.innerText || clonedElement.textContent || '';
+        
+        // 清理文本
+        textContent = textContent
+            .replace(/\n{3,}/g, '\n\n') // 将3个以上的换行符替换为2个
+            .replace(/\s{2,}/g, ' ') // 将多个连续空格替换为单个空格
+            .trim();
+        
+        return textContent;
+    }
+
+    /**
+     * 根据当前功能获取合适的音色配置
+     */
+    getVoiceConfigForCurrentFunction() {
+        if (this.currentFunction === 'intelligent-reading') {
+            // 智能伴读使用讯飞-小媛
+            return {
+                type: 'xunfei',
+                id: 9,
+                name: '讯飞-小媛（女声）'
+            };
+        } else if (this.currentFunction === 'expert-analysis') {
+            // 大师分析根据角色选择音色
+            const expertId = this.getCurrentExpertId();
+            return this.getVoiceConfigForExpert(expertId);
+        }
+        
+        // 默认音色：讯飞-小媛
+        return {
+            type: 'xunfei',
+            id: 9,
+            name: '讯飞-小媛（女声）'
+        };
+    }
+
+    /**
+     * 根据专家角色获取对应音色配置
+     */
+    getVoiceConfigForExpert(expertId) {
+        const voiceMapping = {
+            'luxun': {
+                type: 'baidu',
+                id: 6748, // 度书严-沉稳男声
+                name: '度书严-沉稳男声'
+            },
+            'hushi': {
+                type: 'baidu',
+                id: 6205, // 度悠然-旁白男声
+                name: '度悠然-旁白男声'
+            },
+            'keli': {
+                type: 'xunfei',
+                id: 17, // 讯飞-芳芳（儿童-女）
+                name: '讯飞-芳芳（儿童-女）'
+            },
+            'hoshino': {
+                type: 'baidu',
+                id: 6562, // 度雨楠-元气少女
+                name: '度雨楠-元气少女'
+            },
+            'shakespeare': {
+                type: 'baidu',
+                id: 6747, // 度书古-情感男声
+                name: '度书古-情感男声'
+            },
+            'einstein': {
+                type: 'baidu',
+                id: 6746, // 度书道-沉稳男声
+                name: '度书道-沉稳男声'
+            },
+            'socrates': {
+                type: 'baidu',
+                id: 4176, // 度有为-磁性男声
+                name: '度有为-磁性男声'
+            },
+            'confucius': {
+                type: 'baidu',
+                id: 6205, // 度悠然-旁白男声
+                name: '度悠然-旁白男声'
             }
-
-            historyManager.saveMessage(serverMessage);
-        }
-    }
-
-    /**
-     * 显示聊天界面
-     */
-    showChatScreen() {
-        const welcomeScreen = document.getElementById('welcomeScreen');
-        const chatScreen = document.getElementById('chatScreen');
+        };
         
-        if (welcomeScreen) {
-            welcomeScreen.style.display = 'none';
-        }
-        
-        if (chatScreen) {
-            chatScreen.style.display = 'block';
-            chatScreen.classList.add('fade-in');
-        }
-
-        // 更新选择器状态
-        this.updateChatSelectors();
-
-        // 清空输入
-        this.clearUploadInputs();
-    }
-
-    /**
-     * 清空上传输入
-     */
-    clearUploadInputs() {
-        const textInput = document.getElementById('textInput');
-        const urlInput = document.getElementById('urlInput');
-        
-        if (textInput) textInput.value = '';
-        if (urlInput) urlInput.value = '';
-        
-        if (window.uploadManager && typeof window.uploadManager.clearUploads === 'function') {
-            window.uploadManager.clearUploads();
-        }
-    }
-
-    /**
-     * 清空聊天
-     */
-    clearChat() {
-        if (!confirm('确定要清空当前对话吗？')) return;
-
-        const messagesContainer = document.getElementById('chatMessages');
-        if (messagesContainer) {
-            messagesContainer.innerHTML = '';
-        }
-
-        this.messageHistory = [];
-        this.createNewSession();
-        
-        showNotification('对话已清空', 'success');
-    }
-
-    /**
-     * 切换简洁模式
-     */
-    toggleCompactMode() {
-        document.body.classList.toggle('compact-mode');
-        
-        const isCompact = document.body.classList.contains('compact-mode');
-        localStorage.setItem('compactMode', isCompact.toString());
-        
-        const icon = document.querySelector('#compactModeToggle i');
-        if (icon) {
-            icon.className = `fas ${isCompact ? 'fa-expand' : 'fa-compress'}`;
-        }
-        
-        showNotification(`已${isCompact ? '开启' : '关闭'}简洁模式`, 'info');
+        return voiceMapping[expertId] || {
+            type: 'xunfei',
+            id: 9,
+            name: '讯飞-小媛（女声）'
+        };
     }
 
     /**
@@ -1702,6 +1996,43 @@ class ChatManager {
             chatContainer.appendChild(collapseContainer);
             this.scrollToBottom();
         }
+    }
+
+    /**
+     * 保存消息到历史记录
+     */
+    saveMessageToHistory(role, content) {
+        if (!content || !role) return;
+        
+        const message = {
+            role: role,
+            content: content,
+            timestamp: new Date().toISOString()
+        };
+        
+        this.messageHistory.push(message);
+        
+        // 限制历史记录长度，避免内存过多占用
+        if (this.messageHistory.length > 100) {
+            this.messageHistory = this.messageHistory.slice(-50); // 保留最近50条
+        }
+    }
+
+    /**
+     * 清空聊天
+     */
+    clearChat() {
+        // 清空消息历史
+        this.messageHistory = [];
+        
+        // 清空界面消息
+        const messagesContainer = document.getElementById('chatMessages');
+        if (messagesContainer) {
+            messagesContainer.innerHTML = '';
+        }
+        
+        // 创建新会话
+        this.createNewSession();
     }
 
 }

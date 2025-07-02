@@ -1378,6 +1378,16 @@ body {
   padding: var(--spacing-lg);
 }
 
+.modal-footer {
+  padding: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  background: var(--bg-tertiary);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
 /* ================================
    通知系统
    ================================ */
@@ -3076,15 +3086,26 @@ body.mobile-menu-open {
   }
 }
 
-/* 隐藏的选择器 */
-.hidden-selectors {
-  display: none !important;
+/* 朗读按钮特殊样式 */
+.message-actions .read-btn.playing {
+  color: var(--primary-color);
+  background: rgba(99, 102, 241, 0.2);
+  animation: pulse 1.5s infinite;
 }
 
-.hidden-select {
-  opacity: 0;
-  visibility: hidden;
-  position: absolute;
-  pointer-events: none;
+.message-actions .read-btn.loading {
+  color: var(--accent-color);
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(99, 102, 241, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
 }
 
