@@ -79,28 +79,73 @@ class SelectorManager {
         const value = option.dataset.value;
         const name = option.querySelector('.option-name').textContent;
         
+        console.log('选择选项:', value, name);
+        
         // 更新按钮文本
         const buttonText = button.querySelector('span');
-        buttonText.textContent = name;
+        if (buttonText) {
+            buttonText.textContent = name;
+        }
 
         // 更新隐藏的select
         const select = dropdown.querySelector('select');
-        select.value = value;
+        if (select) {
+            select.value = value;
+            // 触发change事件
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
 
-        // 触发change事件
-        select.dispatchEvent(new Event('change'));
-
-        // 更新选中状态
+        // 更新当前下拉框的选中状态
         dropdown.querySelectorAll('.dropdown-option').forEach(opt => {
             opt.classList.remove('selected');
         });
         option.classList.add('selected');
 
+        // 如果这是模型选择器，同步到所有其他模型选择器
+        if (button.classList.contains('model-button')) {
+            this.syncModelSelectors(value, name);
+        }
+
         // 关闭下拉框
         this.closeAllDropdowns();
 
-        // 同步其他选择器
-        this.syncSelectors();
+        // 强制同步其他选择器
+        this.forceSyncSelectors();
+    }
+
+    // 同步所有模型选择器
+    syncModelSelectors(modelValue, modelName) {
+        console.log('同步所有模型选择器到:', modelValue, modelName);
+        
+        // 更新所有模型选择按钮的文本
+        document.querySelectorAll('.selector-button.model-button').forEach(button => {
+            const buttonText = button.querySelector('span');
+            if (buttonText) {
+                buttonText.textContent = modelName;
+            }
+        });
+        
+        // 更新所有模型select元素
+        document.querySelectorAll('select[id*="ModelSelect"]').forEach(select => {
+            if (select.value !== modelValue) {
+                select.value = modelValue;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+        
+        // 更新所有下拉选项的选中状态
+        document.querySelectorAll('.dropdown-option').forEach(opt => {
+            const optDropdown = opt.closest('.selector-dropdown');
+            const optButton = optDropdown ? optDropdown.previousElementSibling : null;
+            
+            if (optButton && optButton.classList.contains('model-button')) {
+                if (opt.dataset.value === modelValue) {
+                    opt.classList.add('selected');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            }
+        });
     }
 
     setDefaultModel() {
@@ -115,14 +160,25 @@ class SelectorManager {
             }
         });
 
-        // 更新隐藏的select
+        // 更新隐藏的select，确保所有模型选择器都设置默认值
         document.querySelectorAll('select[id*="ModelSelect"]').forEach(select => {
             select.value = defaultModel;
+            // 手动触发change事件以确保其他组件知道值已更改
+            select.dispatchEvent(new Event('change', { bubbles: true }));
         });
 
-        // 更新选中状态
+        // 更新选中状态 - 移除所有选中状态，然后添加到默认模型
+        document.querySelectorAll('.dropdown-option').forEach(option => {
+            if (option.closest('.selector-dropdown').querySelector('select[id*="ModelSelect"]')) {
+                option.classList.remove('selected');
+            }
+        });
+        
+        // 添加默认模型的选中状态
         document.querySelectorAll('.dropdown-option[data-value="GLM-4-Flash"]').forEach(option => {
-            option.classList.add('selected');
+            if (option.closest('.selector-dropdown').querySelector('select[id*="ModelSelect"]')) {
+                option.classList.add('selected');
+            }
         });
     }
 
@@ -170,25 +226,53 @@ class SelectorManager {
     }
 
     syncSelectors() {
-        // 同步模型选择器
-        const modelSelects = document.querySelectorAll('select[id*="ModelSelect"]');
-        if (modelSelects.length > 0) {
-            const firstValue = modelSelects[0].value;
-            modelSelects.forEach(select => {
-                if (select.value !== firstValue) {
-                    select.value = firstValue;
-                }
-            });
-
-            // 同步按钮文本
-            document.querySelectorAll('.selector-button.model-button').forEach(button => {
-                const buttonText = button.querySelector('span');
-                const selectedOption = document.querySelector(`.dropdown-option[data-value="${firstValue}"]`);
-                if (buttonText && selectedOption) {
-                    buttonText.textContent = selectedOption.querySelector('.option-name').textContent;
-                }
-            });
+        // 获取聊天模式的模型选择器
+        const chatModelSelect = document.getElementById('chatModelSelect');
+        
+        // 确定当前活跃的选择器和值
+        let activeValue = null;
+        const chatModelSelector = document.getElementById('chatModelSelector');
+        const isChartModeActive = chatModelSelector && 
+            window.getComputedStyle(chatModelSelector).display !== 'none';
+        
+        if (isChartModeActive && chatModelSelect && chatModelSelect.value) {
+            // 聊天模式且有选择值，使用聊天界面的值
+            activeValue = chatModelSelect.value;
+        } else {
+            // 从欢迎界面的选择器按钮获取当前值
+            const welcomeModelButtonText = document.getElementById('welcomeModelButtonText');
+            if (welcomeModelButtonText) {
+                activeValue = this.getModelValueFromText(welcomeModelButtonText.textContent);
+            } else {
+                activeValue = 'GLM-4-Flash';
+            }
         }
+
+        // 同步所有模型选择器的值
+        const allModelSelects = document.querySelectorAll('select[id*="ModelSelect"]');
+        allModelSelects.forEach(select => {
+            if (select.value !== activeValue) {
+                select.value = activeValue;
+            }
+        });
+
+        // 同步按钮文本
+        document.querySelectorAll('.selector-button.model-button').forEach(button => {
+            const buttonText = button.querySelector('span');
+            const selectedOption = document.querySelector(`.dropdown-option[data-value="${activeValue}"]`);
+            if (buttonText && selectedOption) {
+                buttonText.textContent = selectedOption.querySelector('.option-name').textContent;
+            }
+        });
+
+        // 同步所有模型选择器的选中状态
+        document.querySelectorAll('.dropdown-option').forEach(option => {
+            if (option.dataset.value === activeValue && option.closest('.selector-dropdown').querySelector('select[id*="ModelSelect"]')) {
+                option.classList.add('selected');
+            } else if (option.closest('.selector-dropdown').querySelector('select[id*="ModelSelect"]')) {
+                option.classList.remove('selected');
+            }
+        });
 
         // 同步专家选择器
         const expertSelects = document.querySelectorAll('select[id*="ExpertSelect"]');
@@ -209,20 +293,100 @@ class SelectorManager {
                         buttonText.textContent = selectedOption.querySelector('.option-name').textContent;
                     }
                 });
+
+                // 同步所有专家选择器的选中状态
+                document.querySelectorAll('#expertOptions .dropdown-option').forEach(option => {
+                    if (option.dataset.value === firstValue) {
+                        option.classList.add('selected');
+                    } else {
+                        option.classList.remove('selected');
+                    }
+                });
             }
         }
     }
 
     // 获取当前选中的模型
     getCurrentModel() {
-        const select = document.querySelector('select[id*="ModelSelect"]');
-        return select ? select.value : 'GLM-4-Flash';
+        // 优先使用聊天界面的模型选择器
+        const chatModelSelect = document.getElementById('chatModelSelect');
+        
+        // 如果聊天界面的选择器存在且可见，优先使用它
+        const chatModelSelector = document.getElementById('chatModelSelector');
+        if (chatModelSelect && chatModelSelector && 
+            window.getComputedStyle(chatModelSelector).display !== 'none') {
+            return chatModelSelect.value || 'GLM-4-Flash';
+        }
+        
+        // 否则从欢迎界面的按钮文本获取当前模型
+        const welcomeModelButtonText = document.getElementById('welcomeModelButtonText');
+        if (welcomeModelButtonText) {
+            return this.getModelValueFromText(welcomeModelButtonText.textContent);
+        }
+        
+        // 兜底方案
+        const anySelect = document.querySelector('select[id*="ModelSelect"]');
+        return anySelect ? anySelect.value : 'GLM-4-Flash';
+    }
+
+    // 从按钮文本获取模型值
+    getModelValueFromText(text) {
+        const modelMapping = {
+            'GLM-4-Flash': 'GLM-4-Flash',
+            'GLM-Z1-Flash': 'GLM-Z1-Flash',
+            'DeepSeek-R1-Distill-Qwen-7B': 'DeepSeek-R1-Distill-Qwen-7B'
+        };
+        return modelMapping[text] || 'GLM-4-Flash';
     }
 
     // 获取当前选中的专家
     getCurrentExpert() {
         const select = document.querySelector('select[id*="ExpertSelect"]');
         return select ? select.value : '';
+    }
+
+    // 强制同步所有选择器（用于解决同步问题）
+    forceSyncSelectors() {
+        console.log('强制同步选择器...');
+        
+        // 延迟执行以确保DOM已更新
+        setTimeout(() => {
+            this.syncSelectors();
+        }, 100);
+    }
+
+    // 手动设置模型选择
+    setModel(modelValue) {
+        console.log('手动设置模型:', modelValue);
+        
+        // 更新所有select元素
+        document.querySelectorAll('select[id*="ModelSelect"]').forEach(select => {
+            select.value = modelValue;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        
+        // 更新按钮文本
+        const selectedOption = document.querySelector(`.dropdown-option[data-value="${modelValue}"]`);
+        if (selectedOption) {
+            const optionName = selectedOption.querySelector('.option-name').textContent;
+            document.querySelectorAll('.selector-button.model-button').forEach(button => {
+                const buttonText = button.querySelector('span');
+                if (buttonText) {
+                    buttonText.textContent = optionName;
+                }
+            });
+        }
+        
+        // 更新选中状态
+        document.querySelectorAll('.dropdown-option').forEach(option => {
+            if (option.closest('.selector-dropdown').querySelector('select[id*="ModelSelect"]')) {
+                if (option.dataset.value === modelValue) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            }
+        });
     }
 }
 

@@ -118,15 +118,14 @@ class ChatManager {
             });
         }
 
-        // 清空对话
-        document.getElementById('clearChatBtn')?.addEventListener('click', () => {
-            this.clearChat();
-        });
+        // 清空对话和简洁模式现在由功能菜单处理
+        // document.getElementById('clearChatBtn')?.addEventListener('click', () => {
+        //     this.clearChat();
+        // });
 
-        // 简洁模式切换
-        document.getElementById('compactModeToggle')?.addEventListener('click', () => {
-            this.toggleCompactMode();
-        });
+        // document.getElementById('compactModeToggle')?.addEventListener('click', () => {
+        //     this.toggleCompactMode();
+        // });
 
         // 监听功能切换
         document.addEventListener('functionChanged', (e) => {
@@ -350,12 +349,43 @@ class ChatManager {
 
         // 添加模型选择（智能伴读和大师分析）
         if (this.currentFunction === 'intelligent-reading' || this.currentFunction === 'expert-analysis') {
-            // 优先使用聊天界面的模型选择器，如果不存在则使用主页的
-            const chatModelSelect = document.getElementById('chatModelSelect');
-            const welcomeModelSelect = document.getElementById('welcomeModelSelect');
-            const selectedModel = chatModelSelect?.value || welcomeModelSelect?.value;
+            // 优先从功能菜单获取，否则使用传统选择器
+            let selectedModel = null;
+            
+            if (window.chatFunctionMenu) {
+                selectedModel = window.chatFunctionMenu.getCurrentModel();
+            }
+            
+            if (!selectedModel) {
+                const chatModelSelect = document.getElementById('chatModelSelect');
+                selectedModel = chatModelSelect?.value;
+                
+                // 如果聊天模式没有选择，从全局selector manager获取
+                if (!selectedModel && window.selectorManager) {
+                    selectedModel = window.selectorManager.getCurrentModel();
+                }
+            }
+            
             if (selectedModel) {
                 data.model = selectedModel;
+            }
+        }
+
+        // 添加专家选择（大师分析）
+        if (this.currentFunction === 'expert-analysis') {
+            let selectedExpert = null;
+            
+            if (window.chatFunctionMenu) {
+                selectedExpert = window.chatFunctionMenu.getCurrentExpert();
+            }
+            
+            if (!selectedExpert) {
+                const chatExpertSelect = document.getElementById('chatExpertSelect');
+                selectedExpert = chatExpertSelect?.value;
+            }
+            
+            if (selectedExpert) {
+                data.persona = selectedExpert;
             }
         }
 
@@ -920,24 +950,87 @@ class ChatManager {
     }
 
     /**
-     * 格式化消息内容 - 支持Markdown
+     * 格式化消息内容 - 支持Markdown和think标签处理
      */
     formatMessageContent(content) {
         if (!content) return '';
 
-        // 使用marked进行markdown解析
+        // 使用更简单直接的方法：先处理markdown，再处理think标签
+        let processedContent = content;
+
+        // 如果有markdown解析器，先进行markdown解析
         if (typeof marked !== 'undefined') {
             try {
-                return marked.parse(content);
+                processedContent = marked.parse(processedContent);
             } catch (error) {
                 console.error('Markdown解析错误:', error);
-                return this.escapeHtml(content).replace(/\n/g, '<br>');
+                processedContent = this.escapeHtml(content).replace(/\n/g, '<br>');
             }
+        } else {
+            // 后备方案：基本的文本格式化
+            processedContent = this.basicTextFormat(processedContent);
         }
 
-        // 后备方案：基本的文本格式化
-        return this.basicTextFormat(content);
+        // 最后处理think标签，直接在最终HTML中替换
+        processedContent = this.processThinkTagsInHtml(processedContent);
+
+        return processedContent;
     }
+
+    /**
+     * 在HTML中处理think标签，将其转换为折叠组件
+     */
+    processThinkTagsInHtml(htmlContent) {
+        // 匹配HTML中的<think>标签内容，考虑可能被<p>标签包装的情况
+        const thinkRegex = /<p[^>]*>.*?<think>([\s\S]*?)<\/think>.*?<\/p>|<think>([\s\S]*?)<\/think>/gi;
+        
+        return htmlContent.replace(thinkRegex, (match, thinkContent1, thinkContent2) => {
+            const thinkContent = thinkContent1 || thinkContent2;
+            
+            // 生成唯一ID
+            const thinkId = 'think-' + Math.random().toString(36).substr(2, 9);
+            
+            // 清理思考内容，移除HTML标签，保持纯文本格式
+            const cleanContent = this.stripHtmlTags(thinkContent.trim());
+            
+            // 返回折叠组件的HTML结构
+            return `<div class="think-container">
+                <div class="think-header" onclick="toggleThinkContent('${thinkId}')">
+                    <div class="think-title">
+                        <i class="fas fa-brain think-icon"></i>
+                        <span>AI思考过程</span>
+                    </div>
+                    <button class="think-toggle" id="toggle-${thinkId}">
+                        <i class="fas fa-chevron-down"></i>
+                        <span>展开</span>
+                    </button>
+                </div>
+                <div class="think-content" id="${thinkId}">
+                    <pre>${this.escapeHtml(cleanContent)}</pre>
+                </div>
+            </div>`;
+        });
+    }
+
+    /**
+     * 移除HTML标签，保留纯文本内容
+     */
+    stripHtmlTags(html) {
+        // 创建临时元素来解析HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        
+        // 获取纯文本内容，保持换行
+        let textContent = tempDiv.textContent || tempDiv.innerText || '';
+        
+        // 处理多余的空行，但保留段落间的换行
+        textContent = textContent
+            .replace(/\n\s*\n\s*\n/g, '\n\n') // 将多个空行合并为双换行
+            .trim();
+        
+        return textContent;
+    }
+
 
     /**
      * 基本文本格式化
@@ -1097,6 +1190,9 @@ class ChatManager {
             chatScreen.classList.add('fade-in');
         }
 
+        // 更新选择器状态
+        this.updateChatSelectors();
+
         // 清空输入
         this.clearUploadInputs();
     }
@@ -1197,6 +1293,37 @@ class ChatManager {
     }
 
     /**
+     * 更新聊天界面的选择器显示
+     */
+    updateChatSelectors() {
+        // 新的菜单系统不需要显示/隐藏选择器容器
+        // 只需要通知功能菜单当前功能状态
+        if (window.chatFunctionMenu) {
+            window.chatFunctionMenu.setCurrentFunction(this.currentFunction);
+        }
+        
+        // 保持隐藏选择器的数据同步
+        const chatModelSelector = document.getElementById('chatModelSelector');
+        const chatExpertSelector = document.getElementById('chatExpertSelector');
+
+        if (chatModelSelector) {
+            // 确保模型选择器数据可用
+            const chatModelSelect = document.getElementById('chatModelSelect');
+            if (chatModelSelect && !chatModelSelect.value) {
+                chatModelSelect.value = 'GLM-4-Flash';
+            }
+        }
+
+        if (chatExpertSelector) {
+            // 专家选择器数据处理
+            const chatExpertSelect = document.getElementById('chatExpertSelect');
+            if (chatExpertSelect && this.currentFunction !== 'expert-analysis') {
+                chatExpertSelect.value = '';
+            }
+        }
+    }
+
+    /**
      * 获取当前会话ID
      */
     getCurrentSessionId() {
@@ -1216,6 +1343,7 @@ class ChatManager {
     setCurrentFunction(functionName) {
         this.currentFunction = functionName;
         this.updateInputPlaceholder();
+        this.updateChatSelectors();
     }
 
     /**
@@ -1420,3 +1548,35 @@ window.chatManager = null;
 document.addEventListener('DOMContentLoaded', () => {
     window.chatManager = new ChatManager();
 });
+
+/**
+ * 全局函数：切换思考内容的显示/隐藏
+ */
+window.toggleThinkContent = function(thinkId) {
+    const thinkContent = document.getElementById(thinkId);
+    const toggleBtn = document.getElementById('toggle-' + thinkId);
+    
+    if (!thinkContent || !toggleBtn) return;
+    
+    const isExpanded = thinkContent.classList.contains('expanded');
+    
+    if (isExpanded) {
+        // 折叠
+        thinkContent.style.animation = 'slideUp 0.2s ease-out';
+        setTimeout(() => {
+            thinkContent.classList.remove('expanded');
+            thinkContent.style.display = 'none';
+            thinkContent.style.animation = '';
+        }, 200);
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i><span>展开</span>';
+    } else {
+        // 展开
+        thinkContent.style.display = 'block';
+        thinkContent.classList.add('expanded');
+        thinkContent.style.animation = 'slideDown 0.2s ease-out';
+        setTimeout(() => {
+            thinkContent.style.animation = '';
+        }, 200);
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i><span>折叠</span>';
+    }
+};

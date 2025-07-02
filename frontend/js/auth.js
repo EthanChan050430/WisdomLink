@@ -371,6 +371,11 @@ class AuthManager {
             if (registerItem) registerItem.style.display = 'none';
             if (profileItem) profileItem.style.display = 'block';
             if (logoutItem) logoutItem.style.display = 'block';
+            
+            // 同步移动端菜单状态
+            if (window.mobileMenuManager) {
+                window.mobileMenuManager.syncUserState(true, this.currentUser.username);
+            }
         } else {
             // 未登录状态
             if (loginBtn) loginBtn.style.display = 'inline-block';
@@ -385,6 +390,11 @@ class AuthManager {
             if (registerItem) registerItem.style.display = 'block';
             if (profileItem) profileItem.style.display = 'none';
             if (logoutItem) logoutItem.style.display = 'none';
+            
+            // 同步移动端菜单状态
+            if (window.mobileMenuManager) {
+                window.mobileMenuManager.syncUserState(false);
+            }
         }
     }
 

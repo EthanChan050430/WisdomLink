@@ -43,6 +43,9 @@ class UploadManager {
             });
         });
 
+        // 处理移动端上传选项卡的水平滚动
+        this.handleUploadTabsScroll();
+
         // 功能选择器
         const featureSelect = document.getElementById('featureSelect');
         if (featureSelect) {
@@ -115,6 +118,11 @@ class UploadManager {
         document.querySelectorAll('.upload-panel').forEach(panel => {
             panel.classList.toggle('active', panel.dataset.type === type);
         });
+
+        // 在移动端滚动到激活的选项卡
+        if (window.innerWidth <= 768) {
+            this.scrollToActiveUploadTab();
+        }
     }
 
     /**
@@ -562,12 +570,42 @@ class UploadManager {
 
             // 添加模型选择（智能伴读和大师分析）
             if (this.currentFeature === 'intelligent-reading' || this.currentFeature === 'expert-analysis') {
-                // 优先使用主页的模型选择器，如果不存在则使用聊天界面的
-                const welcomeModelSelect = document.getElementById('welcomeModelSelect');
-                const chatModelSelect = document.getElementById('chatModelSelect');
-                const selectedModel = welcomeModelSelect?.value || chatModelSelect?.value;
+                // 优先使用主页的模型选择，然后是聊天界面的模型选择器
+                let selectedModel = null;
+                
+                // 首先从主页的按钮文本获取模型选择
+                const welcomeModelButtonText = document.getElementById('welcomeModelButtonText');
+                if (welcomeModelButtonText) {
+                    const buttonText = welcomeModelButtonText.textContent;
+                    console.log('主页模型按钮文本:', buttonText);
+                    selectedModel = buttonText; // 直接使用按钮文本作为模型值
+                }
+                
+                // 如果主页没有选择，从全局selector manager获取
+                if (!selectedModel && window.selectorManager) {
+                    selectedModel = window.selectorManager.getCurrentModel();
+                    console.log('从selector manager获取模型:', selectedModel);
+                }
+                
+                // 如果还是没有，使用聊天界面的选择
+                if (!selectedModel) {
+                    const chatModelSelect = document.getElementById('chatModelSelect');
+                    selectedModel = chatModelSelect?.value;
+                    console.log('从聊天界面获取模型:', selectedModel);
+                }
+                
+                // 同步模型选择到聊天界面
                 if (selectedModel) {
+                    const chatModelSelect = document.getElementById('chatModelSelect');
+                    if (chatModelSelect && chatModelSelect.value !== selectedModel) {
+                        chatModelSelect.value = selectedModel;
+                        console.log('同步模型到聊天界面:', selectedModel);
+                    }
                     formData.append('model', selectedModel);
+                    console.log('最终使用模型:', selectedModel);
+                } else {
+                    console.warn('未能获取到模型选择，使用默认模型');
+                    formData.append('model', 'GLM-4-Flash');
                 }
             }
 
@@ -981,6 +1019,50 @@ class UploadManager {
             const element = document.getElementById(id);
             if (element) element.value = '';
         });
+    }
+
+    /**
+     * 处理移动端上传选项卡的水平滚动
+     */
+    handleUploadTabsScroll() {
+        const uploadTabs = document.querySelector('.upload-tabs');
+        if (!uploadTabs) return;
+
+        // 检查是否需要显示滚动提示
+        const checkScrollState = () => {
+            const isScrolledToEnd = uploadTabs.scrollLeft + uploadTabs.clientWidth >= uploadTabs.scrollWidth - 1;
+            uploadTabs.classList.toggle('scrolled-end', isScrolledToEnd);
+        };
+
+        // 监听滚动事件
+        uploadTabs.addEventListener('scroll', checkScrollState);
+        
+        // 初始检查
+        setTimeout(checkScrollState, 100);
+        
+        // 窗口大小改变时重新检查
+        window.addEventListener('resize', () => {
+            setTimeout(checkScrollState, 100);
+        });
+    }
+
+    /**
+     * 滚动到活动的上传选项卡
+     */
+    scrollToActiveUploadTab() {
+        const activeTab = document.querySelector('.upload-tab.active');
+        const uploadTabs = document.querySelector('.upload-tabs');
+
+        if (activeTab && uploadTabs) {
+            // 计算活动选项卡相对于容器的偏移量
+            const offset = activeTab.offsetLeft - (uploadTabs.clientWidth / 2) + (activeTab.clientWidth / 2);
+
+            // 平滑滚动到目标位置
+            uploadTabs.scrollTo({
+                left: Math.max(0, offset),
+                behavior: 'smooth'
+            });
+        }
     }
 }
 

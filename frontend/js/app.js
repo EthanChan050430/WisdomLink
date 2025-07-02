@@ -40,6 +40,9 @@ class AIReaderApp {
             
             // 调试界面状态
             this.debugInterfaceState();
+            
+            // 检查移动端菜单是否正确初始化
+            this.checkMobileMenuStatus();
 
             console.log('智链AI阅读助手初始化完成');
         } catch (error) {
@@ -292,6 +295,9 @@ class AIReaderApp {
      * 切换功能模块
      */
     switchFunction(functionName) {
+        // 检查是否在聊天模式，如果是则退出聊天模式
+        this.exitChatModeIfActive();
+        
         // 更新当前功能
         this.currentFunction = functionName;
 
@@ -316,6 +322,83 @@ class AIReaderApp {
         document.dispatchEvent(event);
 
         console.log(`切换到功能: ${functionName}`);
+    }
+
+    /**
+     * 退出聊天模式（如果当前在聊天模式）
+     */
+    exitChatModeIfActive() {
+        const chatScreen = document.getElementById('chatScreen');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        
+        // 检查是否在聊天模式
+        if (chatScreen && welcomeScreen) {
+            const isChatActive = chatScreen.style.display !== 'none' && chatScreen.style.display !== '';
+            
+            if (isChatActive) {
+                console.log('退出聊天模式，返回主页');
+                
+                // 隐藏聊天界面
+                chatScreen.style.display = 'none';
+                
+                // 显示欢迎界面
+                welcomeScreen.style.display = 'flex';
+                
+                // 清除聊天内容
+                this.clearChatMessages();
+                
+                // 重置到初始状态
+                this.resetToInitialState();
+                
+                // 滚动到顶部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    }
+
+    /**
+     * 重置到初始状态
+     */
+    resetToInitialState() {
+        // 确保欢迎界面正确显示
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        if (welcomeScreen) {
+            welcomeScreen.style.display = 'flex';
+            // 清除任何可能的内联样式覆盖
+            welcomeScreen.style.maxWidth = '';
+            welcomeScreen.style.margin = '';
+            welcomeScreen.style.padding = '';
+        }
+        
+        // 显示上传区域
+        const uploadSection = document.getElementById('uploadSection');
+        if (uploadSection) {
+            uploadSection.style.display = 'block';
+        }
+        
+        // 重置专家选择器显示状态
+        const expertSelector = document.getElementById('expertSelector');
+        if (expertSelector) {
+            expertSelector.style.display = 'none';
+        }
+        
+        // 清除任何进度状态
+        const progressScreen = document.getElementById('progressScreen');
+        if (progressScreen) {
+            progressScreen.style.display = 'none';
+        }
+        
+        // 重置输入框
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.value = '';
+            this.updateSearchPlaceholder(this.currentFunction);
+        }
+        
+        // 重置文件上传状态
+        if (window.fileUploadManager && typeof window.fileUploadManager.resetState === 'function') {
+            window.fileUploadManager.resetState();
+        }
     }
 
     /**
@@ -863,6 +946,42 @@ class AIReaderApp {
         if (window.uploadManager && typeof window.uploadManager.clearUploads === 'function') {
             window.uploadManager.clearUploads();
         }
+    }
+    
+    /**
+     * 检查移动端菜单状态
+     */
+    checkMobileMenuStatus() {
+        setTimeout(() => {
+            console.log('=== 移动端菜单状态检查 ===');
+            console.log('window.mobileMenuManager:', window.mobileMenuManager);
+            
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            
+            console.log('mobileMenuToggle 元素:', mobileMenuToggle);
+            console.log('mobileMenuOverlay 元素:', mobileMenuOverlay);
+            
+            if (mobileMenuToggle) {
+                console.log('汉堡菜单按钮样式:', window.getComputedStyle(mobileMenuToggle).display);
+                console.log('汉堡菜单按钮事件已绑定:', mobileMenuToggle.hasAttribute('data-event-bound'));
+            }
+            
+            if (mobileMenuOverlay) {
+                console.log('菜单覆盖层样式:', window.getComputedStyle(mobileMenuOverlay).display);
+            }
+            
+            // 检查mobile-menu.js是否正确加载
+            if (!window.mobileMenuManager) {
+                console.warn('mobile-menu.js 可能未正确加载，将在1秒后重试初始化');
+                setTimeout(() => {
+                    if (window.MobileMenuManager && !window.mobileMenuManager) {
+                        console.log('重新初始化移动端菜单管理器');
+                        window.mobileMenuManager = new window.MobileMenuManager();
+                    }
+                }, 1000);
+            }
+        }, 500);
     }
 }
 
