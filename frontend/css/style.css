@@ -963,599 +963,158 @@ body {
   transform: scale(1.1);
 }
 
-/* 思考内容样式 */
-.thinking-content {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
+/* AI思考过程折叠框样式 - 简约美观版 */
+.think-container {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08));
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-md);
   margin: var(--spacing-md) 0;
   overflow: hidden;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
 }
 
-.thinking-header {
-  padding: var(--spacing-md) var(--spacing-lg);
-  background: rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.think-container:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.think-header {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(99, 102, 241, 0.05);
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  justify-content: space-between;
   cursor: pointer;
   user-select: none;
   transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.1);
 }
 
-.thinking-header:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.thinking-header i {
-  transition: transform 0.3s ease;
-  color: var(--accent-color);
-}
-
-.thinking-content.collapsed .thinking-header i {
-  transform: rotate(-90deg);
-}
-
-.thinking-body {
-  padding: var(--spacing-lg);
-  color: var(--text-secondary);
-  font-style: italic;
-  line-height: 1.6;
-  max-height: 300px;
-  overflow-y: auto;
-  transition: all 0.3s ease;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-}
-
-.thinking-content.collapsed .thinking-body {
-  display: none;
-}
-
-.thinking-body::-webkit-scrollbar {
-  width: 6px;
-}
-
-.thinking-body::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
-}
-
-.thinking-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-
-.thinking-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* Markdown样式 */
-.message-bubble h1,
-.message-bubble h2,
-.message-bubble h3,
-.message-bubble h4,
-.message-bubble h5,
-.message-bubble h6 {
-  margin: var(--spacing-md) 0 var(--spacing-sm) 0;
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-.message-bubble h1 { font-size: 1.5rem; }
-.message-bubble h2 { font-size: 1.3rem; }
-.message-bubble h3 { font-size: 1.1rem; }
-
-.message-bubble p {
-  margin: var(--spacing-sm) 0;
-}
-
-.message-bubble ul,
-.message-bubble ol {
-  margin: var(--spacing-sm) 0;
-  padding-left: var(--spacing-lg);
-}
-
-.message-bubble li {
-  margin: var(--spacing-xs) 0;
-}
-
-.message-bubble code {
-  background: var(--bg-surface);
-  padding: 0.2em 0.4em;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
-  font-size: 0.875em;
-  color: var(--text-primary);
-}
-
-.message-bubble pre {
-  background: var(--bg-surface);
-  padding: var(--spacing-md);
-  border-radius: var(--radius-md);
-  overflow-x: auto;
-  margin: var(--spacing-md) 0;
-  border: 1px solid var(--border-color);
-}
-
-.message-bubble pre code {
-  background: none;
-  padding: 0;
-  font-size: 0.875rem;
-}
-
-.message-bubble blockquote {
-  border-left: 4px solid var(--primary-color);
-  padding-left: var(--spacing-md);
-  margin: var(--spacing-md) 0;
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-.message-bubble table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: var(--spacing-md) 0;
-  font-size: 0.875rem;
-}
-
-.message-bubble th,
-.message-bubble td {
-  padding: var(--spacing-sm);
-  border: 1px solid var(--border-color);
-  text-align: left;
-}
-
-.message-bubble th {
-  background: var(--bg-surface);
-  font-weight: 600;
-}
-
-/* ================================
-   进度指示器 - 现代化卡片设计
-   ================================ */
-
-.progress-container {
-  padding: var(--spacing-xl);
-  background: transparent;
-  border: none;
-}
-
-.progress-steps {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
-}
-
-.progress-step {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  padding: var(--spacing-xl);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-lg);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* 现代化渐变背景 */
-.progress-step::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 5px;
-  background: linear-gradient(180deg, var(--border-color) 0%, var(--border-light) 100%);
-  transition: all 0.3s ease;
-}
-
-/* 活跃状态 */
-.progress-step.active {
-  border-color: var(--primary-color);
-  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2);
-  transform: translateY(-2px);
-}
-
-.progress-step.active::before {
-  background: linear-gradient(180deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-  width: 6px;
-}
-
-/* 完成状态 */
-.progress-step.completed {
-  border-color: var(--success-color);
-  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15);
-}
-
-.progress-step.completed::before {
-  background: linear-gradient(180deg, var(--success-color) 0%, #059669 100%);
-  width: 6px;
-}
-
-/* 悬停效果 */
-.progress-step:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-  border-color: var(--primary-color);
-}
-
-.progress-step:hover::before {
-  width: 6px;
-  background: linear-gradient(180deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-}
-
-/* 步骤圆圈 */
-.step-circle {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-surface);
-  border: 3px solid var(--border-color);
-  color: var(--text-muted);
-  font-size: 1.3rem;
-  flex-shrink: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-/* 圆圈背景渐变 */
-.step-circle::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-tertiary) 100%);
-  z-index: -1;
-}
-
-/* 活跃状态圆圈 */
-.progress-step.active .step-circle {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-  border-color: var(--primary-color);
-  color: white;
-  box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.15);
-  transform: scale(1.1);
-}
-
-/* 完成状态圆圈 */
-.progress-step.completed .step-circle {
-  background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
-  border-color: var(--success-color);
-  color: white;
-  box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.15);
-}
-
-/* 步骤信息区域 */
-.step-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.step-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  letter-spacing: -0.01em;
-}
-
-.step-description {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 1.5;
-}
-
-/* 状态指示器 */
-.step-status {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-tertiary);
-  flex-shrink: 0;
-  padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: var(--radius-lg);
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-light);
-  transition: all 0.3s ease;
-}
-
-.step-status.completed {
-  color: var(--success-color);
-  background: rgba(16, 185, 129, 0.1);
-  border-color: var(--success-color);
-}
-
-.step-status.active {
-  color: var(--primary-color);
+.think-header:hover {
   background: rgba(99, 102, 241, 0.1);
-  border-color: var(--primary-color);
 }
 
-.step-status.processing {
-  color: var(--warning-color);
-  background: rgba(245, 158, 11, 0.1);
-  border-color: var(--warning-color);
-  animation: pulse 2s infinite;
-}
-
-/* 状态动画 */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-/* 状态图标动画 */
-.step-status .fa-spinner {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.progress-bar {
-  width: 100%;
-  height: 6px;
-  background: var(--bg-surface);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-  border-radius: 3px;
-  width: 0%;
-  transition: width 0.5s ease;
-}
-
-/* ================================
-   输入区域
-   ================================ */
-
-.chat-input-container {
-  padding: var(--spacing-lg);
-  background: var(--bg-tertiary);
-  border-top: 1px solid var(--border-color);
-}
-
-/* 隐藏的选择器容器 */
-.hidden-selectors {
-  display: none !important;
-}
-
-/* 简化输入区域 */
-.simplified-input-area {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--spacing-sm);
-  width: 100%;
-}
-
-/* 功能菜单容器 */
-.function-menu-container {
-  position: relative;
-  flex-shrink: 0;
-}
-
-/* 功能菜单按钮 */
-.btn-function-menu {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--primary-color);
-  border: none;
-  color: white;
-  cursor: pointer;
+.think-title {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.btn-function-menu:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.btn-function-menu:active {
-  transform: translateY(0);
-}
-
-/* 功能菜单下拉框 */
-.function-menu-dropdown {
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  z-index: 1000;
-  min-width: 280px;
-  margin-bottom: var(--spacing-sm);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  animation: slideUp 0.2s ease-out;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 菜单部分 */
-.menu-section {
-  padding: var(--spacing-md);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.menu-section:last-child {
-  border-bottom: none;
-}
-
-.menu-label {
-  font-size: 0.75rem;
-  font-weight: 600;
+  gap: var(--spacing-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: var(--spacing-sm);
 }
 
-.menu-options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
+.think-title:hover {
+  color: var(--text-primary);
 }
 
-/* 菜单选项 */
-.menu-option {
+.think-icon {
+  font-size: 0.9rem;
+  color: var(--accent-color);
+  opacity: 0.8;
+}
+
+.think-toggle {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm);
+  gap: var(--spacing-xs);
+  background: none;
+  border: none;
   cursor: pointer;
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
   transition: all 0.2s ease;
-  position: relative;
 }
 
-.menu-option:hover {
-  background: var(--bg-secondary);
-}
-
-.menu-option.selected {
-  background: var(--primary-color);
-  color: white;
-}
-
-.menu-option.selected .option-desc {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.menu-option .option-name {
-  font-weight: 500;
-  font-size: 0.875rem;
+.think-toggle:hover {
+  background: rgba(99, 102, 241, 0.1);
   color: var(--text-primary);
 }
 
-.menu-option .option-desc {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-top: 2px;
+.think-toggle i {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.7rem;
 }
 
-.menu-option .option-check {
-  margin-left: auto;
-  color: var(--success-color);
-  font-size: 0.875rem;
+.think-content {
+  max-height: 200px;
+  overflow-y: auto;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(15, 23, 42, 0.3);
 }
 
-.menu-option.selected .option-name,
-.menu-option.selected .option-desc {
-  color: white;
+.think-content.expanded {
+  padding: var(--spacing-md);
+  opacity: 1;
+  max-height: 200px;
 }
 
-/* 输入框包装器 */
-.input-wrapper {
-  flex: 1;
-  position: relative;
+.think-content.collapsed {
+  max-height: 0;
+  padding: 0 var(--spacing-md);
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
-.input-wrapper textarea {
-  width: 100%;
-  min-height: 40px;
-  max-height: 120px;
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  font-family: var(--font-sans);
-  resize: none;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.input-wrapper textarea:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.input-wrapper textarea::placeholder {
-  color: var(--text-muted);
-}
-
-/* 发送按钮 */
-.btn-send {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--primary-color);
+.think-content pre {
+  margin: 0;
+  padding: 0;
+  background: none;
   border: none;
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  flex-shrink: 0;
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+  font-style: italic;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
-.btn-send:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+.think-content::-webkit-scrollbar {
+  width: 4px;
 }
 
-.btn-send:active {
-  transform: translateY(0);
+.think-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 2px;
 }
 
-.btn-send:disabled {
-  background: var(--bg-surface);
-  color: var(--text-muted);
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+.think-content::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 2px;
+}
+
+.think-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.5);
+}
+
+/* 响应式设计 - 思考过程在移动设备上的优化 */
+@media (max-width: 768px) {
+  .think-container {
+    margin: var(--spacing-sm) 0;
+    border-radius: var(--radius-sm);
+  }
+  
+  .think-header {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  
+  .think-title {
+    font-size: 0.8rem;
+  }
+  
+  .think-content.expanded {
+    padding: var(--spacing-sm);
+    font-size: 0.75rem;
+    max-height: 150px;
+  }
+  
+  .think-toggle {
+    font-size: 0.7rem;
+    padding: var(--spacing-xs);
+  }
 }
 
 /* ================================
@@ -2291,13 +1850,6 @@ body {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-  }
-}
-
-@media (max-width: 480px) {
-  .mobile-menu-content {
-    width: 90vw;
-    max-width: none;
   }
 }
 
@@ -3076,28 +2628,56 @@ body.mobile-menu-open {
   margin-top: 0;
 }
 
+/* 步骤详情中的思考过程样式 - 与主思考过程保持一致 */
 .step-thinking {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08));
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-md);
   margin: var(--spacing-md) 0;
-  border-left: 4px solid var(--info-color);
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+}
+
+.step-thinking:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
 }
 
 .step-thinking-header {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(99, 102, 241, 0.05);
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-md);
-  font-weight: 600;
-  color: var(--info-color);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.step-thinking-header:hover {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--text-primary);
+}
+
+.step-thinking-header::before {
+  content: "🤔";
+  font-size: 0.9rem;
+  margin-right: var(--spacing-xs);
 }
 
 .step-thinking-content {
-  color: var(--text-secondary);
+  padding: var(--spacing-md);
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
   font-style: italic;
-  line-height: 1.6;
+  line-height: 1.5;
+  background: rgba(15, 23, 42, 0.3);
 }
 
 /* 动画效果 */
@@ -3216,3 +2796,31 @@ body.mobile-menu-open {
   color: var(--primary-color);
   font-weight: 500;
 }
+
+/* 响应式设计 - 思考过程在移动设备上的优化 */
+@media (max-width: 768px) {
+  .thinking-content,
+  .step-thinking {
+    margin: var(--spacing-sm) 0;
+    border-radius: var(--radius-sm);
+  }
+  
+  .thinking-header,
+  .step-thinking-header {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.8rem;
+  }
+  
+  .thinking-body,
+  .step-thinking-content {
+    padding: var(--spacing-sm);
+    font-size: 0.75rem;
+    max-height: 150px;
+  }
+  
+  .thinking-header::before,
+  .step-thinking-header::before {
+    font-size: 0.8rem;
+  }
+}
+

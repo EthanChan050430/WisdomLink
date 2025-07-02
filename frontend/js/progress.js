@@ -472,11 +472,17 @@ class ProgressManager {
 
         // 添加思考过程（如果有）
         if (stepData.thinking) {
+            const thinkingId = `thinking-${Date.now()}`;
             fullContent += `
                 <div class="thinking-section">
-                    <h4>💭 思考过程</h4>
-                    <div class="thinking-content">
-                        ${this.renderMarkdown(stepData.thinking)}
+                    <div class="thinking-content collapsed" id="${thinkingId}">
+                        <div class="thinking-header" onclick="toggleThinking('${thinkingId}')">
+                            AI思考过程
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="thinking-body">
+                            ${this.renderMarkdown(stepData.thinking)}
+                        </div>
                     </div>
                 </div>
                 <hr style="margin: 2rem 0; border: 1px solid var(--border-color);">
@@ -1055,6 +1061,21 @@ class ProgressManager {
 // 关闭步骤详情模态框的全局函数
 function closeStepDetail() {
     document.getElementById('stepDetailModal').style.display = 'none';
+}
+
+// 切换AI思考过程折叠状态的全局函数
+function toggleThinking(thinkingId) {
+    const thinkingElement = document.getElementById(thinkingId);
+    if (thinkingElement) {
+        thinkingElement.classList.toggle('collapsed');
+        
+        // 更新箭头图标
+        const icon = thinkingElement.querySelector('.thinking-header i');
+        if (icon) {
+            const isCollapsed = thinkingElement.classList.contains('collapsed');
+            icon.className = `fas fa-chevron-${isCollapsed ? 'down' : 'up'}`;
+        }
+    }
 }
 
 // 全局进度管理器实例

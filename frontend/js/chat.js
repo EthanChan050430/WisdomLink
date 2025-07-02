@@ -911,23 +911,19 @@ class ChatManager {
         const messageBubble = messageElement.querySelector('.message-bubble');
         if (!messageBubble) return null;
 
+        const thinkingId = `thinking-chat-${Date.now()}`;
         const thinkingElement = document.createElement('div');
-        thinkingElement.className = 'thinking-content';
+        thinkingElement.className = 'thinking-content collapsed'; // 默认折叠
+        thinkingElement.id = thinkingId;
         thinkingElement.innerHTML = `
-            <div class="thinking-header">
+            <div class="thinking-header" onclick="toggleThinkingChat('${thinkingId}')">
+                AI思考过程
                 <i class="fas fa-chevron-down"></i>
-                <span>AI正在思考...</span>
             </div>
             <div class="thinking-body">
                 <div class="thinking-text"></div>
             </div>
         `;
-
-        // 绑定折叠功能
-        const header = thinkingElement.querySelector('.thinking-header');
-        header.addEventListener('click', () => {
-            thinkingElement.classList.toggle('collapsed');
-        });
 
         messageBubble.appendChild(thinkingElement);
         return thinkingElement;
@@ -1061,7 +1057,7 @@ class ChatManager {
             // 清理思考内容，移除HTML标签，保持纯文本格式
             const cleanContent = this.stripHtmlTags(thinkContent.trim());
             
-            // 返回折叠组件的HTML结构
+            // 返回折叠组件的HTML结构（默认折叠状态）
             return `<div class="think-container">
                 <div class="think-header" onclick="toggleThinkContent('${thinkId}')">
                     <div class="think-title">
@@ -1073,7 +1069,7 @@ class ChatManager {
                         <span>展开</span>
                     </button>
                 </div>
-                <div class="think-content" id="${thinkId}">
+                <div class="think-content collapsed" id="${thinkId}" style="display: none;">
                     <pre>${this.escapeHtml(cleanContent)}</pre>
                 </div>
             </div>`;
@@ -1626,25 +1622,36 @@ window.toggleThinkContent = function(thinkId) {
     
     if (!thinkContent || !toggleBtn) return;
     
-    const isExpanded = thinkContent.classList.contains('expanded');
+    const isCollapsed = thinkContent.classList.contains('collapsed');
     
-    if (isExpanded) {
-        // 折叠
-        thinkContent.style.animation = 'slideUp 0.2s ease-out';
-        setTimeout(() => {
-            thinkContent.classList.remove('expanded');
-            thinkContent.style.display = 'none';
-            thinkContent.style.animation = '';
-        }, 200);
-        toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i><span>展开</span>';
-    } else {
+    if (isCollapsed) {
         // 展开
         thinkContent.style.display = 'block';
+        thinkContent.classList.remove('collapsed');
         thinkContent.classList.add('expanded');
-        thinkContent.style.animation = 'slideDown 0.2s ease-out';
-        setTimeout(() => {
-            thinkContent.style.animation = '';
-        }, 200);
         toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i><span>折叠</span>';
+    } else {
+        // 折叠
+        thinkContent.classList.remove('expanded');
+        thinkContent.classList.add('collapsed');
+        setTimeout(() => {
+            thinkContent.style.display = 'none';
+        }, 300); // 等待CSS过渡动画完成
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i><span>展开</span>';
     }
 };
+
+// 切换聊天中AI思考过程折叠状态的全局函数
+function toggleThinkingChat(thinkingId) {
+    const thinkingElement = document.getElementById(thinkingId);
+    if (thinkingElement) {
+        thinkingElement.classList.toggle('collapsed');
+        
+        // 更新箭头图标
+        const icon = thinkingElement.querySelector('.thinking-header i');
+        if (icon) {
+            const isCollapsed = thinkingElement.classList.contains('collapsed');
+            icon.className = `fas fa-chevron-${isCollapsed ? 'down' : 'up'}`;
+        }
+    }
+}
