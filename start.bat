@@ -63,6 +63,22 @@ if errorlevel 1 (
     echo ✅ 依赖项检查通过
 )
 
+:: 检查playwright是否安装
+echo.
+echo 🔍 检查Playwright依赖...
+playwright --version >nul 2>&1
+if errorlevel 1 (
+    echo 📦 正在安装Playwright依赖...
+    playwright install
+    if errorlevel 1 (
+        echo ❌ Playwright依赖安装失败，请检查网络连接或Python环境
+        pause
+        exit /b 1
+    )
+) else (
+    echo ✅ Playwright依赖检查通过
+)
+
 :: 启动服务器
 echo.
 echo 🚀 启动智链AI阅读助手...

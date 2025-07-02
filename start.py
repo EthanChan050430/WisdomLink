@@ -147,6 +147,13 @@ def main():
     
     # 检查依赖项
     check_dependencies()
+    #检查playwright依赖
+    try:
+        subprocess.run([sys.executable, "-m", "playwright", "install"], check=True)
+        print("✅ Playwright依赖安装完成")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Playwright依赖安装失败: {e}")
+        sys.exit(1)
     
     # 检查配置
     config_ok = check_config()
