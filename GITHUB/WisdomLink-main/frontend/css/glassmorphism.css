@@ -1,0 +1,296 @@
+/* 毛玻璃效果样式 */
+
+/* 基础毛玻璃类 */
+.glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* 暗色主题下的毛玻璃效果 */
+[data-theme="dark"] .glass {
+    background: rgba(45, 55, 72, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* 强毛玻璃效果 */
+.glass-strong {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .glass-strong {
+    background: rgba(45, 55, 72, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* 轻毛玻璃效果 */
+.glass-light {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .glass-light {
+    background: rgba(45, 55, 72, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* 聊天界面毛玻璃效果 */
+.chat-interface .glass {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+}
+
+[data-theme="dark"] .chat-interface .glass {
+    background: rgba(45, 55, 72, 0.85);
+}
+
+/* 模态框毛玻璃效果 */
+.modal .glass {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="dark"] .modal .glass {
+    background: rgba(45, 55, 72, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 进度界面毛玻璃效果 */
+.progress-interface .glass {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(35px);
+    -webkit-backdrop-filter: blur(35px);
+}
+
+[data-theme="dark"] .progress-interface .glass {
+    background: rgba(45, 55, 72, 0.9);
+}
+
+/* 进度步骤毛玻璃效果 */
+.progress-step {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.progress-step.active {
+    background: rgba(102, 126, 234, 0.15);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+.progress-step.completed {
+    background: rgba(72, 187, 120, 0.15);
+    border: 1px solid rgba(72, 187, 120, 0.3);
+}
+
+[data-theme="dark"] .progress-step {
+    background: rgba(45, 55, 72, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .progress-step.active {
+    background: rgba(102, 126, 234, 0.25);
+    border: 1px solid rgba(102, 126, 234, 0.4);
+}
+
+[data-theme="dark"] .progress-step.completed {
+    background: rgba(72, 187, 120, 0.25);
+    border: 1px solid rgba(72, 187, 120, 0.4);
+}
+
+/* 通知毛玻璃效果 */
+.notification {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.notification.success {
+    background: rgba(72, 187, 120, 0.15);
+    border: 1px solid rgba(72, 187, 120, 0.3);
+}
+
+.notification.error {
+    background: rgba(229, 62, 62, 0.15);
+    border: 1px solid rgba(229, 62, 62, 0.3);
+}
+
+.notification.warning {
+    background: rgba(237, 137, 54, 0.15);
+    border: 1px solid rgba(237, 137, 54, 0.3);
+}
+
+.notification.info {
+    background: rgba(66, 153, 225, 0.15);
+    border: 1px solid rgba(66, 153, 225, 0.3);
+}
+
+[data-theme="dark"] .notification {
+    background: rgba(45, 55, 72, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .notification.success {
+    background: rgba(72, 187, 120, 0.25);
+    border: 1px solid rgba(72, 187, 120, 0.4);
+}
+
+[data-theme="dark"] .notification.error {
+    background: rgba(229, 62, 62, 0.25);
+    border: 1px solid rgba(229, 62, 62, 0.4);
+}
+
+[data-theme="dark"] .notification.warning {
+    background: rgba(237, 137, 54, 0.25);
+    border: 1px solid rgba(237, 137, 54, 0.4);
+}
+
+[data-theme="dark"] .notification.info {
+    background: rgba(66, 153, 225, 0.25);
+    border: 1px solid rgba(66, 153, 225, 0.4);
+}
+
+/* 加载界面毛玻璃效果 */
+.loading-spinner {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .loading-spinner {
+    background: rgba(45, 55, 72, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 思考内容毛玻璃效果 */
+.thinking-content {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .thinking-content {
+    background: rgba(45, 55, 72, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 专家选择器毛玻璃效果 */
+.expert-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+}
+
+.expert-card:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+}
+
+.expert-card.selected {
+    background: rgba(102, 126, 234, 0.15);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+[data-theme="dark"] .expert-card {
+    background: rgba(45, 55, 72, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .expert-card:hover {
+    background: rgba(45, 55, 72, 0.8);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .expert-card.selected {
+    background: rgba(102, 126, 234, 0.25);
+    border: 1px solid rgba(102, 126, 234, 0.4);
+}
+
+/* 毛玻璃效果的浏览器兼容性 */
+@supports not (backdrop-filter: blur(20px)) {
+    .glass,
+    .glass-strong,
+    .glass-light {
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    [data-theme="dark"] .glass,
+    [data-theme="dark"] .glass-strong,
+    [data-theme="dark"] .glass-light {
+        background: rgba(45, 55, 72, 0.95);
+    }
+}
+
+/* 毛玻璃效果动画 */
+.glass-fade-in {
+    animation: glassBlur 0.5s ease forwards;
+}
+
+@keyframes glassBlur {
+    from {
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        opacity: 0;
+    }
+    to {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        opacity: 1;
+    }
+}
+
+/* 毛玻璃悬浮效果 */
+.glass-hover {
+    transition: all 0.3s ease;
+}
+
+.glass-hover:hover {
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .glass-hover:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* 毛玻璃脉冲效果 */
+@keyframes glassPulse {
+    0%, 100% {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+    50% {
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+    }
+}
+
+.glass-pulse {
+    animation: glassPulse 2s ease-in-out infinite;
+}
