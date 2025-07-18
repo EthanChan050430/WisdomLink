@@ -3287,143 +3287,180 @@ body.mobile-menu-open {
 }
 
 /* ================================
-   功能增强与修复 (最终版)
+   功能增强与修复 (已整合)
    ================================ */
 
-/* --- 2. 加载图标旋转 & 3. “完成”状态显示 ✓ --- */
-.step-circle {
-    position: relative; /* 让内部的图标可以相对于它定位 */
+/* --- 强制修复 #2: 模态框标题层级与颜色 --- */
+/* 使用更具体的选择器确保样式生效 */
+.step-detail-modal .step-detail-header .step-main-title {
+    color: var(--text-primary) !important; /* 主标题用主要文字颜色 */
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+}
+.step-detail-modal .step-detail-header .step-sub-title {
+    color: var(--text-secondary) !important; /* 副标题用次要文字颜色 */
+    font-size: 0.875rem !important;
+    font-weight: 400 !important;
 }
 
-/* 默认隐藏我们自定义的 ✓ 图标，因为它只在完成时显示 */
-.step-circle .step-checkmark {
-    display: none;
-}
-/* 给旋转图标一个合适的大小 */
-.step-circle .fa-spin {
-    font-size: 1.6rem;
+/* --- 强制修复 #3: 步骤卡片内容合并 --- */
+.progress-step .step-info .step-title,
+.progress-step .step-info .step-description {
+    display: block !important; /* 核心修复：确保各占一行 */
+    word-break: break-word;
+    white-space: normal;
 }
 
-/* 当步骤进行中 (processing) */
+/* --- 修复 #4: 加载图标 & ✓ 图标显示 & 调整旋转速度 --- */
+/* 默认隐藏 ✓ */
+.progress-step .step-circle .step-checkmark {
+  display: none;
+}
+/* “进行中”状态 */
 .progress-step.processing .step-circle {
-    border: 2px solid var(--primary-color);
+  border-color: var(--primary-color);
+  border-width: 2px;
+  border-style: solid;
 }
 .progress-step.processing .step-title {
-    color: var(--primary-color);
+  color: var(--primary-color);
 }
-/* 在进行中状态，隐藏“等待中”的图标或数字，只显示旋转图标 */
-.progress-step.processing .step-circle .step-number,
-.progress-step.processing .step-circle .fas:not(.fa-spin) {
-    display: none;
+.progress-step.processing .step-circle .step-number {
+    display: none !important;
+}
+.progress-step.processing .step-circle .fa-spinner {
+    display: inline-block !important;
+    /* 通过 animation 属性精确控制旋转速度，2s转一圈，比默认的慢 */
+    animation: spin 4s linear infinite !important; 
 }
 
-
-/* 当步骤已完成 (completed) */
+/* “已完成”状态 */
 .progress-step.completed .step-circle {
-    background-color: var(--success-color);
-    color: white;
+  background-color: var(--success-color);
+  color: white;
+  border-color: transparent;
 }
-/* 在完成状态下，隐藏所有其他内容（数字、原来的图标），只显示 ✓ */
 .progress-step.completed .step-circle .step-number,
-.progress-step.completed .step-circle .fas:not(.step-checkmark) {
-    display: none;
+.progress-step.completed .step-circle i:not(.step-checkmark) {
+  display: none !important;
 }
 .progress-step.completed .step-circle .step-checkmark {
-    display: inline-block; /* 只有在completed状态下才显示✓ */
-    font-size: 1.6rem;
-    font-weight: bold;
+  display: inline-block !important;
+  font-size: 1.6rem;
+  font-weight: bold;
 }
 
-
-/* --- 4. 模态框弹窗顶部圆角 --- */
-/*
-   说明: 你的 .step-detail-header 选择器已存在，
-   但为了确保优先级和适配新HTML结构，我们在这里再次定义。
-*/
-.step-detail-header {
-    border-top-left-radius: var(--radius-xl);
-    border-top-right-radius: var(--radius-xl);
-}
-/* 你的HTML中没有 .step-detail-title-wrapper，但为了兼容性保留 */
-.step-detail-title-wrapper,
-.title-text-wrapper {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    flex-grow: 1;
-    min-width: 0;
-}
-
-
-/* --- 5. 模态框弹窗内标题颜色有层级 --- */
-/*
-   说明：你的HTML中没有step-main-title, step-sub-title这些ID，
-   但JS中已经更新了对它们的引用。如果未来添加，这些样式会生效。
-   当前我们先让 .step-detail-title 下的元素有层级感。
-*/
-.step-detail-title {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-}
-/* 假设第一个span是主标题，后续的是副标题 */
-.step-detail-title > span:first-of-type {
-    color: var(--text-primary);
-    font-weight: 600;
-    font-size: 1.25rem;
-}
-.step-detail-title > small,
-.step-detail-title > span:not(:first-of-type) {
-    color: var(--text-secondary);
-    font-weight: 400;
-    font-size: 0.875rem;
-}
-
-
-/* --- 6 & 7. 步骤卡片内容和标题换行问题 --- */
-/*
-   说明: 你的 .step-info, .step-title, .step-description 已存在，
-   但我们在这里添加一些属性来确保内容能正确换行。
-*/
-.step-info {
-    min-width: 0; 
-}
-.step-title, 
-.step-description {
-    word-break: break-word; /* 强制长单词或无空格字符串换行 */
-    white-space: normal; /* 确保文本可以正常换行 */
-}
-
-
-/* --- 额外优化：让模态框的显示/隐藏更平滑 --- */
-/* 你的.step-detail-modal.active已有动画，这里我们优化它的隐藏过程 */
+/* --- 其他优化，保持不变 --- */
 .step-detail-modal {
-    transition: opacity 0.3s ease, visibility 0s 0.3s;
+  transition: opacity 0.3s ease, visibility 0.3s;
+}
+.step-detail-modal .step-detail-content {
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 .step-detail-modal:not(.active) {
     visibility: hidden;
     opacity: 0;
 }
-.step-detail-modal.active {
-    visibility: visible;
+.step-detail-modal:not(.active) .step-detail-content {
+  transform: translateY(30px);
+  opacity: 0;
+}
+.step-detail-header {
+    border-top-left-radius: var(--radius-xl);
+    border-top-right-radius: var(--radius-xl);
+}
+
+/* ================================
+   新增：自定义旋转加载动画
+   ================================ */
+
+/* 1. 动画容器 */
+.custom-spinner {
+    position: relative;
+    width: 30px; /* 容器大小 */
+    height: 30px;
+    /* 应用旋转动画，1.5s转一圈，您可以调整这个速度 */
+    animation: custom-spin 1.5s linear infinite;
+}
+
+/* 2. 定义旋转动画 */
+@keyframes custom-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg); /* 顺时针旋转 */
+    }
+}
+
+/* 3. 单个小圆点的基础样式 */
+.spinner-dot {
+    position: absolute;
+    top: 0; /* 所有小圆点都从顶部开始定位 */
+    left: 50%;
+    transform-origin: 50% 15px; /* 设置旋转中心点为容器的中心 */
+    background-color: var(--primary-color); /* 使用主题颜色 */
+    border-radius: 50%;
+}
+
+/* 4. 分别定义每个小圆点的大小、位置和透明度 */
+/* 第1个点 (现在是最小、最透明的) */
+.spinner-dot:nth-child(1) {
+    width: 2px;
+    height: 2px;
+    transform: translateX(-50%) rotate(0deg);
+    opacity: 0.4;
+}
+
+/* 第2个点 */
+.spinner-dot:nth-child(2) {
+    width: 3px;
+    height: 3px;
+    transform: translateX(-50%) rotate(51deg);
+    opacity: 0.5;
+}
+
+/* 第3个点 */
+.spinner-dot:nth-child(3) {
+    width: 4px;
+    height: 4px;
+    transform: translateX(-50%) rotate(102deg);
+    opacity: 0.6;
+}
+
+/* 第4个点 */
+.spinner-dot:nth-child(4) {
+    width: 5px;
+    height: 5px;
+    transform: translateX(-50%) rotate(153deg);
+    opacity: 0.7;
+}
+
+/* 第5个点 */
+.spinner-dot:nth-child(5) {
+    width: 6px;
+    height: 6px;
+    transform: translateX(-50%) rotate(204deg);
+    opacity: 0.8;
+}
+
+/* 第6个点 */
+.spinner-dot:nth-child(6) {
+    width: 7px;
+    height: 7px;
+    transform: translateX(-50%) rotate(255deg);
+    opacity: 0.9;
+}
+
+/* 第7个点 (现在是最大、最不透明的，它会成为视觉上的领头羊) */
+.spinner-dot:nth-child(7) {
+    width: 8px;
+    height: 8px;
+    transform: translateX(-50%) rotate(306deg);
     opacity: 1;
-    transition: opacity 0.3s ease;
 }
 
-
-/* --- 额外优化：简化思考过程折叠样式 --- */
-/* 使用HTML的 <details> 和 <summary> 标签，比JS控制更高效 */
-.step-thinking summary {
-    cursor: pointer;
-    list-style: none; /* 移除默认的三角箭头 */
-}
-.step-thinking summary::-webkit-details-marker {
-    display: none; /* 移除默认的三角箭头 */
-}
-.step-thinking .fa-chevron-down {
-    transition: transform 0.2s ease;
-}
-.step-thinking[open] .fa-chevron-down {
-    transform: rotate(180deg);
+/* 5. 确保旧的旋转动画规则被覆盖 (可选，但推荐) */
+.progress-step.processing .step-circle .fa-spinner {
+    display: none !important;
 }
