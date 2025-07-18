@@ -486,17 +486,23 @@
 
             <!-- 进度分析界面 -->
             <div class="progress-screen" id="progressScreen" style="display: none;">
-                <div class="progress-container">
+                <div class="progress-container rounded">
                     <div class="progress-header">
                         <h2 id="progressTitle">正在分析...</h2>
                         <button class="btn-icon" id="backToWelcomeBtn" title="返回主页">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                     </div>
+
+                    <!-- Modified steps with rounded cards and Markdown support -->
+                    <div class="progress-steps rounded-steps" id="progressSteps">
+                        <!-- Steps will be dynamically generated with Markdown content -->
+                    </div>
                     
                     <!-- 新的步骤界面设计 -->
-                    <div class="progress-steps" id="progressSteps">
+                    <div class="analysis-results" id="analysisResults" style="display: none;">
                         <!-- 步骤卡片将动态生成 -->
+                        <div class="markdown-content" id="markdownResults"></div>
                     </div>
                 </div>
             </div>
@@ -505,12 +511,15 @@
             <div class="step-detail-modal" id="stepDetailModal">
                 <div class="step-detail-content">
                     <div class="step-detail-header">
-                        <h3 class="step-detail-title" id="stepDetailTitle">
+                        <div class="step-detail-title-wrapper">
                             <div class="step-icon" id="stepDetailIcon">
-                                <i class="fas fa-search"></i>
+                                <!-- 图标将由JS动态填充 -->
                             </div>
-                            <span id="stepDetailName">步骤详情</span>
-                        </h3>
+                            <div class="title-text-wrapper">
+                                <span class="step-main-title" id="stepDetailMainTitle"></span>
+                                <small class="step-sub-title" id="stepDetailSubTitle"></small>
+                            </div>
+                        </div>
                         <button class="step-detail-close" onclick="closeStepDetail()">
                             <i class="fas fa-times"></i>
                         </button>

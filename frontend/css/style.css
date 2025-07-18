@@ -2273,11 +2273,7 @@ body.mobile-menu-open {
   color: var(--text-secondary);
   line-height: 1.6;
   margin-bottom: var(--spacing-md);
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
   line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .search-result-meta {
@@ -2586,10 +2582,13 @@ body.mobile-menu-open {
   border-radius: var(--radius-xl);
   max-width: 800px;
   width: 100%;
-  max-height: 90vh;
-  overflow: hidden;
+  max-height: 90vh; /* 限制弹窗最大高度 */
   box-shadow: var(--shadow-xl);
   animation: slideInUp 0.3s ease;
+  
+  /* 使用 Flexbox 布局来管理内部结构 */
+  display: flex;
+  flex-direction: column;
 }
 
 .step-detail-header {
@@ -2638,9 +2637,14 @@ body.mobile-menu-open {
 }
 
 .step-detail-body {
+  flex: 1; /* 关键：让此元素占据所有剩余空间 */
+  overflow-y: auto; /* 关键：只在内容超出时显示垂直滚动条 */
   padding: var(--spacing-xl);
-  max-height: calc(90vh - 140px);
+  max-height: 90vh;
   overflow-y: auto;
+  padding: 1.5rem;
+  word-break: break-word;
+  white-space: normal; /* 🔥重要，否避免长句挤成一行 */
 }
 
 .step-detail-body h1,
@@ -3109,3 +3113,317 @@ body.mobile-menu-open {
   }
 }
 
+/* 圆角步骤卡片样式 */
+.progress-step {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg); /* 应用圆角 */
+  padding: var(--spacing-lg);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.progress-step:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+}
+
+/* 步骤图标圆圈 */
+.step-circle {
+  width: 48px;
+  height: 48px;
+  background: var(--bg-tertiary);
+  color: var(--primary-color);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* 步骤信息 */
+.step-info {
+  flex-grow: 1;
+}
+
+.step-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.step-description {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+/* 状态指示 */
+.step-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.step-status.processing {
+  color: var(--primary-color);
+}
+
+/* Markdown内容容器，自动适配所有内容结构 */
+#stepDetailContent {
+  max-height: 90vh;
+  overflow-y: auto;
+  white-space: normal;
+  word-wrap: break-word;
+  padding-bottom: 2rem;
+}
+
+#stepDetailContent h1,
+#stepDetailContent h2,
+#stepDetailContent h3 {
+  color: var(--primary-color);
+  margin: 1rem 0 0.5rem;
+  line-height: 1.4;
+}
+
+#stepDetailContent p {
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+#stepDetailContent ul,
+#stepDetailContent ol {
+  padding-left: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+#stepDetailContent li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+#stepDetailContent code {
+  font-family: var(--font-mono);
+  background: var(--bg-surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--accent-color);
+  font-size: 0.9em;
+}
+
+#stepDetailContent pre {
+  background: var(--bg-surface);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+#stepDetailContent blockquote {
+  border-left: 4px solid var(--primary-color);
+  background: var(--bg-tertiary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-style: italic;
+  color: var(--text-tertiary);
+  margin: var(--spacing-md) 0;
+}
+
+/* 为表格样式默认提升Markdown兼容性 */
+#stepDetailContent table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+#stepDetailContent table th,
+#stepDetailContent table td {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .progress-step {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+  }
+
+  .step-circle {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .step-title {
+    font-size: 1rem;
+  }
+
+  .step-description {
+    font-size: 0.85rem;
+  }
+
+  .step-status {
+    font-size: 0.75rem;
+  }
+}
+
+/* 自动换行处理（防止 mobile 水平滚动） */
+.markdown-container {
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+/* ================================
+   功能增强与修复 (最终版)
+   ================================ */
+
+/* --- 2. 加载图标旋转 & 3. “完成”状态显示 ✓ --- */
+.step-circle {
+    position: relative; /* 让内部的图标可以相对于它定位 */
+}
+
+/* 默认隐藏我们自定义的 ✓ 图标，因为它只在完成时显示 */
+.step-circle .step-checkmark {
+    display: none;
+}
+/* 给旋转图标一个合适的大小 */
+.step-circle .fa-spin {
+    font-size: 1.6rem;
+}
+
+/* 当步骤进行中 (processing) */
+.progress-step.processing .step-circle {
+    border: 2px solid var(--primary-color);
+}
+.progress-step.processing .step-title {
+    color: var(--primary-color);
+}
+/* 在进行中状态，隐藏“等待中”的图标或数字，只显示旋转图标 */
+.progress-step.processing .step-circle .step-number,
+.progress-step.processing .step-circle .fas:not(.fa-spin) {
+    display: none;
+}
+
+
+/* 当步骤已完成 (completed) */
+.progress-step.completed .step-circle {
+    background-color: var(--success-color);
+    color: white;
+}
+/* 在完成状态下，隐藏所有其他内容（数字、原来的图标），只显示 ✓ */
+.progress-step.completed .step-circle .step-number,
+.progress-step.completed .step-circle .fas:not(.step-checkmark) {
+    display: none;
+}
+.progress-step.completed .step-circle .step-checkmark {
+    display: inline-block; /* 只有在completed状态下才显示✓ */
+    font-size: 1.6rem;
+    font-weight: bold;
+}
+
+
+/* --- 4. 模态框弹窗顶部圆角 --- */
+/*
+   说明: 你的 .step-detail-header 选择器已存在，
+   但为了确保优先级和适配新HTML结构，我们在这里再次定义。
+*/
+.step-detail-header {
+    border-top-left-radius: var(--radius-xl);
+    border-top-right-radius: var(--radius-xl);
+}
+/* 你的HTML中没有 .step-detail-title-wrapper，但为了兼容性保留 */
+.step-detail-title-wrapper,
+.title-text-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-grow: 1;
+    min-width: 0;
+}
+
+
+/* --- 5. 模态框弹窗内标题颜色有层级 --- */
+/*
+   说明：你的HTML中没有step-main-title, step-sub-title这些ID，
+   但JS中已经更新了对它们的引用。如果未来添加，这些样式会生效。
+   当前我们先让 .step-detail-title 下的元素有层级感。
+*/
+.step-detail-title {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+/* 假设第一个span是主标题，后续的是副标题 */
+.step-detail-title > span:first-of-type {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+.step-detail-title > small,
+.step-detail-title > span:not(:first-of-type) {
+    color: var(--text-secondary);
+    font-weight: 400;
+    font-size: 0.875rem;
+}
+
+
+/* --- 6 & 7. 步骤卡片内容和标题换行问题 --- */
+/*
+   说明: 你的 .step-info, .step-title, .step-description 已存在，
+   但我们在这里添加一些属性来确保内容能正确换行。
+*/
+.step-info {
+    min-width: 0; 
+}
+.step-title, 
+.step-description {
+    word-break: break-word; /* 强制长单词或无空格字符串换行 */
+    white-space: normal; /* 确保文本可以正常换行 */
+}
+
+
+/* --- 额外优化：让模态框的显示/隐藏更平滑 --- */
+/* 你的.step-detail-modal.active已有动画，这里我们优化它的隐藏过程 */
+.step-detail-modal {
+    transition: opacity 0.3s ease, visibility 0s 0.3s;
+}
+.step-detail-modal:not(.active) {
+    visibility: hidden;
+    opacity: 0;
+}
+.step-detail-modal.active {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+
+/* --- 额外优化：简化思考过程折叠样式 --- */
+/* 使用HTML的 <details> 和 <summary> 标签，比JS控制更高效 */
+.step-thinking summary {
+    cursor: pointer;
+    list-style: none; /* 移除默认的三角箭头 */
+}
+.step-thinking summary::-webkit-details-marker {
+    display: none; /* 移除默认的三角箭头 */
+}
+.step-thinking .fa-chevron-down {
+    transition: transform 0.2s ease;
+}
+.step-thinking[open] .fa-chevron-down {
+    transform: rotate(180deg);
+}

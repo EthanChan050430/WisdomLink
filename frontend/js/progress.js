@@ -41,8 +41,51 @@ class ProgressManager {
     bindEvents() {
         // 返回按钮
         document.getElementById('backToWelcomeBtn')?.addEventListener('click', () => {
+            localStorage.removeItem('progressState'); // 【新增】清除状态
             this.returnToWelcome();
         });
+    }
+
+    //添加保存状态、功能需求//
+    saveState() {
+        const state = {
+            analysisType: this.analysisType,
+            currentStepData: this.currentStepData,
+            activeStep: this.activeStep,
+            currentSteps: this.currentSteps
+        };
+        localStorage.setItem('progressState', JSON.stringify(state));
+    }
+
+    loadState() {
+        const savedState = localStorage.getItem('progressState');
+        if (savedState) {
+            try {
+                const state = JSON.parse(savedState);
+                if (state.analysisType && state.currentSteps && state.currentSteps.length > 0) {
+                    this.analysisType = state.analysisType;
+                    this.currentStepData = state.currentStepData;
+                    this.activeStep = state.activeStep;
+                    this.currentSteps = state.currentSteps;
+
+                    this.showProgressScreen();
+                    this.renderSteps();
+                    
+                    const titles = {
+                        'comprehensive': '全面总结分析',
+                        'fact-checking': '真伪鉴定分析'
+                    };
+                    document.getElementById('progressTitle').textContent = titles[this.analysisType] || '正在分析...';
+                    
+                    console.log('已从 localStorage 恢复进度状态。');
+                    return true; // 表示成功加载
+                }
+            } catch (e) {
+                console.error('加载进度状态失败:', e);
+                localStorage.removeItem('progressState');
+            }
+        }
+        return false; // 表示没有可加载的状态
     }
 
     /**
@@ -69,6 +112,8 @@ class ProgressManager {
             'fact-checking': '真伪鉴定分析'
         };
         document.getElementById('progressTitle').textContent = titles[type] || '正在分析...';
+
+        this.saveState(); // 保存状态
     }
 
     /**
@@ -150,7 +195,7 @@ class ProgressManager {
     }
 
     /**
-     * 创建步骤卡片 - 新的卡片式设计
+     * 【已修改】创建步骤卡片 - 新的卡片式设计
      * @param {Object} step - 步骤配置
      * @param {number} index - 步骤索引
      */
@@ -162,10 +207,10 @@ class ProgressManager {
         const status = this.getStepStatus(index);
         card.classList.add(status);
 
-        // 创建卡片内容
+        // 【核心修改】这里的HTML现在正确调用了你的函数
         card.innerHTML = `
             <div class="step-circle">
-                ${this.getStepIcon(step, status)}
+                ${this.getStepIcon(step, status)} 
             </div>
             <div class="step-info">
                 <h3 class="step-title">${step.title}</h3>
@@ -177,9 +222,8 @@ class ProgressManager {
             </div>
         `;
 
-        // 添加点击事件
         card.addEventListener('click', () => {
-            if (this.currentStepData[step.id] || status === 'completed') {
+            if (status === 'completed' || this.currentStepData[step.id]?.content) {
                 this.showStepDetail(step.id);
             }
         });
@@ -193,45 +237,55 @@ class ProgressManager {
      * @param {string} status - 步骤状态
      */
     getStepIcon(step, status) {
+        // 优先级 1: 如果是“进行中”，必须显示旋转图标
         if (status === 'processing') {
-            return '<i class="fas fa-spinner"></i>';
-        } else if (status === 'completed') {
-            return '<i class="fas fa-check"></i>';
-        } else {
-            // 根据步骤类型和ID返回对应图标
-            const iconMap = {
-                'comprehensive-analysis': {
-                    1: '<i class="fas fa-search"></i>',      // 问题分析
-                    2: '<i class="fas fa-globe"></i>',       // 搜索结果  
-                    3: '<i class="fas fa-cog"></i>',         // 深度分析
-                    4: '<i class="fas fa-check-circle"></i>' // 结果汇总
-                },
-                'intelligent-reading': {
-                    1: '<i class="fas fa-search"></i>',
-                    2: '<i class="fas fa-globe"></i>',
-                    3: '<i class="fas fa-cog"></i>',
-                    4: '<i class="fas fa-check-circle"></i>'
-                },
-                'expert-analysis': {
-                    1: '<i class="fas fa-search"></i>',
-                    2: '<i class="fas fa-globe"></i>',
-                    3: '<i class="fas fa-cog"></i>',
-                    4: '<i class="fas fa-check-circle"></i>'
-                },
-                'fact-checking': {
-                    1: '<i class="fas fa-search"></i>',
-                    2: '<i class="fas fa-globe"></i>',
-                    3: '<i class="fas fa-cog"></i>',
-                    4: '<i class="fas fa-check-circle"></i>'
-                }
-            };
-            
-            if (this.analysisType && iconMap[this.analysisType] && iconMap[this.analysisType][step.id]) {
-                return iconMap[this.analysisType][step.id];
-            }
-            
-            return '<i class="fas fa-circle"></i>';
+            // 【修正】加上 fa-spin 实现旋转
+            return '<i class="fas fa-spinner fa-spin"></i>'; 
+        } 
+        
+        // 优先级 2: 如果是“已完成”，必须显示 ✓
+        if (status === 'completed') {
+            // 【修正】返回带自定义类名的 ✓ 图标
+            return '<i class="fas fa-check step-checkmark"></i>'; 
         }
+
+        // 优先级 3: 如果是“等待中”(else的情况)，执行这里的逻辑
+        
+        // 首先，尝试使用你原来的 iconMap
+        const iconMap = {
+            'comprehensive-analysis': {
+                1: '<i class="fas fa-search"></i>',      // 问题分析
+                2: '<i class="fas fa-globe"></i>',       // 搜索结果  
+                3: '<i class="fas fa-cog"></i>',         // 深度分析
+                4: '<i class="fas fa-check-circle"></i>' // 结果汇总
+            },
+            'intelligent-reading': {
+                1: '<i class="fas fa-search"></i>',
+                2: '<i class="fas fa-globe"></i>',
+                3: '<i class="fas fa-cog"></i>',
+                4: '<i class="fas fa-check-circle"></i>'
+            },
+            'expert-analysis': {
+                1: '<i class="fas fa-search"></i>',
+                2: '<i class="fas fa-globe"></i>',
+                3: '<i class="fas fa-cog"></i>',
+                4: '<i class="fas fa-check-circle"></i>'
+            },
+            'fact-checking': {
+                1: '<i class="fas fa-search"></i>',
+                2: '<i class="fas fa-globe"></i>',
+                3: '<i class="fas fa-cog"></i>',
+                4: '<i class="fas fa-check-circle"></i>'
+            }
+        };
+        
+        if (this.analysisType && iconMap[this.analysisType] && iconMap[this.analysisType][step.id]) {
+            // 如果在你的 map 中找到了图标，就用它！
+            return iconMap[this.analysisType][step.id];
+        }
+        
+        // 最后，如果 map 里也没找到，就显示步骤数字作为默认值
+        return `<span class="step-number">${step.id}</span>`;
     }
 
     /**
@@ -373,6 +427,8 @@ class ProgressManager {
 
         // 更新UI
         this.updateStepUI(stepId);
+
+        this.saveState();//保存状态
     }
 
     /**
@@ -424,6 +480,8 @@ class ProgressManager {
         
         // 重新渲染步骤
         this.renderSteps();
+
+        this.saveState();//保存状态
     }
 
     /**
@@ -456,60 +514,38 @@ class ProgressManager {
     showStepDetail(stepId) {
         const stepData = this.currentStepData[stepId];
         if (!stepData || !stepData.content) {
-            showNotification('该步骤暂无内容', 'info');
+            if (window.showNotification) window.showNotification('该步骤暂无内容', 'info');
             return;
         }
 
         const step = this.currentSteps.find(s => s.id === stepId);
         if (!step) return;
 
-        // 设置模态框标题
-        document.getElementById('stepDetailTitle').textContent = step.title;
+        // 【核心修改】填充主副标题和图标
+        document.getElementById('stepDetailIcon').innerHTML = `<i class="fas fa-tasks"></i>`;
+        document.getElementById('stepDetailMainTitle').textContent = step.title;
+        document.getElementById('stepDetailSubTitle').textContent = step.description;
 
-        // 渲染内容
         const contentContainer = document.getElementById('stepDetailContent');
         let fullContent = '';
 
-        // 添加思考过程（如果有）
         if (stepData.thinking) {
-            const thinkingId = `thinking-${Date.now()}`;
             fullContent += `
-                <div class="thinking-section">
-                    <div class="thinking-content collapsed" id="${thinkingId}">
-                        <div class="thinking-header" onclick="toggleThinking('${thinkingId}')">
-                            AI思考过程
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="thinking-body">
-                            ${this.renderMarkdown(stepData.thinking)}
-                        </div>
-                    </div>
-                </div>
-                <hr style="margin: 2rem 0; border: 1px solid var(--border-color);">
-            `;
+                <details class="step-thinking">
+                    <summary class="step-thinking-header">AI思考过程 <i class="fas fa-chevron-down"></i></summary>
+                    <div class="step-thinking-content">${this.renderMarkdown(stepData.thinking)}</div>
+                </details>`;
         }
-
-        // 添加主要内容
-        fullContent += `
-            <div class="main-content">
-                ${this.renderMarkdown(stepData.content)}
-            </div>
-        `;
-
+        fullContent += this.renderMarkdown(stepData.content);
         contentContainer.innerHTML = fullContent;
-
-        // 显示模态框
-        document.getElementById('stepDetailModal').style.display = 'flex';
         
-        // 重新初始化代码高亮
+        document.getElementById('stepDetailModal').classList.add('active');
+        
         if (typeof hljs !== 'undefined') {
-            setTimeout(() => {
-                contentContainer.querySelectorAll('pre code').forEach((block) => {
-                    hljs.highlightElement(block);
-                });
-            }, 100);
+            contentContainer.querySelectorAll('pre code').forEach(hljs.highlightElement);
         }
     }
+
 
     /**
      * 切换步骤详情显示
@@ -518,6 +554,16 @@ class ProgressManager {
     toggleStepDetail(stepId) {
         event.stopPropagation();
         this.showStepDetail(stepId);
+    }
+
+    /**
+     * 将换行符转换为 HTML <br> 标签，用于纯文本展示
+     * @param {string} text
+     * @returns {string}
+     */
+    formatSnippetContent(text) {
+        if (!text) return '';
+        return text.replace(/\n/g, '<br>');
     }
 
     /**
@@ -567,57 +613,32 @@ class ProgressManager {
     }
 
     /**
-     * 预处理Markdown内容，修复格式问题
-     * @param {string} content - 原始内容
-     */
-    /**
-     * 预处理Markdown内容，修复格式问题（智能处理）
+     * 预处理Markdown内容 -【最终修正版】
+     * 目标：只修复最核心的格式问题，确保Markdown解析器能工作。
      * @param {string} content - 原始内容
      */
     preprocessMarkdownContent(content) {
         if (!content) return '';
-        
-        console.log('开始预处理内容，原始长度:', content.length);
-        console.log('原始内容前200字符:', content.substring(0, 200));
-        
-        // 第一步：标准化换行符和基本清理
-        content = content
-            .replace(/\r\n/g, '\n')
-            .replace(/\r/g, '\n')
-            .replace(/[ \t]+$/gm, '') // 移除行尾空格
-            
-        // 第二步：修复标题格式
-        content = content
-            // 确保标题有正确的空格
-            .replace(/(#{1,6})([^\s#\n])/g, '$1 $2')
-            // 确保标题前有空行（除非在开头）
-            .replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2')
-            // 确保标题后有空行
-            .replace(/(#{1,6}[^\n]+)\n([^#\n\s])/g, '$1\n\n$2')
-            
-        // 第三步：修复段落分隔问题
-        content = content
-            // 中文句号后如果紧跟文字，添加段落分隔
-            .replace(/([。！？；])([^\s\n。！？；#\-\*\d])/g, '$1\n\n$2')
-            // 冒号后如果是长段落，添加分隔
-            .replace(/([：:])\s*([^\n]{50,})/g, '$1\n\n$2')
-            
-        // 第四步：修复列表格式
-        content = content
-            // 确保列表项前有空行
-            .replace(/([^\n])\n(\d+\.\s)/g, '$1\n\n$2')
-            .replace(/([^\n])\n([-*•]\s)/g, '$1\n\n$2')
-            
-        // 第五步：清理过多空行
-        content = content
-            .replace(/\n{4,}/g, '\n\n\n')
-            .replace(/^\n+/, '')
-            .replace(/\n+$/, '\n')
-            
-        console.log('预处理完成，处理后长度:', content.length);
-        console.log('处理后内容前200字符:', content.substring(0, 200));
-        
-        return content;
+
+        // 1. 修复后端可能返回的转义换行符 `\\n` 为真实的换行符 `\n`
+        let processedContent = content.replace(/\\n/g, '\n');
+
+        // 2. 将所有的标题标记 (##, ### 等) 前后都加上换行符，确保它们独立成行
+        //    - 这会处理像 "...结尾。##标题" 或 "##标题1##标题2" 这样的粘连情况
+        //    - 使用 \n 来分隔，而不是 \n\n，避免引入过多空行，后续再统一处理
+        processedContent = processedContent.replace(/(#{1,6}\s*)/g, '\n$1');
+
+        // 3. 确保每个标题标记和后面的文字之间有一个空格
+        processedContent = processedContent.replace(/(#{1,6})([^\s#\n])/g, '$1 $2');
+
+        // 4. 将连续的多个换行符合并为一个，为下一步的段落划分做准备
+        processedContent = processedContent.replace(/\n+/g, '\n');
+
+        // 5. 将单个换行符替换为两个换行符，从而在Markdown中创建段落
+        //    - 这是为了让 marked.js 能正确识别段落
+        processedContent = processedContent.replace(/\n/g, '\n\n');
+
+        return processedContent;
     }
 
     /**
@@ -871,7 +892,7 @@ class ProgressManager {
             case 'step_complete':
                 console.log(`步骤 ${data.step || this.activeStep + 1} 完成`);
                 const completedStepId = data.step || this.activeStep + 1;
-                this.updateStep(completedStepId, '', 'complete');
+                this.updateStep(completedStepId, '', 'complete'); // ✅ 正确推进
                 
                 // 推进到下一步（如果不是最后一步）
                 this.completeCurrentStep();
@@ -939,12 +960,12 @@ class ProgressManager {
             relevanceScore = 0
         } = result;
 
-        // 截断标题和描述
+        // ✅ 标题可以截断
         const truncatedTitle = this.truncateText(title, 80);
-        const truncatedSnippet = this.truncateText(snippet, 200);
-        const displayUrl = this.formatDisplayUrl(url);
 
-        // 计算相关性评分的星级
+        // ✅ Snippet 不建议截断，保持markdown语义和换行完整
+        const formattedSnippet = this.renderMarkdown(this.preprocessMarkdownContent(snippet));
+        const displayUrl = this.formatDisplayUrl(url);
         const starRating = this.getStarRating(relevanceScore);
 
         return `
@@ -965,8 +986,8 @@ class ProgressManager {
                     <span title="${url}">${displayUrl}</span>
                 </div>
                 
-                <div class="search-result-snippet">
-                    ${truncatedSnippet}
+                <div class="search-result-snippet markdown-container">
+                    ${formattedSnippet}
                 </div>
                 
                 <div class="search-result-meta">
@@ -1060,7 +1081,7 @@ class ProgressManager {
 
 // 关闭步骤详情模态框的全局函数
 function closeStepDetail() {
-    document.getElementById('stepDetailModal').style.display = 'none';
+    document.getElementById('stepDetailModal').classList.remove('active');
 }
 
 // 切换AI思考过程折叠状态的全局函数
@@ -1080,3 +1101,17 @@ function toggleThinking(thinkingId) {
 
 // 全局进度管理器实例
 window.progressManager = new ProgressManager();
+
+//页面加载逻辑//
+document.addEventListener('DOMContentLoaded', () => {
+    // 尝试从 localStorage 加载进度
+    const stateLoaded = window.progressManager.loadState();
+
+    // 如果没有恢复任何状态，则正常显示欢迎界面
+    if (!stateLoaded) {
+        // 确保欢迎界面是可见的，其他界面是隐藏的
+        document.getElementById('welcomeScreen').style.display = 'block';
+        document.getElementById('chatScreen').style.display = 'none';
+        document.getElementById('progressScreen').style.display = 'none';
+    }
+});

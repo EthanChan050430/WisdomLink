@@ -515,9 +515,7 @@ class AIReaderApp {
 
         try {
             console.log('=== 准备切换到聊天界面 ===');
-            // 切换到聊天界面
-            this.showChatInterface();
-            
+            // 切换到聊天界面          
             console.log('=== 准备请求数据 ===');
             // 准备请求数据
             const requestData = await this.prepareRequestData(query);
@@ -527,21 +525,28 @@ class AIReaderApp {
             // 根据当前功能调用相应的处理函数
             switch (this.currentFunction) {
                 case 'intelligent-reading':
+                    // 对于智能伴读，我们显示聊天界面（这是正确的）
+                    this.showChatInterface();
                     console.log('调用智能伴读处理');
                     await this.handleIntelligentReading(requestData);
                     break;
+                
+                // 对于其他三个功能，我们显示进度分析界面
                 case 'comprehensive-analysis':
-                    console.log('调用全面分析处理');
-                    await this.handleComprehensiveAnalysis(requestData);
-                    break;
                 case 'expert-analysis':
-                    console.log('调用专家分析处理');
-                    await this.handleExpertAnalysis(requestData);
-                    break;
                 case 'fact-checking':
-                    console.log('调用真伪鉴定处理');
-                    await this.handleFactChecking(requestData);
+                    console.log(`调用 ${this.currentFunction} 的进度分析处理`);
+                    // 检查 progressManager 是否存在
+                    if (window.progressManager) {
+                        // 直接调用 progressManager 的 startAnalysis，它会负责显示进度界面
+                        window.progressManager.startAnalysis(this.currentFunction);
+                        // 你的实际API调用和流式数据处理会在这里触发
+                        // 并将数据传递给 progressManager.handleStreamData()
+                    } else {
+                        showNotification('错误：进度管理器未初始化', 'error');
+                    }
                     break;
+                    
                 default:
                     console.log('未知的功能模块:', this.currentFunction);
                     showNotification('未知的功能模块', 'error');
