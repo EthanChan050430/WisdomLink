@@ -1000,3 +1000,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 导出供其他模块使用
 window.app = app;
+
+// =======================================================
+// 功能 #1: 刷新后保持顶部功能栏状态
+// =======================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 同时获取桌面端和移动端的按钮
+    const functionButtons = document.querySelectorAll('.function-btn, .mobile-function-btn');
+    
+    // 1. 页面加载时，尝试从 localStorage 恢复状态
+    function restoreActiveTab() {
+        const activeTabId = localStorage.getItem('activeFunctionTab');
+        if (!activeTabId) return; // 如果没有保存的状态，直接退出
+
+        // 找到要激活的按钮
+        const buttonToActivate = document.getElementById(activeTabId);
+        const mobileButtonToActivate = document.getElementById('mobile' + activeTabId.charAt(0).toUpperCase() + activeTabId.slice(1));
+        
+        if (buttonToActivate) {
+            // 先移除所有按钮的 active 类
+            functionButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // 再激活正确的桌面端和移动端按钮
+            buttonToActivate.classList.add('active');
+            if (mobileButtonToActivate) {
+                mobileButtonToActivate.classList.add('active');
+            }
+
+            // 【重要】调用 app 实例中已有的 switchFunction 方法来切换功能逻辑
+            // 这样可以确保 placeholder 更新等所有相关逻辑都执行
+            if (window.app && typeof window.app.switchFunction === 'function') {
+                const functionName = buttonToActivate.dataset.function;
+                if (functionName) {
+                    window.app.switchFunction(functionName);
+                }
+            }
+        }
+    }
+
+    // 2. 为每个功能按钮添加点击事件监听，以保存状态
+    functionButtons.forEach(button => {
+        // 我们监听 'mousedown' 而不是 'click'，确保在您原有的 click 事件之前执行
+        button.addEventListener('mousedown', () => { 
+            // 保存桌面端按钮的ID（作为统一标准）
+            let buttonId = button.id;
+            if (buttonId.startsWith('mobile')) {
+                buttonId = buttonId.replace('mobile', '');
+                buttonId = buttonId.charAt(0).toLowerCase() + buttonId.slice(1);
+            }
+            localStorage.setItem('activeFunctionTab', buttonId);
+        });
+    });
+
+    // 3. 页面加载完成后立即执行恢复
+    //    但有一个特殊情况：如果 progress.js 已经恢复了进度页面，
+    //    我们就不应该强制切回到其他页面。
+    const isProgressScreenActive = document.getElementById('progressScreen').style.display === 'block';
+    if (!isProgressScreenActive) {
+         restoreActiveTab();
+    }
+});
