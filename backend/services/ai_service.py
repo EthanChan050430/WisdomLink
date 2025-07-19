@@ -104,5 +104,19 @@ class AIService:
             
         return self._make_request(messages, selected_model)
 
+    def simple_chat_complete(self, prompt: str, system_prompt: str = None, model: str = None) -> str:
+        """简单任务聊天（非流式，返回完整响应）"""
+        content = ""
+        for chunk in self.simple_chat(prompt, system_prompt, model):
+            content += chunk
+        return content
+    
+    def complex_chat_complete(self, prompt: str, system_prompt: str = None, model: str = None) -> str:
+        """复杂任务聊天（非流式，返回完整响应）"""
+        content = ""
+        for chunk in self.complex_chat(prompt, system_prompt, model):
+            content += chunk
+        return content
+
 # 全局AI服务实例
 ai_service = AIService()

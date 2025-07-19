@@ -29,7 +29,7 @@ app.register_blueprint(chat_history_bp, url_prefix='/api/chat-history')
 app.register_blueprint(tts_bp, url_prefix='/api/tts')
 
 
-@app.route('/')
+@app.route('/') 
 def index():
     return send_from_directory('../frontend', 'index.html')
 

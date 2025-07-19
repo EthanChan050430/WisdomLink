@@ -588,6 +588,74 @@ class ChatManager {
     }
 
     /**
+     * 判断是否是基于进度的功能
+     * @param {string} feature - 功能类型
+     */
+    isProgressBasedFeature(feature) {
+        const progressFeatures = ['comprehensive-analysis', 'fact-checking'];
+        return progressFeatures.includes(feature);
+    }
+
+    /**
+     * 处理基于进度的流式响应
+     * @param {Response} response - 响应对象
+     * @param {string} feature - 功能类型
+     */
+    async handleProgressStreamResponse(response, feature) {
+        console.log('=== 开始处理进度流式响应 ===');
+        
+        // 启动进度管理器
+        const analysisType = feature === 'comprehensive-analysis' ? 'comprehensive' : 'fact-checking';
+        if (window.progressManager) {
+            window.progressManager.startAnalysis(analysisType);
+        }
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    console.log('进度流读取完成');
+                    break;
+                }
+
+                const chunk = decoder.decode(value, { stream: true });
+                console.log('收到进度数据块:', chunk);
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const jsonStr = line.slice(6).trim();
+                            if (jsonStr === '[DONE]' || jsonStr === '') continue;
+
+                            console.log('解析进度JSON:', jsonStr);
+                            const data = JSON.parse(jsonStr);
+                            console.log('解析后的进度数据:', data);
+
+                            // 将数据传递给进度管理器
+                            if (window.progressManager) {
+                                window.progressManager.handleStreamData(data);
+                            }
+
+                        } catch (e) {
+                            console.error('解析进度流数据错误:', e, '原始数据:', line);
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('进度流处理错误:', error);
+            hideLoading();
+            showNotification('分析过程中出现错误', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    /**
      * 处理流式响应
      */
     async handleStreamResponse(response) {
@@ -1855,7 +1923,15 @@ class ChatManager {
                 // 检查是否是流式响应
                 if (contentType?.includes('text/plain') || contentType?.includes('text/stream')) {
                     console.log('处理流式响应');
-                    await this.handleStreamResponse(response);
+                    
+                    // 根据功能类型决定使用哪种显示方式
+                    if (this.isProgressBasedFeature(feature)) {
+                        console.log('使用进度界面处理:', feature);
+                        await this.handleProgressStreamResponse(response, feature);
+                    } else {
+                        console.log('使用聊天界面处理:', feature);
+                        await this.handleStreamResponse(response);
+                    }
                 } else if (contentType?.includes('application/json')) {
                     console.log('处理JSON响应');
                     const data = await response.json();

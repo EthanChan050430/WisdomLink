@@ -674,13 +674,12 @@ class ProgressManager {
     }
 
     /**
-     * 渲染 Markdown 内容 - 增强版本，适配大模型输出格式
+     * 渲染 Markdown 内容 - 简化版本，直接渲染原始内容
      * @param {string} content - 原始内容
      */
     renderMarkdown(content) {
         console.log('=== Markdown渲染开始 ===');
         console.log('原始内容长度:', content.length);
-        console.log('原始内容完整文本:', content);
         console.log('原始内容前500字符:', content.substring(0, 500));
         
         if (!content) {
@@ -688,17 +687,11 @@ class ProgressManager {
             return '';
         }
         
-        // 预处理内容：修复markdown格式问题
-        const preprocessed = this.preprocessMarkdownContent(content);
-        
-        console.log('预处理后内容长度:', preprocessed.length);
-        console.log('预处理后内容完整文本:', preprocessed);
-        console.log('预处理后内容前500字符:', preprocessed.substring(0, 500));
         console.log('marked库可用:', typeof marked !== 'undefined');
         
         if (typeof marked !== 'undefined') {
             try {
-                // 配置marked选项，针对大模型输出优化
+                // 配置marked选项
                 marked.setOptions({
                     breaks: true,           // 支持单换行符转换为<br>
                     gfm: true,             // 启用GitHub风格Markdown
@@ -718,15 +711,14 @@ class ProgressManager {
                     }
                 });
 
-                // 使用正确的API方法渲染
-                let rendered = marked.parse ? marked.parse(preprocessed) : marked(preprocessed);
+                // 直接渲染原始内容，不进行预处理
+                let rendered = marked.parse ? marked.parse(content) : marked(content);
                 
                 console.log('Marked渲染成功');
                 console.log('渲染后HTML长度:', rendered.length);
-                console.log('渲染后HTML完整内容:', rendered);
                 console.log('渲染后HTML前1000字符:', rendered.substring(0, 1000));
                 
-                // 后处理：为特定内容添加样式类和修复格式
+                // 后处理：为特定内容添加样式类
                 rendered = this.enhanceRenderedContent(rendered);
                 
                 console.log('后处理完成，最终HTML长度:', rendered.length);
@@ -735,50 +727,109 @@ class ProgressManager {
                 
             } catch (error) {
                 console.error('Marked渲染失败:', error);
-                console.log('回退到增强Markdown解析器');
-                return this.enhancedMarkdownParse(preprocessed);
+                console.log('回退到简单HTML转换');
+                return this.simpleMarkdownParse(content);
             }
         }
         
-        console.log('Marked不可用，使用增强Markdown解析器');
-        return this.enhancedMarkdownParse(preprocessed);
+        console.log('Marked不可用，使用简单HTML转换');
+        return this.simpleMarkdownParse(content);
     }
 
     /**
-     * 预处理Markdown内容 -【最终修正版】
-     * 目标：只修复最核心的格式问题，确保Markdown解析器能工作。
+     * 预处理 Markdown 内容 - 简化版本
      * @param {string} content - 原始内容
      */
     preprocessMarkdownContent(content) {
-        // 优化：更智能地处理多级标题、列表、代码块等
         if (!content) return '';
-        let processed = content.replace(/\\n/g, '\n').trim();
+        
+        // 直接返回原始内容，不做复杂预处理
+        return content.trim();
+    }
 
-        // 移除 markdown 代码块包裹（如```markdown ... ```）
+    /**
+     * 简单的Markdown解析器（后备方案）
+     * @param {string} content - 原始内容
+     */
+    simpleMarkdownParse(content) {
+    simpleMarkdownParse(content) {
+        if (!content) return '';
+
+        
+        // 2. 移除markdown代码块标记（大模型有时会添加这些）
         processed = processed.replace(/^```(?:markdown)?\s*\n/, '');
         processed = processed.replace(/\n```\s*$/, '');
+        console.log('2. 清理代码块标记后长度:', processed.length);
+        
+        // 3. 修复标题格式：确保#后有空格
+        processed = processed.replace(/(#{1,6})([^\s#\n])/g, '$1 $2');
+        // 确保标题前有空行（除了文档开头）
+        processed = processed.replace(/([^\n])(#{1,6}\s)/g, '$1\n\n$2');
+        console.log('3. 修复标题格式后长度:', processed.length);
 
-        // 标题处理：确保#后有空格，且标题前后有空行
-        processed = processed.replace(/(#{1,6})([^ \n#])/g, '$1 $2');
-        processed = processed.replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2');
-        processed = processed.replace(/(#{1,6}\s[^\n]+)\n([^#\n])/g, '$1\n\n$2');
-
-        // 列表处理：统一无序列表符号为“-”，有序列表为“1. ”格式
-        processed = processed.replace(/^(\s*)[-*•–—]\s+/gm, '$1- ');
-        processed = processed.replace(/^(\s*)(\d+)[\.\)]\s+/gm, '$1$2. ');
-
-        // 代码块处理：确保```前后有空行
-        processed = processed.replace(/([^\n])(```)/g, '$1\n$2');
-        processed = processed.replace(/(```[a-zA-Z]*\n[^`]+)\n([^`])/g, '$1\n\n$2');
-
-        // AI常见格式修复：如“## 标题：”变为“## 标题”
+        // 第4步：执行您提议的“替换为小圆点”方案，避免列表解析问题。
+        // 这个版本能处理多种破折号和不规范的空格。
+        processed = processed.replace(/^(\s*)[-*•–—]\s*/gm, '$1• ');
+        // 修复数字列表
+        processed = processed.replace(/^(\s*)(\d+)[\.\)]\s*/gm, '$1$2. ');
+        console.log('4. 修复列表格式后长度:', processed.length);
+        
+        // 5. 修复加粗和斜体格式
+        processed = processed.replace(/\*\*([^*]+?)\*\*/g, '**$1**');
+        console.log('5. 修复加粗斜体后长度:', processed.length);
+        
+        // 6. 特殊处理AI输出的常见问题
+        // 处理"## 标题："这种格式
         processed = processed.replace(/(#{1,6})\s*([^:]+)：\s*/g, '$1 $2\n\n');
-
-        // 段落间距优化
+        console.log('6. 特殊AI格式处理后长度:', processed.length);
+        
+        // 7. 优化段落间距：避免过多空行，但保持结构清晰
         processed = processed.replace(/\n{3,}/g, '\n\n');
+        console.log('7. 优化段落间距后长度:', processed.length);
+        
+        // 8. 最终清理
         processed = processed.replace(/^\n+/, '').replace(/\n+$/, '');
-
+        
         return processed;
+        */
+    }
+
+    /**
+     * 简单的Markdown解析器（后备方案）
+     * @param {string} content - 原始内容
+     */
+    simpleMarkdownParse(content) {
+        if (!content) return '';
+        
+        console.log('使用简单Markdown解析器');
+        
+        // 基本的markdown转HTML
+        let html = content
+            // 标题
+            .replace(/^### (.*$)/gm, '<h3 class="analysis-title glass-card">$1</h3>')
+            .replace(/^## (.*$)/gm, '<h2 class="key-info-title glass-card">$1</h2>')
+            .replace(/^# (.*$)/gm, '<h1 class="summary-title glass-card">$1</h1>')
+            // 加粗
+            .replace(/\*\*(.*?)\*\*/g, '<strong class="highlight-text">$1</strong>')
+            // 斜体
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            // 列表
+            .replace(/^• (.*$)/gm, '<li>$1</li>')
+            .replace(/^- (.*$)/gm, '<li>$1</li>')
+            .replace(/^\* (.*$)/gm, '<li>$1</li>')
+            // 段落
+            .replace(/\n\n+/g, '</p><p>')
+            .replace(/\n/g, '<br>');
+        
+        // 包装列表项
+        html = html.replace(/(<li>.*<\/li>)/g, '<ul class="enhanced-list">$1</ul>');
+        
+        // 包装段落
+        if (!html.startsWith('<h') && !html.startsWith('<ul')) {
+            html = '<p>' + html + '</p>';
+        }
+        
+        return html;
     }
 
     /**
@@ -787,117 +838,99 @@ class ProgressManager {
      */
     enhancedMarkdownParse(content) {
         if (!content) return '';
-        // 优化：支持多级标题、嵌套列表、代码块、引用等
+        
+        console.log('使用增强Markdown解析器');
+        console.log('原始内容长度:', content.length);
+        console.log('原始内容前200字符:', content.substring(0, 200));
+        
+        // 先进行段落分割和修复
+        content = this.intelligentParagraphSplit(content);
+        
+        // 按段落分割内容
+        let paragraphs = content.split(/\n\s*\n/).filter(p => p.trim());
+        
+        console.log('分割后段落数量:', paragraphs.length);
+        paragraphs.forEach((p, i) => {
+            console.log(`段落 ${i + 1}: ${p.substring(0, 50)}...`);
+        });
+        
         let html = '';
-        let lines = content.split(/\r?\n/);
-        let inCodeBlock = false;
-        let codeLang = '';
-        let codeBuffer = [];
-        let listType = null;
-        let listBuffer = [];
-        let lastLineEmpty = true;
-
-        function flushList() {
-            if (listBuffer.length > 0) {
-                if (listType === 'ul') {
-                    html += '<ul>' + listBuffer.map(item => `<li>${item}</li>`).join('') + '</ul>';
-                } else if (listType === 'ol') {
-                    html += '<ol>' + listBuffer.map(item => `<li>${item}</li>`).join('') + '</ol>';
-                }
-                listBuffer = [];
-                listType = null;
-            }
-        }
-
-        for (let i = 0; i < lines.length; i++) {
-            let line = lines[i];
-            if (inCodeBlock) {
-                if (/^```/.test(line)) {
-                    html += `<pre><code${codeLang ? ' class="language-' + codeLang + '"' : ''}>${codeBuffer.join('\n')}</code></pre>`;
-                    inCodeBlock = false;
-                    codeLang = '';
-                    codeBuffer = [];
-                    continue;
-                } else {
-                    codeBuffer.push(line);
+        
+        for (let paragraph of paragraphs) {
+            paragraph = paragraph.trim();
+            if (!paragraph) continue;
+            
+            // 处理标题
+            if (paragraph.startsWith('#')) {
+                const match = paragraph.match(/^(#{1,6})\s*(.+)$/);
+                if (match) {
+                    const level = match[1].length;
+                    const text = match[2];
+                    html += `<h${level}>${text}</h${level}>`;
                     continue;
                 }
             }
-            let codeBlockMatch = line.match(/^```([a-zA-Z0-9]*)/);
-            if (codeBlockMatch) {
-                flushList();
-                inCodeBlock = true;
-                codeLang = codeBlockMatch[1] || '';
-                codeBuffer = [];
+            
+            // 处理有序列表
+            if (/^\d+\.\s/.test(paragraph)) {
+                const items = paragraph.split(/(?=\d+\.\s)/).filter(item => item.trim());
+                html += '<ol>';
+                for (let item of items) {
+                    if (/^\d+\.\s/.test(item.trim())) {
+                        const text = item.replace(/^\d+\.\s*/, '').trim();
+                        const processedText = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                        html += `<li>${processedText}</li>`;
+                    }
+                }
+                html += '</ol>';
                 continue;
             }
-            // 标题
-            let headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
-            if (headingMatch) {
-                flushList();
-                let level = headingMatch[1].length;
-                let text = headingMatch[2].trim();
-                html += `<h${level}>${text}</h${level}>`;
-                lastLineEmpty = false;
+            
+            // 处理无序列表
+            if (/^[-*•]\s/.test(paragraph)) {
+                const items = paragraph.split(/(?=[-*•]\s)/).filter(item => item.trim());
+                html += '<ul>';
+                for (let item of items) {
+                    if (/^[-*•]\s/.test(item.trim())) {
+                        const text = item.replace(/^[-*•]\s*/, '').trim();
+                        const processedText = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                        html += `<li>${processedText}</li>`;
+                    }
+                }
+                html += '</ul>';
                 continue;
             }
-            // 有序列表
-            let olMatch = line.match(/^\s*(\d+)\.\s+(.*)$/);
-            if (olMatch) {
-                if (listType !== 'ol') flushList();
-                listType = 'ol';
-                listBuffer.push(olMatch[2].trim());
-                lastLineEmpty = false;
+            
+            // 处理引用
+            if (paragraph.startsWith('>')) {
+                const text = paragraph.replace(/^>\s*/gm, '');
+                html += `<blockquote>${text}</blockquote>`;
                 continue;
             }
-            // 无序列表
-            let ulMatch = line.match(/^\s*[-*•]\s+(.*)$/);
-            if (ulMatch) {
-                if (listType !== 'ul') flushList();
-                listType = 'ul';
-                listBuffer.push(ulMatch[1].trim());
-                lastLineEmpty = false;
-                continue;
-            }
-            // 引用
-            let blockquoteMatch = line.match(/^>\s?(.*)$/);
-            if (blockquoteMatch) {
-                flushList();
-                html += `<blockquote>${blockquoteMatch[1]}</blockquote>`;
-                lastLineEmpty = false;
-                continue;
-            }
-            // 水平线
-            if (/^---+$/.test(line.trim())) {
-                flushList();
+            
+            // 处理水平线
+            if (/^---+$/.test(paragraph)) {
                 html += '<hr>';
-                lastLineEmpty = false;
                 continue;
             }
-            // 空行
-            if (/^\s*$/.test(line)) {
-                flushList();
-                lastLineEmpty = true;
-                continue;
-            }
-            // 普通段落
-            flushList();
-            let processedText = line
+            
+            // 处理普通段落
+            let processedText = paragraph
+                // 处理粗体
                 .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                // 处理斜体
                 .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                // 处理行内代码
                 .replace(/`([^`]+)`/g, '<code>$1</code>')
-                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-            if (lastLineEmpty) {
-                html += `<p>${processedText}</p>`;
-            } else {
-                html += processedText;
-            }
-            lastLineEmpty = false;
+                // 处理链接
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+                // 处理内部换行
+                .replace(/\n/g, '<br>');
+            
+            html += `<p>${processedText}</p>`;
         }
-        flushList();
-        if (inCodeBlock && codeBuffer.length > 0) {
-            html += `<pre><code${codeLang ? ' class="language-' + codeLang + '"' : ''}>${codeBuffer.join('\n')}</code></pre>`;
-        }
+        
+        console.log('增强Markdown解析完成，HTML长度:', html.length);
         return html;
     }
 

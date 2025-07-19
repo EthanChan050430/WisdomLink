@@ -104,10 +104,16 @@ def start_comprehensive_analysis():
         # 生成会话ID
         session_id = str(uuid.uuid4())
         
-        return Response(
-            generate_comprehensive_analysis(extracted_content, session_id),
-            mimetype='text/plain'
-        )
+        # 改为JSON响应而不是流式响应，避免markdown格式问题
+        try:
+            result = generate_comprehensive_analysis_json(extracted_content, session_id)
+            return jsonify({
+                'success': True,
+                'session_id': session_id,
+                'analysis': result
+            })
+        except Exception as e:
+            return jsonify({'success': False, 'message': f'分析失败：{str(e)}'})
         
     except Exception as e:
         return jsonify({'success': False, 'message': f'开始全面分析失败：{str(e)}'})
@@ -451,3 +457,201 @@ def generate_chat_response(messages, session_id):
         
     except Exception as e:
         yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+
+def generate_comprehensive_analysis_json(content, session_id):
+    """生成全面分析的四个步骤 - JSON版本（非流式）"""
+    try:
+        print(f"=== 全面分析调试（JSON版本）===")
+        print(f"内容长度: {len(content)}")
+        print(f"内容前200字符: {content[:200]}")
+        print(f"==================")
+        
+        # 检查内容是否为空或包含爬虫错误
+        if not content.strip():
+            raise Exception('内容为空，无法进行分析')
+            
+        if "错误：无法提取" in content:
+            raise Exception('网页内容提取失败，请检查链接是否有效')
+            
+        if "没有提取到任何内容" in content:
+            raise Exception('没有提取到任何有效内容，请重新尝试')
+        
+        analysis_result = {
+            'steps': []
+        }
+        
+        # 第一步：文章概要
+        print("开始第一步：文章概要")
+        overview_prompt = f"""我是一个专业的内容分析助手。我已经接收到了需要分析的内容，现在开始进行概要分析。
+
+**待分析内容：**
+{content}
+
+**分析任务：**
+请对上述内容进行全面的概要分析，包括：
+
+## 概要分析
+
+### 主要主题
+分析文章的核心主题和主要内容
+
+### 核心观点
+提取文章的核心观点和主要论述
+
+### 主要论述内容
+- **主要论点**：梳理文章的主要论点
+- **论述逻辑和结构**：分析论述的逻辑关系
+
+### 关键信息点
+- **重要事实和数据**：提取重要的事实、数据、案例
+- **关键术语和概念**：识别关键术语和概念
+
+请使用标准的markdown格式，确保标题、列表等格式规范。
+
+<think>
+我已经收到了完整的内容，现在开始进行详细的概要分析。
+</think>"""
+        
+        overview_content = ai_service.simple_chat_complete(overview_prompt)
+        analysis_result['steps'].append({
+            'step': 1,
+            'name': '文章概要',
+            'description': '提取文章大意和核心信息',
+            'content': overview_content
+        })
+        
+        # 第二步：搜索结果
+        print("开始第二步：搜索结果")
+        
+        # 提取搜索关键词
+        keyword_prompt = f"""基于以下概要分析结果：
+{overview_content}
+
+以及原文内容：
+{content}
+
+请提取3-5个最重要的搜索关键词，用于搜索相关资料和信息。
+关键词应该是：
+1. 文章的核心主题
+2. 重要的概念或术语
+3. 可能需要进一步了解的话题
+
+请直接输出关键词，每行一个，不要其他格式。"""
+        
+        keywords_text = ai_service.simple_chat_complete(keyword_prompt)
+        keywords = [kw.strip() for kw in keywords_text.split('\n') if kw.strip() and not kw.strip().startswith('#')]
+        keywords = keywords[:5]  # 限制最多5个关键词
+        
+        search_results_content = "## 搜索结果汇总\n\n"
+        
+        for i, keyword in enumerate(keywords, 1):
+            search_results_content += f"### {i}. 关键词：{keyword}\n\n"
+            
+            search_data = search_information(keyword)
+            if 'error' not in search_data and 'results' in search_data:
+                results = search_data['results'][:3]  # 取前3个结果
+                for j, result in enumerate(results, 1):
+                    title = result.get('title', '未知标题')
+                    snippet = result.get('snippet', '无描述')
+                    url = result.get('url', '#')
+                    
+                    search_results_content += f"**结果 {j}**：[{title}]({url})\n"
+                    search_results_content += f"{snippet}\n\n"
+            else:
+                search_results_content += f"搜索 '{keyword}' 时出现错误或无结果\n\n"
+        
+        analysis_result['steps'].append({
+            'step': 2,
+            'name': '搜索结果',
+            'description': '搜索相关资料和信息',
+            'content': search_results_content
+        })
+        
+        # 第三步：深度分析
+        print("开始第三步：深度分析")
+        deep_analysis_prompt = f"""基于前面的概要分析：
+{overview_content}
+
+以及搜索到的相关信息：
+{search_results_content}
+
+以及原始内容：
+{content}
+
+请进行深度分析，包括：
+
+## 深度分析
+
+### 内容价值评估
+分析内容的价值、意义和影响
+
+### 观点深度解读
+深入解读核心观点和论述
+
+### 逻辑关系分析
+分析内容的逻辑结构和论证关系
+
+### 背景和上下文
+分析内容的背景信息和相关上下文
+
+### 批判性思考
+提供批判性的观点和思考
+
+请使用标准的markdown格式。"""
+        
+        deep_analysis_content = ai_service.complex_chat_complete(deep_analysis_prompt)
+        analysis_result['steps'].append({
+            'step': 3,
+            'name': '深度分析',
+            'description': '深入分析内容价值和意义',
+            'content': deep_analysis_content
+        })
+        
+        # 第四步：结果汇总
+        print("开始第四步：结果汇总")
+        summary_prompt = f"""基于前面的所有分析：
+
+**概要分析：**
+{overview_content}
+
+**搜索结果：**
+{search_results_content}
+
+**深度分析：**
+{deep_analysis_content}
+
+**原始内容：**
+{content}
+
+请进行最终的结果汇总：
+
+## 最终分析总结
+
+### 核心发现
+总结最重要的发现和洞察
+
+### 关键价值点
+提炼出最有价值的信息和观点
+
+### 实用建议
+基于分析结果提供实用的建议或启示
+
+### 延伸思考
+提出值得进一步思考和探索的问题
+
+请使用标准的markdown格式，提供完整而有价值的总结。"""
+        
+        summary_content = ai_service.complex_chat_complete(summary_prompt)
+        analysis_result['steps'].append({
+            'step': 4,
+            'name': '结果汇总',
+            'description': '汇总分析结果和关键发现',
+            'content': summary_content
+        })
+        
+        print("全面分析完成")
+        return analysis_result
+        
+    except Exception as e:
+        print(f"全面分析出错：{str(e)}")
+        raise e

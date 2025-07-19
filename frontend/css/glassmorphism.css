@@ -99,6 +99,94 @@
     border: 1px solid rgba(72, 187, 120, 0.3);
 }
 
+/* 新的分析步骤容器毛玻璃效果 */
+.analysis-steps-wrapper {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .analysis-steps-wrapper {
+    background: rgba(45, 55, 72, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* 分析结果容器毛玻璃效果 */
+.analysis-result-wrapper {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .analysis-result-wrapper {
+    background: rgba(45, 55, 72, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* 步骤卡片毛玻璃效果 */
+.progress-step-card {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.progress-step-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.progress-step-card.processing {
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+}
+
+.progress-step-card.completed {
+    background: rgba(72, 187, 120, 0.1);
+    border: 1px solid rgba(72, 187, 120, 0.3);
+    box-shadow: 0 4px 20px rgba(72, 187, 120, 0.2);
+}
+
+[data-theme="dark"] .progress-step-card {
+    background: rgba(45, 55, 72, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .progress-step-card:hover {
+    background: rgba(45, 55, 72, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .progress-step-card.processing {
+    background: rgba(102, 126, 234, 0.2);
+    border: 1px solid rgba(102, 126, 234, 0.4);
+}
+
+[data-theme="dark"] .progress-step-card.completed {
+    background: rgba(72, 187, 120, 0.2);
+    border: 1px solid rgba(72, 187, 120, 0.4);
+}
+
 [data-theme="dark"] .progress-step {
     background: rgba(45, 55, 72, 0.7);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -293,4 +381,198 @@
 
 .glass-pulse {
     animation: glassPulse 2s ease-in-out infinite;
+}
+
+/* ===== Markdown渲染内容的毛玻璃样式 ===== */
+
+/* 分析标题样式 */
+.analysis-title.glass-card {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+    border-left: 4px solid rgba(59, 130, 246, 0.6);
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+[data-theme="dark"] .analysis-title.glass-card {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.15));
+    border-left-color: rgba(59, 130, 246, 0.8);
+}
+
+/* 关键信息标题样式 */
+.key-info-title.glass-card {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.1));
+    border-left: 4px solid rgba(16, 185, 129, 0.6);
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+[data-theme="dark"] .key-info-title.glass-card {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(34, 197, 94, 0.15));
+    border-left-color: rgba(16, 185, 129, 0.8);
+}
+
+/* 结构标题样式 */
+.structure-title.glass-card {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.1));
+    border-left: 4px solid rgba(245, 158, 11, 0.6);
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+[data-theme="dark"] .structure-title.glass-card {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(251, 191, 36, 0.15));
+    border-left-color: rgba(245, 158, 11, 0.8);
+}
+
+/* 总结标题样式 */
+.summary-title.glass-card {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(248, 113, 113, 0.1));
+    border-left: 4px solid rgba(239, 68, 68, 0.6);
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+[data-theme="dark"] .summary-title.glass-card {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(248, 113, 113, 0.15));
+    border-left-color: rgba(239, 68, 68, 0.8);
+}
+
+/* 数据统计段落样式 */
+.data-statistics.glass-card {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+[data-theme="dark"] .data-statistics.glass-card {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+/* 分类信息样式 */
+.category-info.glass-card {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 6px;
+    font-size: 0.95em;
+}
+
+[data-theme="dark"] .category-info.glass-card {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.4);
+}
+
+/* 重要提示样式 */
+.important-note.glass-card {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-left: 4px solid rgba(245, 158, 11, 0.6);
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 8px;
+    position: relative;
+}
+
+.important-note.glass-card::before {
+    content: "💡";
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    font-size: 1.2em;
+}
+
+.important-note.glass-card {
+    padding-left: 40px;
+}
+
+[data-theme="dark"] .important-note.glass-card {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+/* 增强列表样式 */
+.enhanced-list {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px 0;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.enhanced-list li {
+    margin: 8px 0;
+    padding-left: 8px;
+}
+
+[data-theme="dark"] .enhanced-list {
+    background: rgba(45, 55, 72, 0.6);
+}
+
+/* 代码块样式 */
+.code-block.glass-card {
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    margin: 16px 0;
+    overflow-x: auto;
+}
+
+[data-theme="dark"] .code-block.glass-card {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 数据表格样式 */
+.data-table.glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 16px 0;
+    width: 100%;
+}
+
+.data-table.glass-card th,
+.data-table.glass-card td {
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.data-table.glass-card th {
+    background: rgba(255, 255, 255, 0.1);
+    font-weight: 600;
+}
+
+[data-theme="dark"] .data-table.glass-card {
+    background: rgba(45, 55, 72, 0.6);
+}
+
+[data-theme="dark"] .data-table.glass-card th {
+    background: rgba(45, 55, 72, 0.8);
+}
+
+/* 强调文本样式 */
+.highlight-text {
+    background: linear-gradient(120deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2));
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+[data-theme="dark"] .highlight-text {
+    background: linear-gradient(120deg, rgba(59, 130, 246, 0.3), rgba(147, 51, 234, 0.3));
 }

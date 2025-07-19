@@ -783,11 +783,20 @@ class UploadManager {
             if (response.ok) {
                 const contentType = response.headers.get('content-type');
                 
-                if (contentType?.includes('text/plain') || contentType?.includes('text/stream')) {
+                // 检查是否是全面分析或真伪鉴定（使用JSON响应）
+                if (this.currentFeature === 'comprehensive-analysis' || this.currentFeature === 'fact-checking') {
+                    console.log('处理JSON响应（全面分析/真伪鉴定）');
+                    const data = await response.json();
+                    if (data.success) {
+                        this.handleJsonAnalysisResponse(data);
+                    } else {
+                        showNotification(data.message || '分析失败', 'error');
+                    }
+                } else if (contentType?.includes('text/plain') || contentType?.includes('text/stream')) {
                     console.log('处理流式响应');
                     await this.handleProgressStreamResponse(response);
                 } else {
-                    console.log('处理非流式响应');
+                    console.log('处理普通JSON响应');
                     const data = await response.json();
                     showNotification(data.message || '分析完成', data.success ? 'success' : 'error');
                 }
@@ -842,6 +851,66 @@ class UploadManager {
             showNotification('处理响应失败', 'error');
         } finally {
             reader.releaseLock();
+        }
+    }
+
+    /**
+     * 处理JSON分析响应（全面分析/真伪鉴定）
+     * @param {Object} data - 响应数据
+     */
+    handleJsonAnalysisResponse(data) {
+        console.log('处理JSON分析响应:', data);
+        
+        if (window.progressManager && data.analysis && data.analysis.steps) {
+            // 首先设置会话ID
+            if (data.session_id) {
+                const sessionData = {
+                    type: 'session_id',
+                    session_id: data.session_id
+                };
+                window.progressManager.handleStreamData(sessionData);
+            }
+
+            // 处理每个步骤
+            data.analysis.steps.forEach((step, index) => {
+                console.log(`处理步骤 ${step.step}:`, step);
+                
+                // 步骤开始
+                const stepStartData = {
+                    type: 'step_start',
+                    step: step.step,
+                    name: step.name,
+                    description: step.description
+                };
+                window.progressManager.handleStreamData(stepStartData);
+                
+                // 步骤内容
+                const stepContentData = {
+                    type: 'content',
+                    step: step.step,
+                    content: step.content
+                };
+                window.progressManager.handleStreamData(stepContentData);
+                
+                // 步骤完成
+                const stepCompleteData = {
+                    type: 'step_complete',
+                    step: step.step
+                };
+                window.progressManager.handleStreamData(stepCompleteData);
+            });
+            
+            // 分析完成后自动显示最终结果
+            setTimeout(() => {
+                if (window.progressManager.showFinalResultAndCollapseSteps) {
+                    window.progressManager.showFinalResultAndCollapseSteps();
+                }
+            }, 1000);
+            
+            showNotification('分析完成', 'success');
+        } else {
+            console.error('无效的分析响应数据');
+            showNotification('分析响应数据格式错误', 'error');
         }
     }
 

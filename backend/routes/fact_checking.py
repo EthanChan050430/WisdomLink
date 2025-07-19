@@ -76,10 +76,16 @@ def start_fact_checking():
         # 生成会话ID
         session_id = str(uuid.uuid4())
         
-        return Response(
-            generate_fact_checking_analysis(extracted_content, session_id),
-            mimetype='text/plain'
-        )
+        # 改为JSON响应而不是流式响应，避免markdown格式问题
+        try:
+            result = generate_fact_checking_analysis_json(extracted_content, session_id)
+            return jsonify({
+                'success': True,
+                'session_id': session_id,
+                'analysis': result
+            })
+        except Exception as e:
+            return jsonify({'success': False, 'message': f'鉴定失败：{str(e)}'})
         
     except Exception as e:
         return jsonify({'success': False, 'message': f'开始真伪鉴定失败：{str(e)}'})
@@ -433,3 +439,203 @@ def generate_chat_response(messages, session_id):
         
     except Exception as e:
         yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+
+def generate_fact_checking_analysis_json(content, session_id):
+    """生成真伪鉴定分析的四个步骤 - JSON版本（非流式）"""
+    try:
+        print(f"=== 真伪鉴定调试（JSON版本）===")
+        print(f"内容长度: {len(content)}")
+        print(f"内容前200字符: {content[:200]}")
+        print(f"==================")
+        
+        # 检查内容是否为空或包含爬虫错误
+        if not content.strip():
+            raise Exception('内容为空，无法进行鉴定')
+            
+        if "错误：无法提取" in content:
+            raise Exception('网页内容提取失败，请检查链接是否有效')
+            
+        if "没有提取到任何内容" in content:
+            raise Exception('没有提取到任何有效内容，请重新尝试')
+        
+        analysis_result = {
+            'steps': []
+        }
+        
+        # 第一步：内容解析
+        print("开始第一步：内容解析")
+        content_analysis_prompt = f"""我是一个专业的真伪鉴定助手。现在需要对以下内容进行真伪鉴定分析。
+
+**待鉴定内容：**
+{content}
+
+**鉴定任务：**
+请对上述内容进行详细的解析，包括：
+
+## 内容解析
+
+### 内容类型识别
+分析这是什么类型的内容（新闻、观点、数据、传言等）
+
+### 关键声明提取
+提取内容中的关键声明、数据和论断
+
+### 信息来源分析
+分析内容的信息来源和引用情况
+
+### 可验证要素
+识别哪些部分是可以验证的具体事实
+
+请使用标准的markdown格式。
+
+<think>
+我需要仔细分析这个内容，识别其中的关键声明和可验证要素。
+</think>"""
+        
+        content_analysis = ai_service.simple_chat_complete(content_analysis_prompt)
+        analysis_result['steps'].append({
+            'step': 1,
+            'name': '内容解析',
+            'description': '解析内容类型和关键声明',
+            'content': content_analysis
+        })
+        
+        # 第二步：事实核查
+        print("开始第二步：事实核查")
+        
+        # 提取核查关键词
+        keyword_prompt = f"""基于以下内容解析：
+{content_analysis}
+
+以及原始内容：
+{content}
+
+请提取3-5个最需要核查的关键词或关键声明，用于搜索验证信息。
+关键词应该是：
+1. 具体的事实声明
+2. 可验证的数据
+3. 重要的人物、地点、事件
+4. 需要证实的关键信息
+
+请直接输出关键词，每行一个，不要其他格式。"""
+        
+        keywords_text = ai_service.simple_chat_complete(keyword_prompt)
+        keywords = [kw.strip() for kw in keywords_text.split('\n') if kw.strip() and not kw.strip().startswith('#')]
+        keywords = keywords[:5]  # 限制最多5个关键词
+        
+        fact_check_content = "## 事实核查结果\n\n"
+        
+        for i, keyword in enumerate(keywords, 1):
+            fact_check_content += f"### {i}. 核查要点：{keyword}\n\n"
+            
+            search_data = search_information(keyword)
+            if 'error' not in search_data and 'results' in search_data:
+                results = search_data['results'][:3]  # 取前3个结果
+                for j, result in enumerate(results, 1):
+                    title = result.get('title', '未知标题')
+                    snippet = result.get('snippet', '无描述')
+                    url = result.get('url', '#')
+                    
+                    fact_check_content += f"**参考资料 {j}**：[{title}]({url})\n"
+                    fact_check_content += f"{snippet}\n\n"
+            else:
+                fact_check_content += f"搜索 '{keyword}' 时出现错误或无结果\n\n"
+        
+        analysis_result['steps'].append({
+            'step': 2,
+            'name': '事实核查',
+            'description': '搜索验证信息和参考资料',
+            'content': fact_check_content
+        })
+        
+        # 第三步：可信度分析
+        print("开始第三步：可信度分析")
+        credibility_prompt = f"""基于前面的内容解析：
+{content_analysis}
+
+以及事实核查结果：
+{fact_check_content}
+
+以及原始内容：
+{content}
+
+请进行可信度分析，包括：
+
+## 可信度分析
+
+### 信息源可信度
+分析信息来源的权威性和可靠性
+
+### 逻辑一致性
+检查内容的逻辑是否一致、论证是否合理
+
+### 证据支撑度
+评估有多少可靠证据支持相关声明
+
+### 疑点识别
+指出内容中存在的疑点或矛盾之处
+
+### 风险评估
+评估信息传播可能带来的风险
+
+请使用标准的markdown格式。"""
+        
+        credibility_analysis = ai_service.complex_chat_complete(credibility_prompt)
+        analysis_result['steps'].append({
+            'step': 3,
+            'name': '可信度分析',
+            'description': '分析信息的可信度和逻辑性',
+            'content': credibility_analysis
+        })
+        
+        # 第四步：结论判定
+        print("开始第四步：结论判定")
+        conclusion_prompt = f"""基于所有前面的分析：
+
+**内容解析：**
+{content_analysis}
+
+**事实核查：**
+{fact_check_content}
+
+**可信度分析：**
+{credibility_analysis}
+
+**原始内容：**
+{content}
+
+请给出最终的真伪判定结论：
+
+## 真伪判定结论
+
+### 总体判定
+给出明确的真假判断（真实/部分真实/存疑/虚假）
+
+### 判定依据
+详细说明判定的主要依据
+
+### 核心证据
+列出支持或反驳的核心证据
+
+### 建议处理
+针对该信息给出处理建议
+
+### 注意事项
+提醒用户需要注意的相关问题
+
+请使用标准的markdown格式，提供准确、负责任的判定结果。"""
+        
+        conclusion = ai_service.complex_chat_complete(conclusion_prompt)
+        analysis_result['steps'].append({
+            'step': 4,
+            'name': '结论判定',
+            'description': '给出最终的真伪判定结论',
+            'content': conclusion
+        })
+        
+        print("真伪鉴定完成")
+        return analysis_result
+        
+    except Exception as e:
+        print(f"真伪鉴定出错：{str(e)}")
+        raise e
