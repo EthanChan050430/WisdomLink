@@ -36,14 +36,45 @@ class ProgressManager {
     }
 
     /**
-     * 绑定事件
+     * 【修改】绑定所有事件监听
      */
     bindEvents() {
         // 返回按钮
         document.getElementById('backToWelcomeBtn')?.addEventListener('click', () => {
-            localStorage.removeItem('progressState'); // 【新增】清除状态
+            localStorage.removeItem('progressState');
             this.returnToWelcome();
         });
+
+        // --- 【新增代码块开始】---
+        const modal = document.getElementById('stepDetailModal');
+        if (modal) {
+            // 找到模态框自带的关闭按钮并绑定事件
+            modal.querySelector('.step-detail-close')?.addEventListener('click', () => this.closeModal());
+            
+            // 【新增功能 #2】点击模态框外部 (遮罩层) 关闭
+            modal.addEventListener('click', (event) => {
+                // 只有当点击目标是遮罩层本身时才关闭
+                if (event.target === modal) {
+                    this.closeModal();
+                }
+            });
+        }
+
+        // 【新增功能 #2】监听键盘 "Esc" 键关闭模态框
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && document.getElementById('stepDetailModal')?.classList.contains('active')) {
+                this.closeModal();
+            }
+        });
+        // --- 【新增代码块结束】---
+    }
+
+    // --- 【新增方法】---
+    /**
+     * 封装的关闭模态框方法
+     */
+    closeModal() {
+        document.getElementById('stepDetailModal')?.classList.remove('active');
     }
 
     //添加保存状态、功能需求//
@@ -76,6 +107,24 @@ class ProgressManager {
                         'fact-checking': '真伪鉴定分析'
                     };
                     document.getElementById('progressTitle').textContent = titles[this.analysisType] || '正在分析...';
+
+                    // 当恢复进度时，主动更新顶部功能栏的状态
+                    if (window.app && typeof window.app.updateFunctionButtons === 'function') {
+                        // 建立分析类型到功能名的映射
+                        const functionNameMap = {
+                            'comprehensive': 'comprehensive-analysis',
+                            'fact-checking': 'fact-checking'
+                            // 您可以根据需要添加更多映射
+                        };
+                        const functionName = functionNameMap[this.analysisType];
+                        if (functionName) {
+                            // 调用 app.js 中的方法来更新按钮UI
+                            window.app.updateFunctionButtons(functionName);
+                            // 同时也将状态保存到 localStorage，确保万无一失
+                            localStorage.setItem('activeFunctionTab', window.app.getFunctionButtonId(functionName));
+                        }
+                    }
+                    // --- 【新增代码块结束】---
                     
                     console.log('已从 localStorage 恢复进度状态。');
                     return true; // 表示成功加载
@@ -237,54 +286,23 @@ class ProgressManager {
      * @param {string} status - 步骤状态
      */
     getStepIcon(step, status) {
-        // 优先级 1: 如果是“进行中”，必须显示旋转图标
         if (status === 'processing') {
-            // 【修正】加上 fa-spin 实现旋转
-            return '<i class="fas fa-spinner fa-spin"></i>'; 
+            // 返回我们自定义的7个小点的加载器HTML结构
+            return `
+                <div class="custom-spinner">
+                    <div class="spinner-dot"></div>
+                    <div class="spinner-dot"></div>
+                    <div class="spinner-dot"></div>
+                    <div class="spinner-dot"></div>
+                    <div class="spinner-dot"></div>
+                    <div class="spinner-dot"></div>
+                    <div class="spinner-dot"></div>
+                </div>
+            `;
         } 
-        
-        // 优先级 2: 如果是“已完成”，必须显示 ✓
         if (status === 'completed') {
-            // 【修正】返回带自定义类名的 ✓ 图标
-            return '<i class="fas fa-check step-checkmark"></i>'; 
+            return '<i class="fas fa-check step-checkmark"></i>';
         }
-
-        // 优先级 3: 如果是“等待中”(else的情况)，执行这里的逻辑
-        
-        // 首先，尝试使用你原来的 iconMap
-        const iconMap = {
-            'comprehensive-analysis': {
-                1: '<i class="fas fa-search"></i>',      // 问题分析
-                2: '<i class="fas fa-globe"></i>',       // 搜索结果  
-                3: '<i class="fas fa-cog"></i>',         // 深度分析
-                4: '<i class="fas fa-check-circle"></i>' // 结果汇总
-            },
-            'intelligent-reading': {
-                1: '<i class="fas fa-search"></i>',
-                2: '<i class="fas fa-globe"></i>',
-                3: '<i class="fas fa-cog"></i>',
-                4: '<i class="fas fa-check-circle"></i>'
-            },
-            'expert-analysis': {
-                1: '<i class="fas fa-search"></i>',
-                2: '<i class="fas fa-globe"></i>',
-                3: '<i class="fas fa-cog"></i>',
-                4: '<i class="fas fa-check-circle"></i>'
-            },
-            'fact-checking': {
-                1: '<i class="fas fa-search"></i>',
-                2: '<i class="fas fa-globe"></i>',
-                3: '<i class="fas fa-cog"></i>',
-                4: '<i class="fas fa-check-circle"></i>'
-            }
-        };
-        
-        if (this.analysisType && iconMap[this.analysisType] && iconMap[this.analysisType][step.id]) {
-            // 如果在你的 map 中找到了图标，就用它！
-            return iconMap[this.analysisType][step.id];
-        }
-        
-        // 最后，如果 map 里也没找到，就显示步骤数字作为默认值
         return `<span class="step-number">${step.id}</span>`;
     }
 
@@ -353,8 +371,7 @@ class ProgressManager {
         const texts = {
             'pending': '等待中',
             'processing': '进行中', 
-            'active': '进行中',
-            'completed': '✓ 完成'
+            'completed': '完成' // ✓ 由图标显示，这里只显示文本
         };
         return texts[status] || '等待中';
     }
@@ -521,15 +538,18 @@ class ProgressManager {
         const step = this.currentSteps.find(s => s.id === stepId);
         if (!step) return;
 
-        // 【核心修改】填充主副标题和图标
-        document.getElementById('stepDetailIcon').innerHTML = `<i class="fas fa-tasks"></i>`;
+        // --- 【核心修改部分开始】---
+        // 填充新的主副标题和图标
+        document.getElementById('stepDetailIcon').innerHTML = step.icon ? `<span>${step.icon}</span>` : `<i class="fas fa-tasks"></i>`;
         document.getElementById('stepDetailMainTitle').textContent = step.title;
         document.getElementById('stepDetailSubTitle').textContent = step.description;
+        // --- 【核心修改部分结束】---
 
         const contentContainer = document.getElementById('stepDetailContent');
         let fullContent = '';
 
         if (stepData.thinking) {
+            // 使用<details>标签，无需JS即可实现折叠
             fullContent += `
                 <details class="step-thinking">
                     <summary class="step-thinking-header">AI思考过程 <i class="fas fa-chevron-down"></i></summary>
@@ -541,10 +561,12 @@ class ProgressManager {
         
         document.getElementById('stepDetailModal').classList.add('active');
         
+        // 如果使用了代码高亮库
         if (typeof hljs !== 'undefined') {
             contentContainer.querySelectorAll('pre code').forEach(hljs.highlightElement);
         }
     }
+
 
 
     /**
@@ -620,25 +642,27 @@ class ProgressManager {
     preprocessMarkdownContent(content) {
         if (!content) return '';
 
-        // 1. 修复后端可能返回的转义换行符 `\\n` 为真实的换行符 `\n`
-        let processedContent = content.replace(/\\n/g, '\n');
+        // 第1步：基础清理，将所有可能的换行符统一为 \n
+        let processed = content.replace(/\\n/g, '\n');
 
-        // 2. 将所有的标题标记 (##, ### 等) 前后都加上换行符，确保它们独立成行
-        //    - 这会处理像 "...结尾。##标题" 或 "##标题1##标题2" 这样的粘连情况
-        //    - 使用 \n 来分隔，而不是 \n\n，避免引入过多空行，后续再统一处理
-        processedContent = processedContent.replace(/(#{1,6}\s*)/g, '\n$1');
+        // 第2步：【关键修复】确保所有'#'和标题文字之间有一个空格。
+        // 这是让Markdown标题生效的首要条件！
+        // 例如，把 "#标题" 变成 "# 标题"
+        processed = processed.replace(/(#{1,6})([^\s#\n])/g, '$1 $2');
 
-        // 3. 确保每个标题标记和后面的文字之间有一个空格
-        processedContent = processedContent.replace(/(#{1,6})([^\s#\n])/g, '$1 $2');
+        // 第3步：【关键修复】在粘连的标题之间插入换行符。
+        // 例如，把 "标题文字##另一个标题" 变成 "标题文字\n\n##另一个标题"
+        processed = processed.replace(/([^\n])(#{1,6}\s)/g, '$1\n\n$2');
 
-        // 4. 将连续的多个换行符合并为一个，为下一步的段落划分做准备
-        processedContent = processedContent.replace(/\n+/g, '\n');
+        // 第4步：执行您提议的“替换为小圆点”方案，避免列表解析问题。
+        // 这个版本能处理多种破折号和不规范的空格。
+        processed = processed.replace(/^(\s*)[-*•–—]\s*/gm, '$1· ');
+        
+        // 第5步：确保所有行之间都有适当的段落间距，但不过多。
+        // 将一个或多个换行符替换为两个，形成段落。
+        processed = processed.replace(/\n+/g, '\n\n');
 
-        // 5. 将单个换行符替换为两个换行符，从而在Markdown中创建段落
-        //    - 这是为了让 marked.js 能正确识别段落
-        processedContent = processedContent.replace(/\n/g, '\n\n');
-
-        return processedContent;
+        return processed.trim();
     }
 
     /**
@@ -1077,11 +1101,6 @@ class ProgressManager {
         console.log('分析搜索结果:', index);
         // 可以在这里实现进一步分析功能
     }
-}
-
-// 关闭步骤详情模态框的全局函数
-function closeStepDetail() {
-    document.getElementById('stepDetailModal').classList.remove('active');
 }
 
 // 切换AI思考过程折叠状态的全局函数

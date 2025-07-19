@@ -35,19 +35,19 @@
         
         <div class="navbar-center">
             <div class="nav-functions">
-                <button class="function-btn active" id="intelligentReading" data-function="intelligent-reading">
+                <button class="function-btn active" id="intelligentReading" data-function="intelligent-reading" data-target="welcomeScreen">
                     <i class="fas fa-book-reader"></i>
                     <span>智能伴读</span>
                 </button>
-                <button class="function-btn" id="comprehensiveAnalysis" data-function="comprehensive-analysis">
+                <button class="function-btn" id="comprehensiveAnalysis" data-function="comprehensive-analysis" data-target="welcomeScreen">
                     <i class="fas fa-chart-bar"></i>
                     <span>全面总结</span>
                 </button>
-                <button class="function-btn" id="expertAnalysis" data-function="expert-analysis">
+                <button class="function-btn" id="expertAnalysis" data-function="expert-analysis" data-target="welcomeScreen">
                     <i class="fas fa-user-graduate"></i>
                     <span>大师分析</span>
                 </button>
-                <button class="function-btn" id="factChecking" data-function="fact-checking">
+                <button class="function-btn" id="factChecking" data-function="fact-checking" data-target="welcomeScreen">
                     <i class="fas fa-shield-alt"></i>
                     <span>真伪鉴定</span>
                 </button>
@@ -516,11 +516,11 @@
                                 <!-- 图标将由JS动态填充 -->
                             </div>
                             <div class="title-text-wrapper">
-                                <span class="step-main-title" id="stepDetailMainTitle"></span>
+                                <h3 class="step-main-title" id="stepDetailMainTitle"></h3>
                                 <small class="step-sub-title" id="stepDetailSubTitle"></small>
                             </div>
                         </div>
-                        <button class="step-detail-close" onclick="closeStepDetail()">
+                        <button class="step-detail-close" aria-label="关闭">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
