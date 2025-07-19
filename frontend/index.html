@@ -548,13 +548,19 @@
             </div>
             <div class="modal-body">
                 <form id="authForm">
-                    <div class="form-group">
+                    <div class="form-group glass-input-group">
                         <label for="authUsername">用户名</label>
-                        <input type="text" id="authUsername" name="username" required>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="authUsername" name="username" required placeholder="请输入用户名">
+                        </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group glass-input-group">
                         <label for="authPassword">密码</label>
-                        <input type="password" id="authPassword" name="password" required>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="authPassword" name="password" required placeholder="请输入密码">
+                        </div>
                     </div>
                     <div class="form-group" id="authEmailGroup" style="display: none;">
                         <label for="authEmail">邮箱</label>
@@ -563,8 +569,10 @@
                     <button type="submit" class="btn-primary" id="authSubmitBtn">登录</button>
                 </form>
                 <div class="auth-switch">
-                    <span id="authSwitchText">还没有账号？</span>
-                    <a href="#" id="authSwitchLink">立即注册</a>
+                    <div class="auth-switch-beauty">
+                        <span class="auth-switch-text">还没有账号？</span>
+                        <span class="auth-switch-register" id="authSwitchLink">立即注册</span>
+                    </div>
                 </div>
             </div>
         </div>

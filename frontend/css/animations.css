@@ -221,18 +221,16 @@
 }
 
 /* 悬浮动画 */
-@keyframes hover {
-    0%, 100% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
-}
-
-.animate-hover {
-    animation: hover 3s ease-in-out infinite;
-}
+@keyframes hover { 
+    0%, 100% { transform: translateY(0px); } 
+    50% { transform: translateY(-12px) scale(1.03); } /* 增加0.3%缩放 */ 
+} 
+.animate-hover { 
+    animation: hover 1.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite; /* 弹性贝塞尔曲线 */ 
+} 
+.animate-elastic { 
+    animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 弹性贝塞尔 */ 
+} 
 
 /* 脉冲动画 */
 @keyframes pulse {
@@ -494,17 +492,11 @@
     }
 }
 
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-50px) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
+@keyframes modalSlideIn { 
+    0% { opacity: 0; transform: translateY(-50px) scale(0.9); } 
+    70% { transform: translateY(0) scale(1.02); } /* 过冲1.02倍 */ 
+    100% { opacity: 1; transform: translateY(0) scale(1); } 
+} 
 .modal {
     animation: modalFadeIn 0.3s ease forwards;
 }
@@ -548,8 +540,10 @@
 }
 
 /* 高性能动画提示 */
-.animate-gpu {
-    transform: translateZ(0);
+.animate-gpu { 
+    will-change: transform; /* 显式声明变化属性 */ 
+
+transform: translateZ(0);
     backface-visibility: hidden;
     perspective: 1000px;
 }

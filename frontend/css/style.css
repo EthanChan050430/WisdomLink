@@ -1,4 +1,90 @@
-﻿/* ================================
+/* 登录模态底部注册美化 */
+.auth-switch-beauty {
+  position: absolute;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  font-size: 1rem;
+  z-index: 2;
+}
+.auth-switch-text {
+  color: var(--text-tertiary);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+.auth-switch-register {
+  font-weight: 700;
+  background: linear-gradient(90deg, #6366f1, #06b6d4, #8b5cf6, #f59e0b);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-size: 1.08rem;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.2s;
+  filter: drop-shadow(0 1px 4px #6366f1aa);
+  border: none;
+  text-decoration: none !important;
+}
+.auth-switch-register:hover {
+  filter: drop-shadow(0 2px 8px #06b6d4cc);
+  transform: scale(1.08);
+}
+/* 保证模态内容有足够底部空间 */
+.modal-content {
+  position: relative;
+  padding-bottom: 64px;
+}
+/* 登录模态框输入框美化 */
+.glass-input-group {
+  margin-bottom: var(--spacing-md);
+}
+.input-icon-wrapper {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.08);
+  border: 1.5px solid var(--primary-color);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+  padding: 0.5rem 1rem;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  position: relative;
+}
+.input-icon-wrapper i {
+  color: var(--primary-color);
+  font-size: 1.1rem;
+  margin-right: 0.75rem;
+  transition: color 0.2s;
+}
+.input-icon-wrapper input[type="text"],
+.input-icon-wrapper input[type="password"] {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: var(--font-sans);
+  width: 100%;
+  padding: 0.5rem 0;
+  transition: color 0.2s;
+}
+.input-icon-wrapper input::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.7;
+}
+.input-icon-wrapper:focus-within {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(6,182,212,0.12);
+}
+.input-icon-wrapper input:focus {
+  color: var(--accent-color);
+}
+/* ================================
    智链AI阅读助手 - 主样式表
    ================================ */
 
