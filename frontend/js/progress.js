@@ -74,7 +74,23 @@ class ProgressManager {
      * 封装的关闭模态框方法
      */
     closeModal() {
-        document.getElementById('stepDetailModal')?.classList.remove('active');
+        const modalElement = document.getElementById('stepDetailModal');
+        if (!modalElement) return; // 如果找不到模态框，直接返回
+
+        // 关键1：从模态框获取当前是哪个步骤的ID
+        const stepId = modalElement.dataset.currentStepId;
+        const scrollableContent = modalElement.querySelector('#stepDetailContent');
+
+        // 问题2：如果ID存在，将滚动位置保存到对应的步骤数据中
+        if (stepId && scrollableContent && this.currentStepData[stepId]) {
+            this.currentStepData[stepId].scrollTop = scrollableContent.scrollTop;
+        }
+
+        // 问题1：解除背景滚动锁定
+        document.body.classList.remove('modal-open');
+        
+        // 关闭模态框
+        modalElement.classList.remove('active');
     }
 
     //添加保存状态、功能需求//
@@ -623,18 +639,15 @@ class ProgressManager {
         const step = this.currentSteps.find(s => s.id === stepId);
         if (!step) return;
 
-        // --- 【核心修改部分开始】---
-        // 填充新的主副标题和图标
+        // --- 填充标题和图标 ---
         document.getElementById('stepDetailIcon').innerHTML = step.icon ? `<span>${step.icon}</span>` : `<i class="fas fa-tasks"></i>`;
         document.getElementById('stepDetailMainTitle').textContent = step.title;
         document.getElementById('stepDetailSubTitle').textContent = step.description;
-        // --- 【核心修改部分结束】---
 
         const contentContainer = document.getElementById('stepDetailContent');
         let fullContent = '';
 
         if (stepData.thinking) {
-            // 使用<details>标签，无需JS即可实现折叠
             fullContent += `
                 <details class="step-thinking">
                     <summary class="step-thinking-header">AI思考过程 <i class="fas fa-chevron-down"></i></summary>
@@ -644,9 +657,27 @@ class ProgressManager {
         fullContent += this.renderMarkdown(stepData.content);
         contentContainer.innerHTML = fullContent;
         
-        document.getElementById('stepDetailModal').classList.add('active');
+        // === 【最终修正代码】 ===
+        const modalElement = document.getElementById('stepDetailModal');
+
+        // 关键1：告诉模态框它当前正在显示哪个步骤
+        modalElement.dataset.currentStepId = stepId;
+
+        // 问题1：锁定背景滚动
+        document.body.classList.add('modal-open');
         
-        // 如果使用了代码高亮库
+        // 显示模态框
+        modalElement.classList.add('active');
+        
+        // 问题2：从数据对象中恢复独立的滚动位置
+        if (stepData.scrollTop) {
+            contentContainer.scrollTop = stepData.scrollTop;
+        } else {
+            // 如果这个步骤之前没被打开过，确保滚动条在顶部
+            contentContainer.scrollTop = 0; 
+        }
+        
+        // 如果使用了代码高亮库 (您已有的代码)
         if (typeof hljs !== 'undefined') {
             contentContainer.querySelectorAll('pre code').forEach(hljs.highlightElement);
         }
