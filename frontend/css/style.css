@@ -2856,10 +2856,7 @@ body.mobile-menu-open {
 
 /* 内容增强样式 - 新增 */
 .key-info-title {
-  background: linear-gradient(135deg, var(--warning-color), #fbbf24);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--primary-color);
   border-left: 4px solid var(--warning-color);
   padding-left: var(--spacing-lg);
   margin: var(--spacing-xl) 0;
