@@ -45,13 +45,12 @@ class ProgressManager {
             this.returnToWelcome();
         });
 
-        // --- 【新增代码块开始】---
         const modal = document.getElementById('stepDetailModal');
         if (modal) {
             // 找到模态框自带的关闭按钮并绑定事件
             modal.querySelector('.step-detail-close')?.addEventListener('click', () => this.closeModal());
             
-            // 【新增功能 #2】点击模态框外部 (遮罩层) 关闭
+            // 点击模态框外部 (遮罩层) 关闭
             modal.addEventListener('click', (event) => {
                 // 只有当点击目标是遮罩层本身时才关闭
                 if (event.target === modal) {
@@ -66,7 +65,6 @@ class ProgressManager {
                 this.closeModal();
             }
         });
-        // --- 【新增代码块结束】---
     }
 
     // --- 【新增方法】---
@@ -88,7 +86,9 @@ class ProgressManager {
 
         // 问题1：解除背景滚动锁定
         document.body.classList.remove('modal-open');
-        
+        // 解绑遮罩区域的滚动事件
+        modalElement.removeEventListener('wheel', this.handleOverlayScroll);
+
         // 关闭模态框
         modalElement.classList.remove('active');
     }
@@ -143,6 +143,13 @@ class ProgressManager {
                     // --- 【新增代码块结束】---
                     
                     console.log('已从 localStorage 恢复进度状态。');
+                    
+                    // 如果最后一步已完成且有内容，自动显示分析结果
+                    const lastStepId = this.currentSteps.length;
+                    if (this.currentStepData[lastStepId]?.complete && this.currentStepData[lastStepId]?.content) {
+                        this.showFinalResultAndCollapseSteps();
+                    }
+
                     return true; // 表示成功加载
                 }
             } catch (e) {
@@ -668,6 +675,9 @@ class ProgressManager {
         
         // 显示模态框
         modalElement.classList.add('active');
+
+        // 绑定遮罩区域的滚动事件
+        modalElement.addEventListener('wheel', this.handleOverlayScroll, { passive: false });
         
         // 问题2：从数据对象中恢复独立的滚动位置
         if (stepData.scrollTop) {
@@ -1356,6 +1366,21 @@ class ProgressManager {
             }, 500);
         }
     }
+
+    handleOverlayScroll(event) {
+        // 检查事件目标是否在模态框内容区之外（即在遮罩上）
+        if (!event.target.closest('.step-detail-content')) {
+            // 阻止默认行为（例如滚动整个页面）
+            event.preventDefault();
+            
+            // 找到模态框内的可滚动内容区
+            const contentContainer = document.getElementById('stepDetailContent');
+            if (contentContainer) {
+                // 将滚轮的垂直滚动量应用到内容区
+                contentContainer.scrollTop += event.deltaY;
+            }
+        }
+    }
 }
 
 // 切换AI思考过程折叠状态的全局函数
@@ -1378,12 +1403,27 @@ window.progressManager = new ProgressManager();
 
 //页面加载逻辑//
 document.addEventListener('DOMContentLoaded', () => {
-    // 尝试从 localStorage 加载进度
-    const stateLoaded = window.progressManager.loadState();
+    // 判断是刷新还是新开页面
+    let isReload = false;
+    if (performance.getEntriesByType) {
+        const nav = performance.getEntriesByType('navigation')[0];
+        if (nav && nav.type === 'reload') isReload = true;
+    } else if (performance.navigation) {
+        // 兼容老浏览器
+        isReload = performance.navigation.type === 1;
+    }
 
-    // 如果没有恢复任何状态，则正常显示欢迎界面
-    if (!stateLoaded) {
-        // 确保欢迎界面是可见的，其他界面是隐藏的
+    if (isReload) {
+        // 刷新，恢复进度
+        const stateLoaded = window.progressManager.loadState();
+        if (!stateLoaded) {
+            document.getElementById('welcomeScreen').style.display = 'block';
+            document.getElementById('chatScreen').style.display = 'none';
+            document.getElementById('progressScreen').style.display = 'none';
+        }
+    } else {
+        // 新开页面，清除进度，回到首页
+        localStorage.removeItem('progressState');
         document.getElementById('welcomeScreen').style.display = 'block';
         document.getElementById('chatScreen').style.display = 'none';
         document.getElementById('progressScreen').style.display = 'none';

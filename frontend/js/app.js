@@ -297,6 +297,9 @@ class AIReaderApp {
     switchFunction(functionName) {
         // 检查是否在聊天模式，如果是则退出聊天模式
         this.exitChatModeIfActive();
+
+        // 检查是否在分析模式，如果是则退出分析模式
+        this.exitProgressModeIfActive();
         
         // 更新当前功能
         this.currentFunction = functionName;
@@ -322,6 +325,14 @@ class AIReaderApp {
         document.dispatchEvent(event);
 
         console.log(`切换到功能: ${functionName}`);
+
+        // 只有在应用初始化完成后才更新URL，避免初始化时产生不必要的历史记录
+        if (this.isInitialized) {
+            const url = new URL(window.location);
+            url.searchParams.set('function', functionName);
+            // 使用 replaceState，这样不会污染用户的浏览器历史记录
+            window.history.replaceState({ function: functionName }, '', url);
+        }
     }
 
     /**
@@ -357,48 +368,86 @@ class AIReaderApp {
     }
 
     /**
+     * 【新增】如果当前在进度分析界面，则退出该界面
+     */
+    exitProgressModeIfActive() {
+        const progressScreen = document.getElementById('progressScreen');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+
+        // 检查进度分析界面是否可见
+        if (progressScreen && welcomeScreen && window.getComputedStyle(progressScreen).display !== 'none') {
+            console.log('检测到正在分析中，强制返回欢迎主页...');
+
+            // 1. 隐藏进度页面
+            progressScreen.style.display = 'none';
+
+            // 2. 显示欢迎页面
+            welcomeScreen.style.display = 'flex'; // 使用 flex 以匹配您其他代码的设置
+
+            // 3. 清理掉旧的分析进度，避免刷新后又回来
+            localStorage.removeItem('progressState');
+
+            // 4. 【关键】调用您已有的、功能强大的 resetToInitialState 方法，
+            //    它会负责重置上传区域、专家选择器等所有欢迎页面的元素。
+            this.resetToInitialState();
+        }
+    }
+
+    /**
      * 重置到初始状态
      */
+    /**
+     * 重置到初始状态 (最终的、绝对有效的修正版)
+     */
     resetToInitialState() {
-        // 确保欢迎界面正确显示
+        // --- 1. 获取所有需要操作的界面元素 ---
+        const mainContent = document.querySelector('.main-content');
         const welcomeScreen = document.getElementById('welcomeScreen');
-        if (welcomeScreen) {
-            welcomeScreen.style.display = 'flex';
-            // 清除任何可能的内联样式覆盖
-            welcomeScreen.style.maxWidth = '';
-            welcomeScreen.style.margin = '';
-            welcomeScreen.style.padding = '';
-        }
-        
-        // 显示上传区域
-        const uploadSection = document.getElementById('uploadSection');
-        if (uploadSection) {
-            uploadSection.style.display = 'block';
-        }
-        
-        // 重置专家选择器显示状态
-        const expertSelector = document.getElementById('expertSelector');
-        if (expertSelector) {
-            expertSelector.style.display = 'none';
-        }
-        
-        // 清除任何进度状态
         const progressScreen = document.getElementById('progressScreen');
+        const uploadSection = document.getElementById('uploadSection');
+        const expertSelector = document.getElementById('expertSelector');
+        const searchInput = document.getElementById('searchInput');
+
+        // --- 2. 核心修复：重置主内容区的宽度 ---
+        if (mainContent) {
+            // 命令父容器放弃那个被“冻结”的固定宽度，恢复自动填充
+            mainContent.style.width = 'auto'; 
+        }
+        
+        // --- 3. 重置并显示 WelcomeScreen 容器 ---
+        if (welcomeScreen) {
+            welcomeScreen.removeAttribute('style');
+            welcomeScreen.style.display = 'flex';
+        }
+
+        // --- 4. 隐藏其他不应显示的界面 ---
         if (progressScreen) {
             progressScreen.style.display = 'none';
         }
         
-        // 重置输入框
-        const searchInput = document.getElementById('searchInput');
+        // --- 5. 重置 WelcomeScreen 内部的各个组件 ---
+        if (uploadSection) {
+            uploadSection.style.display = 'block';
+        }
+        if (expertSelector) {
+            expertSelector.style.display = 'none';
+        }
         if (searchInput) {
             searchInput.value = '';
             this.updateSearchPlaceholder(this.currentFunction);
+            this.adjustTextareaHeight(searchInput);
         }
         
-        // 重置文件上传状态
+        // --- 6. 重置文件上传状态 ---
         if (window.fileUploadManager && typeof window.fileUploadManager.resetState === 'function') {
             window.fileUploadManager.resetState();
         }
+
+        // --- 7. 【保险措施】强制浏览器重新计算整体布局 ---
+        // 在所有操作完成后，延迟一小会儿再触发resize，确保万无一失
+        setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 50);
     }
 
     /**
@@ -994,70 +1043,46 @@ class AIReaderApp {
 let app;
 
 // 应用启动
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // 实例化应用
     app = new AIReaderApp();
-});
+    window.app = app; // 让全局可以访问到app实例
 
-// 导出供其他模块使用
-window.app = app;
-
-// =======================================================
-// 功能 #1: 刷新后保持顶部功能栏状态
-// =======================================================
-
-document.addEventListener('DOMContentLoaded', () => {
-    // 同时获取桌面端和移动端的按钮
-    const functionButtons = document.querySelectorAll('.function-btn, .mobile-function-btn');
-    
-    // 1. 页面加载时，尝试从 localStorage 恢复状态
-    function restoreActiveTab() {
-        const activeTabId = localStorage.getItem('activeFunctionTab');
-        if (!activeTabId) return; // 如果没有保存的状态，直接退出
-
-        // 找到要激活的按钮
-        const buttonToActivate = document.getElementById(activeTabId);
-        const mobileButtonToActivate = document.getElementById('mobile' + activeTabId.charAt(0).toUpperCase() + activeTabId.slice(1));
-        
-        if (buttonToActivate) {
-            // 先移除所有按钮的 active 类
-            functionButtons.forEach(btn => btn.classList.remove('active'));
-            
-            // 再激活正确的桌面端和移动端按钮
-            buttonToActivate.classList.add('active');
-            if (mobileButtonToActivate) {
-                mobileButtonToActivate.classList.add('active');
+    // 等待应用内部的异步初始化完成
+    await new Promise(resolve => {
+        const interval = setInterval(() => {
+            if (app.isInitialized) {
+                clearInterval(interval);
+                resolve();
             }
-
-            // 【重要】调用 app 实例中已有的 switchFunction 方法来切换功能逻辑
-            // 这样可以确保 placeholder 更新等所有相关逻辑都执行
-            if (window.app && typeof window.app.switchFunction === 'function') {
-                const functionName = buttonToActivate.dataset.function;
-                if (functionName) {
-                    window.app.switchFunction(functionName);
-                }
-            }
-        }
-    }
-
-    // 2. 为每个功能按钮添加点击事件监听，以保存状态
-    functionButtons.forEach(button => {
-        // 我们监听 'mousedown' 而不是 'click'，确保在您原有的 click 事件之前执行
-        button.addEventListener('mousedown', () => { 
-            // 保存桌面端按钮的ID（作为统一标准）
-            let buttonId = button.id;
-            if (buttonId.startsWith('mobile')) {
-                buttonId = buttonId.replace('mobile', '');
-                buttonId = buttonId.charAt(0).toLowerCase() + buttonId.slice(1);
-            }
-            localStorage.setItem('activeFunctionTab', buttonId);
-        });
+        }, 50);
     });
 
-    // 3. 页面加载完成后立即执行恢复
-    //    但有一个特殊情况：如果 progress.js 已经恢复了进度页面，
-    //    我们就不应该强制切回到其他页面。
-    const isProgressScreenActive = document.getElementById('progressScreen').style.display === 'block';
-    if (!isProgressScreenActive) {
-         restoreActiveTab();
+    // --- 【这是新增的核心逻辑】 ---
+
+    // 检查是否在分析进度页面，如果是，则不处理，让 progress.js 接管
+    const progressScreen = document.getElementById('progressScreen');
+    const isProgressActive = progressScreen && getComputedStyle(progressScreen).display !== 'none';
+
+    if (isProgressActive) {
+        console.log('分析进度已恢复，跳过从URL恢复功能。');
+        return; // 退出
     }
+
+    // 从URL读取 'function' 参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const functionFromUrl = urlParams.get('function');
+
+    if (functionFromUrl) {
+        // 如果URL里有功能参数，就用它来设置界面
+        console.log(`从URL恢复功能: ${functionFromUrl}`);
+        app.switchFunction(functionFromUrl);
+
+        // (可选) 清理URL，让地址栏看起来更干净
+        const cleanUrl = new URL(window.location);
+        cleanUrl.searchParams.delete('function');
+        window.history.replaceState({}, '', cleanUrl);
+    }
+    // 如果URL没有参数, app.initDefaultState() 会设置默认功能, 无需操作
 });
+

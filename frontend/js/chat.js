@@ -9,6 +9,10 @@ class ChatManager {
         this.isProcessing = false;
         this.currentFunction = 'intelligent-reading';
         this.messageHistory = [];
+        // 新增：获取聊天容器元素
+        this.chatMessagesContainer = document.getElementById('chatMessages');
+        // 新增：用户滚动状态开关
+        this.isUserScrolling = false;
         this.init();
         this.setupMarkdown();
     }
@@ -171,6 +175,17 @@ class ChatManager {
             console.log('Chat.js - 发送按钮存在，已添加事件监听器');
         } else {
             console.log('Chat.js - 警告：发送按钮不存在！');
+        }
+
+        if (this.chatMessagesContainer) {
+            this.chatMessagesContainer.addEventListener('scroll', () => {
+                // 判断滚动条是否非常接近底部（留出10px的容差）
+                const isAtBottom = this.chatMessagesContainer.scrollHeight - this.chatMessagesContainer.scrollTop - this.chatMessagesContainer.clientHeight < 10;
+                
+                // 如果用户滚动到了底部，就关闭“用户手动滚动”的开关
+                // 否则，只要不在底部，就认为是用户在手动滚动，打开开关
+                this.isUserScrolling = !isAtBottom;
+            });
         }
     }
 
@@ -543,7 +558,7 @@ class ChatManager {
             { value: 'keli', name: '可莉', icon: '💥', description: '活泼的元素使者' },
             { value: 'socrates', name: '苏格拉底', icon: '🤔', description: '哲学的启发者' },
             { value: 'einstein', name: '爱因斯坦', icon: '🧮', description: '科学的探索者' },
-            { value: 'confucius', name: '孔子', icon: '📜', description: '智慧的教育家' }
+            { value: 'Hoshino', name: '星野', icon: '⚔️', description: '强大的战斗人员' }
         ];
     }
 
@@ -1785,10 +1800,14 @@ class ChatManager {
      * 滚动到底部
      */
     scrollToBottom() {
-        const messagesContainer = document.getElementById('chatMessages');
-        if (messagesContainer) {
+        if (this.isUserScrolling) {
+            return;
+        }
+
+        if (this.chatMessagesContainer) {
             setTimeout(() => {
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                // 使用我们缓存的属性
+                this.chatMessagesContainer.scrollTop = this.chatMessagesContainer.scrollHeight;
             }, 100);
         }
     }
