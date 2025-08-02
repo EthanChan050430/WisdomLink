@@ -683,7 +683,7 @@ class UploadManager {
                 // 进度界面功能
                 this.startProgressAnalysis(formData);
             } else {
-                // 聊天界面功能
+                // 聊天界面功能（intelligent-reading 和 expert-analysis）
                 this.startChatAnalysis(formData);
             }
 
@@ -783,21 +783,23 @@ class UploadManager {
             if (response.ok) {
                 const contentType = response.headers.get('content-type');
                 
-                // 检查是否是全面分析或真伪鉴定（使用JSON响应）
-                if (this.currentFeature === 'comprehensive-analysis' || this.currentFeature === 'fact-checking') {
-                    console.log('处理JSON响应（全面分析/真伪鉴定）');
-                    const data = await response.json();
-                    if (data.success) {
-                        this.handleJsonAnalysisResponse(data);
-                    } else {
-                        showNotification(data.message || '分析失败', 'error');
-                    }
-                } else if (contentType?.includes('text/plain') || contentType?.includes('text/stream')) {
+                // 检查是否是流式响应
+                if (contentType?.includes('text/plain') || contentType?.includes('text/stream')) {
                     console.log('处理流式响应');
                     await this.handleProgressStreamResponse(response);
                 } else {
-                    console.log('处理普通JSON响应');
+                    console.log('处理JSON响应');
                     const data = await response.json();
+                    if (data.success) {
+                        // 对于全面分析和真伪鉴定，如果返回JSON，则处理JSON响应
+                        if (this.currentFeature === 'comprehensive-analysis' || this.currentFeature === 'fact-checking') {
+                            this.handleJsonAnalysisResponse(data);
+                        } else {
+                            showNotification('分析完成', 'success');
+                        }
+                    } else {
+                        showNotification(data.message || '分析失败', 'error');
+                    }
                     showNotification(data.message || '分析完成', data.success ? 'success' : 'error');
                 }
             } else {

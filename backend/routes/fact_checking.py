@@ -76,16 +76,11 @@ def start_fact_checking():
         # 生成会话ID
         session_id = str(uuid.uuid4())
         
-        # 改为JSON响应而不是流式响应，避免markdown格式问题
-        try:
-            result = generate_fact_checking_analysis_json(extracted_content, session_id)
-            return jsonify({
-                'success': True,
-                'session_id': session_id,
-                'analysis': result
-            })
-        except Exception as e:
-            return jsonify({'success': False, 'message': f'鉴定失败：{str(e)}'})
+        # 使用流式响应实现实时进度更新
+        return Response(
+            generate_fact_checking_analysis(extracted_content, session_id),
+            mimetype='text/plain'
+        )
         
     except Exception as e:
         return jsonify({'success': False, 'message': f'开始真伪鉴定失败：{str(e)}'})

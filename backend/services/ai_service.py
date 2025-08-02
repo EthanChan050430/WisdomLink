@@ -30,7 +30,8 @@ class AIService:
                 f'{self.base_url}/chat/completions',
                 headers=headers,
                 data=json.dumps(data),
-                stream=stream
+                stream=stream,
+                timeout=60  # 添加60秒超时
             )
             
             if stream:

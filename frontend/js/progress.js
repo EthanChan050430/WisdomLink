@@ -45,13 +45,12 @@ class ProgressManager {
             this.returnToWelcome();
         });
 
-        // --- 【新增代码块开始】---
         const modal = document.getElementById('stepDetailModal');
         if (modal) {
             // 找到模态框自带的关闭按钮并绑定事件
             modal.querySelector('.step-detail-close')?.addEventListener('click', () => this.closeModal());
             
-            // 【新增功能 #2】点击模态框外部 (遮罩层) 关闭
+            // 点击模态框外部 (遮罩层) 关闭
             modal.addEventListener('click', (event) => {
                 // 只有当点击目标是遮罩层本身时才关闭
                 if (event.target === modal) {
@@ -66,7 +65,6 @@ class ProgressManager {
                 this.closeModal();
             }
         });
-        // --- 【新增代码块结束】---
     }
 
     // --- 【新增方法】---
@@ -74,7 +72,25 @@ class ProgressManager {
      * 封装的关闭模态框方法
      */
     closeModal() {
-        document.getElementById('stepDetailModal')?.classList.remove('active');
+        const modalElement = document.getElementById('stepDetailModal');
+        if (!modalElement) return; // 如果找不到模态框，直接返回
+
+        // 关键1：从模态框获取当前是哪个步骤的ID
+        const stepId = modalElement.dataset.currentStepId;
+        const scrollableContent = modalElement.querySelector('#stepDetailContent');
+
+        // 问题2：如果ID存在，将滚动位置保存到对应的步骤数据中
+        if (stepId && scrollableContent && this.currentStepData[stepId]) {
+            this.currentStepData[stepId].scrollTop = scrollableContent.scrollTop;
+        }
+
+        // 问题1：解除背景滚动锁定
+        document.body.classList.remove('modal-open');
+        // 解绑遮罩区域的滚动事件
+        modalElement.removeEventListener('wheel', this.handleOverlayScroll);
+
+        // 关闭模态框
+        modalElement.classList.remove('active');
     }
 
     //添加保存状态、功能需求//
@@ -127,6 +143,13 @@ class ProgressManager {
                     // --- 【新增代码块结束】---
                     
                     console.log('已从 localStorage 恢复进度状态。');
+                    
+                    // 如果最后一步已完成且有内容，自动显示分析结果
+                    const lastStepId = this.currentSteps.length;
+                    if (this.currentStepData[lastStepId]?.complete && this.currentStepData[lastStepId]?.content) {
+                        this.showFinalResultAndCollapseSteps();
+                    }
+
                     return true; // 表示成功加载
                 }
             } catch (e) {
@@ -623,30 +646,51 @@ class ProgressManager {
         const step = this.currentSteps.find(s => s.id === stepId);
         if (!step) return;
 
-        // --- 【核心修改部分开始】---
-        // 填充新的主副标题和图标
+        // --- 填充标题和图标 ---
         document.getElementById('stepDetailIcon').innerHTML = step.icon ? `<span>${step.icon}</span>` : `<i class="fas fa-tasks"></i>`;
         document.getElementById('stepDetailMainTitle').textContent = step.title;
         document.getElementById('stepDetailSubTitle').textContent = step.description;
-        // --- 【核心修改部分结束】---
 
         const contentContainer = document.getElementById('stepDetailContent');
         let fullContent = '';
 
         if (stepData.thinking) {
-            // 使用<details>标签，无需JS即可实现折叠
             fullContent += `
                 <details class="step-thinking">
                     <summary class="step-thinking-header">AI思考过程 <i class="fas fa-chevron-down"></i></summary>
-                    <div class="step-thinking-content">${this.renderMarkdown(stepData.thinking)}</div>
+                    <div class="step-thinking-content markdown-container">${this.renderMarkdown(stepData.thinking)}</div>
                 </details>`;
         }
-        fullContent += this.renderMarkdown(stepData.content);
+        fullContent += `<div class="markdown-container">${this.renderMarkdown(stepData.content)}</div>`;
         contentContainer.innerHTML = fullContent;
         
-        document.getElementById('stepDetailModal').classList.add('active');
+        // 确保容器也有markdown类
+        contentContainer.classList.add('markdown-container');
         
-        // 如果使用了代码高亮库
+        // === 【最终修正代码】 ===
+        const modalElement = document.getElementById('stepDetailModal');
+
+        // 关键1：告诉模态框它当前正在显示哪个步骤
+        modalElement.dataset.currentStepId = stepId;
+
+        // 问题1：锁定背景滚动
+        document.body.classList.add('modal-open');
+        
+        // 显示模态框
+        modalElement.classList.add('active');
+
+        // 绑定遮罩区域的滚动事件
+        modalElement.addEventListener('wheel', this.handleOverlayScroll, { passive: false });
+        
+        // 问题2：从数据对象中恢复独立的滚动位置
+        if (stepData.scrollTop) {
+            contentContainer.scrollTop = stepData.scrollTop;
+        } else {
+            // 如果这个步骤之前没被打开过，确保滚动条在顶部
+            contentContainer.scrollTop = 0; 
+        }
+        
+        // 如果使用了代码高亮库 (您已有的代码)
         if (typeof hljs !== 'undefined') {
             contentContainer.querySelectorAll('pre code').forEach(hljs.highlightElement);
         }
@@ -755,11 +799,56 @@ class ProgressManager {
         let processed = content.replace(/\\n/g, '\n').trim();
 
         // 移除 markdown 代码块包裹（如```markdown ... ```）
-        processed = processed.replace(/^```(?:markdown)?\s*\n/, '');
-        processed = processed.replace(/\n```\s*$/, '');
+        // 处理开头的代码块标记
+        processed = processed.replace(/^```(?:markdown|md)?\s*\n?/i, '');
+        // 处理结尾的代码块标记
+        processed = processed.replace(/\n?```\s*$/i, '');
+        
+        // 额外处理：如果整个内容被包裹在代码块中，移除外层包裹
+        if (processed.startsWith('```') && processed.endsWith('```')) {
+            const lines = processed.split('\n');
+            if (lines.length > 2) {
+                // 移除第一行和最后一行
+                processed = lines.slice(1, -1).join('\n');
+            }
+        }
+        
+        // 处理可能的语言标识符残留（如 "markdown#" 或 "md#"）
+        processed = processed.replace(/^(markdown|md)#?\s*\n?/i, '');
+        
+        // 移除可能的代码块语言标识符行
+        const lines = processed.split('\n');
+        if (lines.length > 0 && /^(markdown|md)#?\s*$/i.test(lines[0])) {
+            processed = lines.slice(1).join('\n');
+        }
+        
+        // 修复语言标识符移除后可能留下的多余#号（如 "# ## 标题" -> "## 标题"）
+        processed = processed.replace(/^#+\s*(#{1,6}\s)/m, '$1');
 
-        // 标题处理：确保#后有空格，且标题前后有空行
+        // 修复常见的AI输出格式问题
+        // 1. 修复标题格式：确保#后有空格
         processed = processed.replace(/(#{1,6})([^ \n#])/g, '$1 $2');
+        
+        // 2. 修复嵌套标题问题 - 使用多次迭代处理复杂情况
+        let maxIterations = 10;
+        let iteration = 0;
+        while (iteration < maxIterations) {
+            let beforeFix = processed;
+            
+            // 处理标题后直接跟标题的情况（如 "## 标题### 子标题"）
+            processed = processed.replace(/(#{1,6}\s[^#\n]*?)(#{1,6}\s)/g, '$1\n\n$2');
+            
+            // 处理标题后跟文本再跟标题的情况（如 "### 标题文本内容### 下一个标题"）
+            processed = processed.replace(/(#{1,6}\s[^\n#]+?)([。！？]?)(#{1,6}\s)/g, '$1$2\n\n$3');
+            
+            // 如果没有变化，说明修复完成
+            if (beforeFix === processed) {
+                break;
+            }
+            iteration++;
+        }
+        
+        // 3. 修复标题前后的空行问题
         processed = processed.replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2');
         processed = processed.replace(/(#{1,6}\s[^\n]+)\n([^#\n])/g, '$1\n\n$2');
 
@@ -1161,7 +1250,7 @@ class ProgressManager {
         const truncatedTitle = this.truncateText(title, 80);
 
         // ✅ Snippet 不建议截断，保持markdown语义和换行完整
-        const formattedSnippet = this.renderMarkdown(this.preprocessMarkdownContent(snippet));
+        const formattedSnippet = `<div class="markdown-container">${this.renderMarkdown(this.preprocessMarkdownContent(snippet))}</div>`;
         const displayUrl = this.formatDisplayUrl(url);
         const starRating = this.getStarRating(relevanceScore);
 
@@ -1295,7 +1384,8 @@ class ProgressManager {
         if (resultWrapper && resultContent) {
             // 清理和渲染最终结果
             const cleanedContent = this.cleanupContent(finalResult);
-            resultContent.innerHTML = this.renderMarkdown(cleanedContent);
+            resultContent.innerHTML = `<div class="markdown-container">${this.renderMarkdown(cleanedContent)}</div>`;
+            resultContent.classList.add('markdown-container');
             
             // 显示结果容器
             resultWrapper.style.display = 'block';
@@ -1325,6 +1415,21 @@ class ProgressManager {
             }, 500);
         }
     }
+
+    handleOverlayScroll(event) {
+        // 检查事件目标是否在模态框内容区之外（即在遮罩上）
+        if (!event.target.closest('.step-detail-content')) {
+            // 阻止默认行为（例如滚动整个页面）
+            event.preventDefault();
+            
+            // 找到模态框内的可滚动内容区
+            const contentContainer = document.getElementById('stepDetailContent');
+            if (contentContainer) {
+                // 将滚轮的垂直滚动量应用到内容区
+                contentContainer.scrollTop += event.deltaY;
+            }
+        }
+    }
 }
 
 // 切换AI思考过程折叠状态的全局函数
@@ -1347,12 +1452,27 @@ window.progressManager = new ProgressManager();
 
 //页面加载逻辑//
 document.addEventListener('DOMContentLoaded', () => {
-    // 尝试从 localStorage 加载进度
-    const stateLoaded = window.progressManager.loadState();
+    // 判断是刷新还是新开页面
+    let isReload = false;
+    if (performance.getEntriesByType) {
+        const nav = performance.getEntriesByType('navigation')[0];
+        if (nav && nav.type === 'reload') isReload = true;
+    } else if (performance.navigation) {
+        // 兼容老浏览器
+        isReload = performance.navigation.type === 1;
+    }
 
-    // 如果没有恢复任何状态，则正常显示欢迎界面
-    if (!stateLoaded) {
-        // 确保欢迎界面是可见的，其他界面是隐藏的
+    if (isReload) {
+        // 刷新，恢复进度
+        const stateLoaded = window.progressManager.loadState();
+        if (!stateLoaded) {
+            document.getElementById('welcomeScreen').style.display = 'block';
+            document.getElementById('chatScreen').style.display = 'none';
+            document.getElementById('progressScreen').style.display = 'none';
+        }
+    } else {
+        // 新开页面，清除进度，回到首页
+        localStorage.removeItem('progressState');
         document.getElementById('welcomeScreen').style.display = 'block';
         document.getElementById('chatScreen').style.display = 'none';
         document.getElementById('progressScreen').style.display = 'none';
