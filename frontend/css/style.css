@@ -595,6 +595,20 @@ body.light-theme .function-btn:hover:not(.active) {
   box-shadow: var(--shadow-lg);
 }
 
+/* 确保upload-section在重置时恢复正常样式 */
+.upload-section.reset {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-xl) !important;
+  padding: var(--spacing-xl) !important;
+  box-shadow: var(--shadow-lg) !important;
+  min-height: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  display: block !important;
+}
+
 .upload-tabs {
   display: flex;
   gap: var(--spacing-sm);
@@ -1050,6 +1064,7 @@ body.light-theme .function-btn:hover:not(.active) {
   padding: var(--spacing-xl);
   overflow-y: auto;
   scroll-behavior: smooth;
+  min-height: 0;
 }
 
 .message {
@@ -1110,9 +1125,6 @@ body.light-theme .function-btn:hover:not(.active) {
   max-width: 80%;
 }
 
-.message.user .message-content {
-  text-align: right;
-}
 
 .message-bubble {
   padding: var(--spacing-lg) var(--spacing-xl);
@@ -1132,9 +1144,10 @@ body.light-theme .function-btn:hover:not(.active) {
 
 .message.user .message-bubble {
   background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-  color: white;
+  color: white !important;
   border-bottom-right-radius: 8px;
   position: relative;
+  text-align: left; /* <-- 新增：强制气泡内文本左对齐 */
 }
 
 .message.assistant .message-bubble {
@@ -1922,7 +1935,7 @@ body.light-theme .function-btn:hover:not(.active) {
   }
   
   .chat-messages {
-    padding-bottom: 80px; /* 为固定输入框留出空间 */
+    padding-bottom: px; /* 为固定输入框留出空间 */
   }
   
   /* 功能菜单在移动端的优化 */
@@ -3204,7 +3217,7 @@ body.mobile-menu-open {
   font-family: var(--font-sans);
   font-size: 1rem;
   line-height: 1.5;
-  resize: none;
+  resize: vertical;
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
@@ -3621,81 +3634,6 @@ body.mobile-menu-open {
   color: var(--primary-color);
 }
 
-/* Markdown内容容器，自动适配所有内容结构 */
-#stepDetailContent {
-  max-height: 90vh;
-  overflow-y: auto;
-  white-space: normal;
-  word-wrap: break-word;
-  padding-bottom: 2rem;
-}
-
-#stepDetailContent h1,
-#stepDetailContent h2,
-#stepDetailContent h3 {
-  color: var(--primary-color);
-  margin: 1rem 0 0.5rem;
-  line-height: 1.4;
-}
-
-#stepDetailContent p {
-  margin-bottom: 1rem;
-  color: var(--text-secondary);
-}
-
-#stepDetailContent ul,
-#stepDetailContent ol {
-  padding-left: 1.25rem;
-  margin-bottom: 1rem;
-}
-
-#stepDetailContent li {
-  margin-bottom: 0.5rem;
-  line-height: 1.6;
-}
-
-#stepDetailContent code {
-  font-family: var(--font-mono);
-  background: var(--bg-surface);
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: var(--accent-color);
-  font-size: 0.9em;
-}
-
-#stepDetailContent pre {
-  background: var(--bg-surface);
-  padding: 1rem;
-  border-radius: var(--radius-md);
-  overflow-x: auto;
-  font-family: var(--font-mono);
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-}
-
-#stepDetailContent blockquote {
-  border-left: 4px solid var(--primary-color);
-  background: var(--bg-tertiary);
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-style: italic;
-  color: var(--text-tertiary);
-  margin: var(--spacing-md) 0;
-}
-
-/* 为表格样式默认提升Markdown兼容性 */
-#stepDetailContent table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 1rem;
-}
-
-#stepDetailContent table th,
-#stepDetailContent table td {
-  padding: 0.75rem;
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-}
-
 @media (max-width: 768px) {
   .progress-step {
     flex-direction: column;
@@ -3724,10 +3662,201 @@ body.mobile-menu-open {
   }
 }
 
-/* 自动换行处理（防止 mobile 水平滚动） */
-.markdown-container {
+/* ================================
+   Markdown内容样式 (已整合优化)
+   ================================ */
+
+/* 通用markdown容器样式，确保换行和可读性 */
+.markdown-container,
+.message-bubble .markdown-content,
+#stepDetailContent {
+  line-height: 1.6;
+  word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: normal;
+}
+
+/* 标题样式 */
+.markdown-container h1, #stepDetailContent h1,
+.markdown-container h2, #stepDetailContent h2,
+.markdown-container h3, #stepDetailContent h3,
+.markdown-container h4, #stepDetailContent h4,
+.markdown-container h5, #stepDetailContent h5,
+.markdown-container h6, #stepDetailContent h6 {
+  color: var(--primary-color);
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 1.5rem 0 0.75rem 0;
+}
+.markdown-container > *:first-child, 
+#stepDetailContent > *:first-child {
+  margin-top: 0;
+}
+
+.markdown-container h1, #stepDetailContent h1 {
+  font-size: 1.75rem;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.markdown-container h2, #stepDetailContent h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 0.3rem;
+}
+
+.markdown-container h3, #stepDetailContent h3 {
+  font-size: 1.25rem;
+}
+
+.markdown-container h4, #stepDetailContent h4 {
+  font-size: 1.1rem;
+}
+
+.markdown-container h5, #stepDetailContent h5 {
+  font-size: 1rem;
+}
+
+.markdown-container h6, #stepDetailContent h6 {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* 段落样式 */
+.markdown-container p, #stepDetailContent p {
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* 列表样式 */
+.markdown-container ul, .markdown-container ol, 
+#stepDetailContent ul, #stepDetailContent ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.markdown-container li, #stepDetailContent li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* 代码样式 */
+.markdown-container code, #stepDetailContent code {
+  font-family: var(--font-mono);
+  background: var(--bg-surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--accent-color);
+  font-size: 0.9em;
+  border: 1px solid var(--border-color);
+}
+
+.markdown-container pre, #stepDetailContent pre {
+  background: var(--bg-surface);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.markdown-container pre code, #stepDetailContent pre code {
+  background: none;
+  padding: 0;
+  border: none;
+  color: var(--text-primary);
+  font-size: inherit; /* 继承pre的字体大小 */
+}
+
+/* 引用样式 */
+.markdown-container blockquote, #stepDetailContent blockquote {
+  border-left: 4px solid var(--primary-color);
+  background: var(--bg-tertiary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-style: italic;
+  color: var(--text-tertiary);
+  margin: 1rem 0;
+}
+
+/* 表格样式 */
+.markdown-container table, #stepDetailContent table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.markdown-container table th, .markdown-container table td,
+#stepDetailContent table th, #stepDetailContent table td {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.markdown-container table th, #stepDetailContent table th {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* 水平分割线 */
+.markdown-container hr, #stepDetailContent hr {
+  border: none;
+  height: 2px;
+  background: var(--border-color);
+  margin: 2rem 0;
+  border-radius: 1px;
+}
+
+/* 强调文本 */
+.markdown-container strong, .markdown-container b, 
+#stepDetailContent strong, #stepDetailContent b {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.markdown-container em, .markdown-container i, 
+#stepDetailContent em, #stepDetailContent i {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* 链接样式 */
+.markdown-container a, #stepDetailContent a {
+  color: var(--accent-color);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-color);
+  transition: all 0.2s ease;
+}
+
+.markdown-container a:hover, #stepDetailContent a:hover {
+  color: var(--primary-hover);
+  border-bottom-color: var(--primary-hover);
+}
+
+/* 滚动条样式 */
+#stepDetailContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+#stepDetailContent::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+#stepDetailContent::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 3px;
+}
+
+#stepDetailContent::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
 }
 
 /* ================================
@@ -3825,6 +3954,11 @@ body.mobile-menu-open {
     height: 30px;
     /* 应用旋转动画，1.5s转一圈，您可以调整这个速度 */
     animation: custom-spin 1.5s linear infinite;
+    /* 关键优化 #1: 告知浏览器 transform 属性将持续变化，触发硬件加速 */
+    will-change: transform;
+    
+    /* 关键优化 #2: 强制开启3D加速，作为 will-change 的补充，兼容性更强 */
+    transform: translateZ(0);
 }
 
 /* 2. 定义旋转动画 */
@@ -3931,3 +4065,183 @@ body.dynamic-bg-active .welcome-description {
   color: rgba(255, 255, 255, 0.85);
 }
 
+/* =========== 修复：浅色模式下AI思考过程的样式 =========== */
+
+.light-theme .think-container {
+  /* 在浅色模式下，将渐变背景调整为基于主题变量的更柔和版本 */
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light-theme .think-content {
+  /* 使用浅色主题的第三级背景色，通常是浅灰色 */
+  background: var(--bg-tertiary); 
+}
+
+.light-theme .think-content pre {
+  /* 使用浅色主题的二级文字颜色，是清晰的深灰色，确保对比度 */
+  color: var(--text-secondary); 
+}
+
+/* =========== 修复：浅色模式下AI回复气泡的背景和文字颜色 =========== */
+
+/* 1. 调整AI回复气泡的背景和边框，使其在浅色模式下清晰可见 */
+.light-theme .message.assistant .message-bubble {
+    background: var(--bg-tertiary); /* 使用一个浅灰色背景，而不是透明色 */
+    border: 1px solid var(--border-light); /* 使用浅色模式的边框颜色 */
+}
+
+/* 2. 统一并加深气泡内所有主要文本的颜色，确保高对比度 */
+.light-theme .message.bubble .markdown-content p,
+.light-theme .message.bubble .markdown-content li {
+    color: var(--text-primary); /* 将普通段落和列表项的文字统一为最深的 --text-primary */
+}
+
+/* 3. (可选优化) 增强引用文本的可读性 */
+.light-theme .markdown-container blockquote, 
+.light-theme #stepDetailContent blockquote {
+    color: var(--text-secondary); /* 让引用文本颜色比普通文本稍浅，但仍然清晰 */
+    background: var(--bg-secondary);
+}
+
+/* 为多个可交互卡片元素增加统一的悬停动效 */
+.session-item,
+.progress-step,
+.search-result-item {
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.session-item:hover,
+.progress-step:hover,
+.search-result-item:hover {
+    transform: translateY(-3px); /* 向上轻微移动 */
+    box-shadow: var(--shadow-lg); /* 使用您已定义的更强的阴影 */
+}
+
+/* =========== 新增/修改：输入框展开/收起功能样式 (新版) =========== */
+
+/* 1. 修改输入框本身：移除右侧padding，添加动画 */
+.simplified-input-area .input-wrapper textarea {
+    resize: none !important; /* 禁用原生拖拽 */
+    transition: height 0.3s ease, max-height 0.3s ease; /* 高度变化时有平滑动画 */
+    /* padding-right: 45px;  <-- 这行现在可以删掉了 */
+}
+
+/* 2. “展开/收起”按钮的样式调整 */
+/* 我们让它复用 .btn-function-menu 的样式，只需要微调 */
+.btn-expand-toggle {
+    flex-shrink: 0; /* 防止按钮被压缩 */
+    /* 之前的 position: absolute 等定位样式都删掉 */
+}
+
+/* 3. 定义输入框“展开后”的样式 */
+.simplified-input-area .input-wrapper textarea.expanded {
+    height: 30vh !important;
+    max-height: 50vh !important;
+}
+
+/* 4. (重要) 调整父容器的 gap，确保按钮间距合适 */
+.simplified-input-area {
+    gap: var(--spacing-sm); /* 从 spacing-md 减小到 spacing-sm */
+}
+
+/* ================================
+   新增：聊天气泡最大高度限制 (修复重叠问题)
+   ================================ */
+
+.message-bubble {
+  /* 为所有聊天气泡设置一个最大高度，例如屏幕高度的60% */
+  max-height: 60vh; 
+  
+  /* 当内容超出最大高度时，在气泡内部显示垂直滚动条 */
+  overflow-y: auto; 
+  
+  /* 让气泡内的布局更稳定，特别是处理代码块和长文本 */
+  display: block; 
+}
+
+/* 优化滚动条样式 (可选，但推荐) */
+.message-bubble::-webkit-scrollbar {
+  width: 6px;
+}
+.message-bubble::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.1);
+  border-radius: 3px;
+}
+.message-bubble::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 3px;
+}
+.message-bubble::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-hover);
+}
+
+/* ================================
+   新增：强制用户消息气泡内所有文本为白色
+   ================================ */
+.message.user .message-bubble * {
+    color: white !important;
+}
+
+/* 修复用户气泡内链接颜色 */
+.message.user .message-bubble a {
+    color: #93c5fd !important; /* 使用一个明亮的蓝色，适合深色背景 */
+    border-bottom-color: #93c5fd !important;
+}
+
+.message.user .message-bubble a:hover {
+    color: #dbeafe !important; /* 悬停时更亮 */
+    border-bottom-color: #dbeafe !important;
+}
+
+/* ==========================================================
+   功能升级：为首页标题增加双主题渐变和立体阴影 (最终修复版)
+   ========================================================== */
+
+/* ---------- 1. 夜间模式 (默认) 效果 ---------- */
+.subtitle,
+.welcome-description {
+  
+  background: linear-gradient(
+    120deg,
+    #FFFFFF 30%,
+    var(--accent-color) 100%
+  );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  
+  /* 强制指令：确保文字颜色为透明，让渐变能够显示出来 */
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
+}
+
+
+/* ---------- 2. 浅色模式 (.light-theme) 效果 ---------- */
+.light-theme .subtitle,
+.light-theme .welcome-description {
+  
+  background: linear-gradient(
+    120deg,
+    var(--text-primary) 30%,
+    var(--primary-color) 100%
+  );
+  
+  -webkit-background-clip: text;
+  background-clip: text;
+  /* 强制指令：同样为浅色模式添加，防止冲突 */
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+
+  filter: 
+    drop-shadow(0 0 6px rgba(255, 255, 255, 0.7)) 
+    drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.15));
+}
+
+
+/* ---------- 3. 统一的字体加粗优化 ---------- */
+.subtitle {
+    font-weight: 500;
+}
