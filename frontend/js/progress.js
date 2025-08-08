@@ -586,24 +586,22 @@ class ProgressManager {
     }
 
     /**
-     * 更新步骤UI
+     * 【优化后】更新步骤UI - 只更新变化的卡片，避免全量重绘
      * @param {number} stepId - 步骤ID
      */
     updateStepUI(stepId) {
         const card = document.querySelector(`[data-step="${stepId}"]`);
         if (!card) return;
 
-        // 如果步骤有内容，添加可点击样式
+        // 【关键修复】只更新预览内容，不再调用 this.renderSteps()
         if (this.currentStepData[stepId]?.content) {
+            // 这部分逻辑保持不变，因为它已经是精准更新了
             card.style.cursor = 'pointer';
             card.title = '点击查看详细内容';
-            card.classList.add('has-content');
             
-            // 在新的步骤卡片中显示内容预览
             const stepContentContainer = card.querySelector('.step-card-content');
-            if (stepContentContainer && this.currentStepData[stepId].content) {
+            if (stepContentContainer) {
                 const cleanedContent = this.cleanupContent(this.currentStepData[stepId].content);
-                // 显示内容的前200个字符作为预览
                 const preview = cleanedContent.length > 200 
                     ? cleanedContent.substring(0, 200) + '...'
                     : cleanedContent;
@@ -620,18 +618,43 @@ class ProgressManager {
                 stepContentContainer.style.display = 'block';
             }
         }
-
-        // 更新进度条（如果存在）
-        const progressFill = card.querySelector('.step-progress-fill');
-        const stepIndex = this.currentSteps.findIndex(step => step.id === stepId);
-        if (progressFill && stepIndex !== -1) {
-            progressFill.style.width = this.getStepProgress(stepIndex) + '%';
-        }
-        
-        // 重新渲染步骤以更新状态
-        this.renderSteps();
     }
 
+        /**
+     * 【新增】精准更新单个卡片的状态和样式
+     * @param {number} stepId - 要更新的步骤ID
+     * @param {string} newStatus - 新的状态 ('pending', 'processing', 'completed')
+     */
+    updateCardStatus(stepId, newStatus) {
+        const card = document.querySelector(`[data-step="${stepId}"]`);
+        if (!card) return;
+
+        // 移除旧的状态类
+        card.classList.remove('pending', 'processing', 'completed');
+        // 添加新的状态类
+        card.classList.add(newStatus);
+        
+        // 更新图标圈的样式
+        const iconCircle = card.querySelector('.step-icon-circle');
+        if(iconCircle) {
+            iconCircle.className = `step-icon-circle ${newStatus}`;
+            const stepConfig = this.currentSteps.find(s => s.id === stepId);
+            if(stepConfig) {
+                iconCircle.innerHTML = this.getStepIcon(stepConfig, newStatus);
+            }
+        }
+
+        // 更新状态指示器的样式和文本
+        const statusIndicator = card.querySelector('.status-indicator');
+        if(statusIndicator) {
+            statusIndicator.className = `status-indicator ${newStatus}`;
+            const icon = statusIndicator.querySelector('i');
+            const text = statusIndicator.querySelector('span');
+            if(icon) icon.className = `fas ${this.getStatusIcon(newStatus)}`;
+            if(text) text.textContent = this.getStatusText(newStatus);
+        }
+    }
+    
     /**
      * 显示步骤详情
      * @param {number} stepId - 步骤ID
@@ -658,11 +681,14 @@ class ProgressManager {
             fullContent += `
                 <details class="step-thinking">
                     <summary class="step-thinking-header">AI思考过程 <i class="fas fa-chevron-down"></i></summary>
-                    <div class="step-thinking-content">${this.renderMarkdown(stepData.thinking)}</div>
+                    <div class="step-thinking-content markdown-container">${this.renderMarkdown(stepData.thinking)}</div>
                 </details>`;
         }
-        fullContent += this.renderMarkdown(stepData.content);
+        fullContent += `<div class="markdown-container">${this.renderMarkdown(stepData.content)}</div>`;
         contentContainer.innerHTML = fullContent;
+        
+        // 确保容器也有markdown类
+        contentContainer.classList.add('markdown-container');
         
         // === 【最终修正代码】 ===
         const modalElement = document.getElementById('stepDetailModal');
@@ -796,11 +822,56 @@ class ProgressManager {
         let processed = content.replace(/\\n/g, '\n').trim();
 
         // 移除 markdown 代码块包裹（如```markdown ... ```）
-        processed = processed.replace(/^```(?:markdown)?\s*\n/, '');
-        processed = processed.replace(/\n```\s*$/, '');
+        // 处理开头的代码块标记
+        processed = processed.replace(/^```(?:markdown|md)?\s*\n?/i, '');
+        // 处理结尾的代码块标记
+        processed = processed.replace(/\n?```\s*$/i, '');
+        
+        // 额外处理：如果整个内容被包裹在代码块中，移除外层包裹
+        if (processed.startsWith('```') && processed.endsWith('```')) {
+            const lines = processed.split('\n');
+            if (lines.length > 2) {
+                // 移除第一行和最后一行
+                processed = lines.slice(1, -1).join('\n');
+            }
+        }
+        
+        // 处理可能的语言标识符残留（如 "markdown#" 或 "md#"）
+        processed = processed.replace(/^(markdown|md)#?\s*\n?/i, '');
+        
+        // 移除可能的代码块语言标识符行
+        const lines = processed.split('\n');
+        if (lines.length > 0 && /^(markdown|md)#?\s*$/i.test(lines[0])) {
+            processed = lines.slice(1).join('\n');
+        }
+        
+        // 修复语言标识符移除后可能留下的多余#号（如 "# ## 标题" -> "## 标题"）
+        processed = processed.replace(/^#+\s*(#{1,6}\s)/m, '$1');
 
-        // 标题处理：确保#后有空格，且标题前后有空行
+        // 修复常见的AI输出格式问题
+        // 1. 修复标题格式：确保#后有空格
         processed = processed.replace(/(#{1,6})([^ \n#])/g, '$1 $2');
+        
+        // 2. 修复嵌套标题问题 - 使用多次迭代处理复杂情况
+        let maxIterations = 10;
+        let iteration = 0;
+        while (iteration < maxIterations) {
+            let beforeFix = processed;
+            
+            // 处理标题后直接跟标题的情况（如 "## 标题### 子标题"）
+            processed = processed.replace(/(#{1,6}\s[^#\n]*?)(#{1,6}\s)/g, '$1\n\n$2');
+            
+            // 处理标题后跟文本再跟标题的情况（如 "### 标题文本内容### 下一个标题"）
+            processed = processed.replace(/(#{1,6}\s[^\n#]+?)([。！？]?)(#{1,6}\s)/g, '$1$2\n\n$3');
+            
+            // 如果没有变化，说明修复完成
+            if (beforeFix === processed) {
+                break;
+            }
+            iteration++;
+        }
+        
+        // 3. 修复标题前后的空行问题
         processed = processed.replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2');
         processed = processed.replace(/(#{1,6}\s[^\n]+)\n([^#\n])/g, '$1\n\n$2');
 
@@ -1202,7 +1273,7 @@ class ProgressManager {
         const truncatedTitle = this.truncateText(title, 80);
 
         // ✅ Snippet 不建议截断，保持markdown语义和换行完整
-        const formattedSnippet = this.renderMarkdown(this.preprocessMarkdownContent(snippet));
+        const formattedSnippet = `<div class="markdown-container">${this.renderMarkdown(this.preprocessMarkdownContent(snippet))}</div>`;
         const displayUrl = this.formatDisplayUrl(url);
         const starRating = this.getStarRating(relevanceScore);
 
@@ -1336,7 +1407,8 @@ class ProgressManager {
         if (resultWrapper && resultContent) {
             // 清理和渲染最终结果
             const cleanedContent = this.cleanupContent(finalResult);
-            resultContent.innerHTML = this.renderMarkdown(cleanedContent);
+            resultContent.innerHTML = `<div class="markdown-container">${this.renderMarkdown(cleanedContent)}</div>`;
+            resultContent.classList.add('markdown-container');
             
             // 显示结果容器
             resultWrapper.style.display = 'block';

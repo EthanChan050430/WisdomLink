@@ -150,6 +150,41 @@ class ChatManager {
             searchInput.addEventListener('input', () => {
                 this.adjustTextareaHeight(searchInput);
             });
+
+            // ========== 新增：展开/收起输入框按钮的逻辑 ==========
+            const expandToggleBtn = document.getElementById('expandToggleBtn');
+            if (expandToggleBtn && searchInput) {
+                // 监听输入框的输入事件，来决定是否显示展开按钮
+                searchInput.addEventListener('input', () => {
+                    // 当输入框的滚动高度（内容高度）大于其可见高度时，才显示展开按钮
+                    if (searchInput.scrollHeight > searchInput.clientHeight && !searchInput.classList.contains('expanded')) {
+                        expandToggleBtn.style.display = 'flex';
+                    } else if (searchInput.scrollHeight <= searchInput.clientHeight) {
+                        // 如果内容变少，按钮重新隐藏
+                        expandToggleBtn.style.display = 'none';
+                    }
+                });
+
+                // 为展开/收起按钮添加点击事件
+                expandToggleBtn.addEventListener('click', () => {
+                    // 切换 .expanded 类
+                    const isExpanded = searchInput.classList.toggle('expanded');
+                    const icon = expandToggleBtn.querySelector('i');
+                    
+                    if (isExpanded) {
+                        // 如果刚刚展开了
+                        icon.className = 'fas fa-compress-alt'; // 切换为收起图标
+                        expandToggleBtn.title = '收起输入框';
+                        expandToggleBtn.style.display = 'flex'; // 确保展开后按钮总是可见
+                    } else {
+                        // 如果刚刚收起了
+                        icon.className = 'fas fa-expand-alt'; // 切换回展开图标
+                        expandToggleBtn.title = '展开输入框';
+                        // 收起时，让高度自动适应当前内容
+                        this.adjustTextareaHeight(searchInput);
+                    }
+                });
+            }
         }
 
         // 清空对话和简洁模式现在由功能菜单处理
@@ -1043,7 +1078,7 @@ class ChatManager {
                 ${avatarContent}
             </div>
             <div class="message-content">
-                <div class="message-bubble" data-message-content>
+                <div class="message-bubble markdown-container" data-message-content>
                     ${this.formatMessageContent(content)}
                 </div>
                 <div class="message-time">${timestamp}</div>
@@ -1801,14 +1836,17 @@ class ChatManager {
      */
     scrollToBottom() {
         if (this.isUserScrolling) {
+            // 如果用户正在向上滚动查看历史记录，则不强制滚动到底部
             return;
         }
 
+        // 检查聊天消息容器是否存在
         if (this.chatMessagesContainer) {
-            setTimeout(() => {
-                // 使用我们缓存的属性
-                this.chatMessagesContainer.scrollTop = this.chatMessagesContainer.scrollHeight;
-            }, 100);
+            // 使用现代浏览器支持的平滑滚动API
+            this.chatMessagesContainer.scrollTo({
+                top: this.chatMessagesContainer.scrollHeight,
+                behavior: 'smooth'
+            });
         }
     }
 
@@ -1816,8 +1854,13 @@ class ChatManager {
      * 调整文本框高度
      */
     adjustTextareaHeight(textarea) {
+        // 如果输入框当前是展开状态，则不进行任何自动高度调整
+        if (textarea.classList.contains('expanded')) {
+            return;
+        }
         textarea.style.height = 'auto';
-        const newHeight = Math.min(textarea.scrollHeight, 120);
+        // 将自动增高的最大值改回一个较小的值，比如150px
+        const newHeight = Math.min(textarea.scrollHeight, 150); 
         textarea.style.height = newHeight + 'px';
     }
 
