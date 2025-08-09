@@ -98,6 +98,34 @@ body {
     color: var(--primary-color);
 }
 
+/* Logo图片样式 */
+.logo .logo-image {
+    height: 28px;
+    width: auto;
+    transition: transform 0.3s ease;
+}
+
+.logo:hover .logo-image {
+    transform: scale(1.05);
+}
+
+/* 主题相关的logo显示控制 */
+.dark-theme .light-logo {
+    display: none;
+}
+
+.dark-theme .dark-logo {
+    display: inline-block;
+}
+
+.light-theme .dark-logo {
+    display: none;
+}
+
+.light-theme .light-logo {
+    display: inline-block;
+}
+
 .nav {
     display: flex;
     align-items: center;
@@ -1596,8 +1624,9 @@ html {
 .dark-theme .mobile-menu-content {
     background: var(--bg-primary);
     border-left-color: var(--border-color);
-}/
-* 应用场景轮播样式 */
+}
+
+/* 应用场景轮播样式 */
 .use-cases {
     padding: 120px 0;
     background: var(--bg-secondary);

@@ -22,6 +22,11 @@ class AIReaderApp {
      */
     async init() {
         try {
+            // 检查是否需要重定向到首页
+            if (this.shouldRedirectToHome()) {
+                return; // 如果重定向了就直接返回，不继续初始化
+            }
+            
             showLoading('初始化应用...');
             
             // 检查用户登录状态
@@ -50,6 +55,27 @@ class AIReaderApp {
             hideLoading();
             showNotification('应用初始化失败，请刷新页面重试', 'error');
         }
+    }
+
+    /**
+     * 检查是否需要重定向到首页
+     * 第一次访问index.html时自动重定向到home.html
+     */
+    shouldRedirectToHome() {
+        // 检查是否已经访问过index.html
+        const hasVisitedIndex = localStorage.getItem('hasVisitedIndex');
+        
+        if (!hasVisitedIndex) {
+            // 标记已访问过index.html
+            localStorage.setItem('hasVisitedIndex', 'true');
+            
+            // 重定向到home.html
+            console.log('首次访问，重定向到首页');
+            window.location.href = 'home.html';
+            return true;
+        }
+        
+        return false;
     }
 
     /**
