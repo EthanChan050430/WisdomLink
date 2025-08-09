@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智链 - AI智能阅读助手</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/mobile-enhancements.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="light-theme">
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-link"></i>
+                <span class="logo-text">智链</span>
+            </div>
+
+            <nav class="nav">
+                <a href="#features" class="nav-link">功能</a>
+                <a href="#use-cases" class="nav-link">场景</a>
+                <a href="#about" class="nav-link">关于</a>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-sun"></i>
+                </button>
+                <a href="index.html" class="btn-start">开始使用</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="main">
+        <!-- 英雄区域 -->
+        <section class="hero">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h1 class="hero-title">智链</h1>
+                    <p class="hero-subtitle">AI智能阅读助手</p>
+                    <p class="hero-description">
+                        基于大语言模型的智能内容分析平台，支持多种输入方式和分析角度，
+                        让AI成为您的专属阅读伙伴，提供深度理解和智能解读。
+                    </p>
+                    <div class="hero-actions">
+                        <a href="index.html" class="btn-primary">
+                            <i class="fas fa-rocket"></i>
+                            立即体验
+                        </a>
+                        <a href="#features" class="btn-secondary">了解更多</a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="hero-card">
+                        <div class="card-header">
+                            <div class="card-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            <span class="card-title">智能分析中...</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="analysis-item">
+                                <i class="fas fa-book-reader"></i>
+                                <span>智能伴读</span>
+                            </div>
+                            <div class="analysis-item">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>全面总结</span>
+                            </div>
+                            <div class="analysis-item">
+                                <i class="fas fa-user-graduate"></i>
+                                <span>大师分析</span>
+                            </div>
+                            <div class="analysis-item">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>真伪鉴定</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 核心功能 -->
+        <section class="features" id="features">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">四大核心功能</h2>
+                    <p class="section-subtitle">全方位智能阅读体验，让每一次阅读都成为思维的升华</p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-book-reader"></i>
+                        </div>
+                        <h3 class="feature-title">智能伴读</h3>
+                        <p class="feature-description">
+                            深入解读内容，持续对话答疑。AI陪伴您的阅读过程，随时解答疑问，提供个性化的理解指导。
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h3 class="feature-title">全面总结</h3>
+                        <p class="feature-description">
+                            四步分析法：概要→细节→思考→总结。系统性地分析内容，从表面到深层，全方位理解文本。
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <h3 class="feature-title">大师分析</h3>
+                        <p class="feature-description">
+                            多角色视角分析，包括鲁迅、胡适、爱因斯坦等大师。从不同专家的角度解读内容，获得多元化见解。
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="feature-title">真伪鉴定</h3>
+                        <p class="feature-description">
+                            四步验证内容真实性和可信度。通过AI分析和外部资料查证，帮助您识别信息的真伪和可靠性。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 应用场景 -->
+        <section class="use-cases" id="use-cases">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">应用场景</h2>
+                    <p class="section-subtitle">智链在各个领域的实际应用，助力不同场景下的智能阅读需求</p>
+                </div>
+
+                <div class="use-cases-carousel">
+                    <div class="carousel-container">
+                        <div class="carousel-track" id="carouselTrack">
+                            <!-- 学术研究 -->
+                            <div class="use-case-slide">
+                                <div class="use-case-image">
+                                    <div class="image-placeholder academic">
+                                        <img
+                                            src="https://ts1.tc.mm.bing.net/th/id/R-C.5131f9acbd8280cba46c77592845de75?rik=OfwbmIaLO%2fADWQ&riu=http%3a%2f%2fmm.lanzhuwh.com%2fimages%2fshiye4.jpg&ehk=SwQUVy29Xu5%2f5l%2bAp8rzt1SMDdNWLdJDT%2fmuGrWu%2fc4%3d&risl=&pid=ImgRaw&r=0">
+                                    </div>
+                                </div>
+                                <div class="use-case-content">
+                                    <h3 class="use-case-title">学术研究</h3>
+                                    <p class="use-case-description">
+                                        快速理解复杂学术论文，提取关键观点，进行多角度分析。
+                                        帮助研究者高效阅读文献，发现研究灵感。
+                                    </p>
+                                    <div class="use-case-features">
+                                        <span class="feature-tag">论文解读</span>
+                                        <span class="feature-tag">文献综述</span>
+                                        <span class="feature-tag">观点提取</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 商业分析 -->
+                            <div class="use-case-slide">
+                                <div class="use-case-image">
+                                    <div class="image-placeholder business">
+                                        <img
+                                            src="https://pic2.zhimg.com/v2-5feb98c6b8363cc624b3e6d65f441ec3_1200x500.jpg">
+                                    </div>
+                                </div>
+                                <div class="use-case-content">
+                                    <h3 class="use-case-title">商业分析</h3>
+                                    <p class="use-case-description">
+                                        深度分析市场报告、财务数据、行业趋势。
+                                        为商业决策提供智能化的信息解读和风险评估。
+                                    </p>
+                                    <div class="use-case-features">
+                                        <span class="feature-tag">市场报告</span>
+                                        <span class="feature-tag">财务分析</span>
+                                        <span class="feature-tag">趋势预测</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 新闻媒体 -->
+                            <div class="use-case-slide">
+                                <div class="use-case-image">
+                                    <div class="image-placeholder news">
+                                        <img
+                                            src="https://n.sinaimg.cn/sinacn15/600/w900h500/20180727/77c7-hfvkitx7739203.jpg">
+                                    </div>
+                                </div>
+                                <div class="use-case-content">
+                                    <h3 class="use-case-title">新闻媒体</h3>
+                                    <p class="use-case-description">
+                                        快速获取新闻要点，验证信息真实性，多角度解读事件。
+                                        帮助读者理性分析新闻，避免信息误导。
+                                    </p>
+                                    <div class="use-case-features">
+                                        <span class="feature-tag">事实核查</span>
+                                        <span class="feature-tag">观点分析</span>
+                                        <span class="feature-tag">信息验证</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 教育学习 -->
+                            <div class="use-case-slide">
+                                <div class="use-case-image">
+                                    <div class="image-placeholder education">
+                                        <img
+                                            src="https://ts1.tc.mm.bing.net/th/id/R-C.dbecaccce9327d31c7b3b74d584ee972?rik=9F%2fIixHgS6mSzA&riu=http%3a%2f%2fp0.ifengimg.com%2fpmop%2f2018%2f1105%2f48E29A40F3FCCB4F5AF553AB91A5BB41D6ECCA80_size64_w1080_h648.jpeg&ehk=OwlfVGByhbd9pPEuZiGLc0uluF4u%2bwO%2bimvq%2bp4BTu4%3d&risl=&pid=ImgRaw&r=0">
+                                    </div>
+                                </div>
+                                <div class="use-case-content">
+                                    <h3 class="use-case-title">教育学习</h3>
+                                    <p class="use-case-description">
+                                        个性化学习辅导，难点解析，知识点总结。
+                                        提升学习效率，培养批判性思维能力。
+                                    </p>
+                                    <div class="use-case-features">
+                                        <span class="feature-tag">个性辅导</span>
+                                        <span class="feature-tag">知识总结</span>
+                                        <span class="feature-tag">思维训练</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 法律文档 -->
+                            <div class="use-case-slide">
+                                <div class="use-case-image">
+                                    <div class="image-placeholder legal">
+                                        <img
+                                            src="https://www.rmzxb.com.cn/upload/resources/image/2022/12/22/2747419.png">
+                                    </div>
+                                </div>
+                                <div class="use-case-content">
+                                    <h3 class="use-case-title">法律文档</h3>
+                                    <p class="use-case-description">
+                                        解读复杂法律条文，分析合同要点，识别潜在风险。
+                                        为法律工作者提供高效的文档分析工具。
+                                    </p>
+                                    <div class="use-case-features">
+                                        <span class="feature-tag">条文解读</span>
+                                        <span class="feature-tag">合同分析</span>
+                                        <span class="feature-tag">风险识别</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 技术文档 -->
+                            <div class="use-case-slide">
+                                <div class="use-case-image">
+                                    <div class="image-placeholder tech">
+                                        <img
+                                            src="https://ts1.tc.mm.bing.net/th/id/R-C.2f5a02aac2952223986322cd703e0d79?rik=yW6ydL20ERYu%2bQ&riu=http%3a%2f%2fwww.dcck.com.cn%2fupfiles%2f202209161209011326945440.png&ehk=fqa%2fqDKWxWp2AfVLoy8ZVdjl1CLczM6KARVJuXVO%2b2k%3d&risl=&pid=ImgRaw&r=0">
+                                    </div>
+                                </div>
+                                <div class="use-case-content">
+                                    <h3 class="use-case-title">技术文档</h3>
+                                    <p class="use-case-description">
+                                        快速理解技术规范、API文档、开发指南。
+                                        帮助开发者高效学习新技术，解决技术难题。
+                                    </p>
+                                    <div class="use-case-features">
+                                        <span class="feature-tag">API解读</span>
+                                        <span class="feature-tag">技术指南</span>
+                                        <span class="feature-tag">代码分析</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 轮播控制 -->
+                    <div class="carousel-controls">
+                        <button class="carousel-btn prev" id="prevBtn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <div class="carousel-indicators" id="carouselIndicators">
+                            <!-- 指示器将通过JavaScript动态生成 -->
+                        </div>
+                        <button class="carousel-btn next" id="nextBtn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 使用方法 -->
+        <section class="how-it-works">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">如何使用</h2>
+                    <p class="section-subtitle">简单四步，开启智能阅读之旅</p>
+                </div>
+
+                <div class="steps-grid">
+
+                    <div class="step-item">
+                        <div class="step-number">01</div>
+                        <h3 class="step-title">选择分析模式</h3>
+                        <p class="step-description">
+                            根据需求选择智能伴读、全面总结、大师分析或真伪鉴定，
+                            每种模式都有独特的分析视角。
+                        </p>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-number">02</div>
+                        <h3 class="step-title">选择输入方式</h3>
+                        <p class="step-description">
+                            支持文本输入、网页链接、文档上传（PDF/DOCX/TXT）、
+                            图片OCR识别等多种方式。
+                        </p>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-number">03</div>
+                        <h3 class="step-title">AI智能分析</h3>
+                        <p class="step-description">
+                            AI开始深度分析内容，提供实时的思考过程展示，
+                            让您了解AI的分析逻辑。
+                        </p>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-number">04</div>
+                        <h3 class="step-title">互动对话</h3>
+                        <p class="step-description">
+                            获得分析结果后，可以继续与AI对话，
+                            深入探讨感兴趣的话题和细节。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于我们 -->
+        <section class="about" id="about">
+            <div class="container">
+                <div class="about-content">
+                    <div class="about-header">
+                        <h2 class="section-title">关于智链</h2>
+                        <div class="about-highlight">
+                            <i class="fas fa-quote-left"></i>
+                            <p class="about-quote">
+                                "让AI成为每个人的智能阅读伙伴，在知识的海洋中点亮思维的明灯"
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="about-description">
+                        <div class="description-item">
+                            <div class="description-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="description-content">
+                                <h3>我们的愿景</h3>
+                                <p>在信息爆炸的时代，智链致力于成为您的智能阅读伙伴。我们相信，真正的理解不仅来自于信息的获取，更来自于深度的思考和多角度的分析。</p>
+                            </div>
+                        </div>
+
+                        <div class="description-item">
+                            <div class="description-icon">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div class="description-content">
+                                <h3>我们的使命</h3>
+                                <p>通过先进的AI技术，让每一次阅读都成为思维的升华，帮助用户在知识的海洋中高效航行，发现更深层的智慧和洞察。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tech-showcase">
+                        <h3 class="tech-title">
+                            <i class="fas fa-cogs"></i>
+                            核心技术栈
+                        </h3>
+                        <p class="tech-subtitle">点击了解技术详情</p>
+                        <div class="tech-stack">
+                            <div class="tech-item primary" data-tech="glm4">
+                                <i class="fas fa-brain"></i>
+                                <span>智谱AI GLM-4</span>
+                                <div class="tech-badge">核心</div>
+                            </div>
+                            <div class="tech-item" data-tech="flask">
+                                <i class="fab fa-python"></i>
+                                <span>Python Flask</span>
+                            </div>
+                            <div class="tech-item" data-tech="javascript">
+                                <i class="fab fa-js-square"></i>
+                                <span>JavaScript</span>
+                            </div>
+                            <div class="tech-item" data-tech="ocr">
+                                <i class="fas fa-eye"></i>
+                                <span>OCR识别</span>
+                            </div>
+                            <div class="tech-item" data-tech="voice">
+                                <i class="fas fa-microphone"></i>
+                                <span>语音交互</span>
+                            </div>
+                            <div class="tech-item" data-tech="stream">
+                                <i class="fas fa-stream"></i>
+                                <span>实时流式响应</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技术详情弹窗 -->
+            <div class="tech-modal" id="techModal">
+                <div class="tech-modal-content">
+                    <div class="tech-modal-header">
+                        <h3 class="tech-modal-title" id="techModalTitle"></h3>
+                        <button class="tech-modal-close" id="techModalClose">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="tech-modal-body" id="techModalBody">
+                        <!-- 技术详情内容将通过JavaScript动态填充 -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="logo">
+                        <i class="fas fa-link"></i>
+                        <span class="logo-text">智链</span>
+                    </div>
+                    <p class="footer-desc">AI智能阅读助手，让阅读更智能</p>
+                </div>
+                <div class="footer-right">
+                    <p class="footer-text">
+                        此项目为 程钰轩、李旭恒、陈嘉杰 参赛作品<br>
+                        <img src="https://cityu.edu.mo/wp-content/themes/cityu/images/header/logo.png"
+                            style="height: 18px;"><a href="https://cityu.edu.mo/zh/" class="footer-link">
+                            澳门城市大学</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|
+                        <a href="https://github.com/EthanChan050430/WisdomLink" class="footer-link">
+                            <i class="fab fa-github"></i> GitHub
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 主题切换功能
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        const themeIcon = themeToggle.querySelector('i');
+
+        // 检查本地存储的主题设置
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.className = savedTheme + '-theme';
+        updateThemeIcon(savedTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = body.classList.contains('dark-theme') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            body.className = newTheme + '-theme';
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        function updateThemeIcon(theme) {
+            themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 滚动动画
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, observerOptions);
+
+        // 观察需要动画的元素
+        document.querySelectorAll('.feature-card, .step-item, .hero-card, .use-case-slide').forEach(element => {
+            observer.observe(element);
+        });
+
+        // 导航栏滚动效果
+        let lastScrollTop = 0;
+        const header = document.querySelector('.header');
+
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                header.style.transform = 'translateY(-100%)';
+            } else {
+                header.style.transform = 'translateY(0)';
+            }
+
+            lastScrollTop = scrollTop;
+        });
+
+        // 应用场景轮播功能
+        class UseCasesCarousel {
+            constructor() {
+                this.track = document.getElementById('carouselTrack');
+                this.prevBtn = document.getElementById('prevBtn');
+                this.nextBtn = document.getElementById('nextBtn');
+                this.indicators = document.getElementById('carouselIndicators');
+                this.slides = document.querySelectorAll('.use-case-slide');
+                this.currentIndex = 0;
+                this.autoPlayInterval = null;
+                this.autoPlayDelay = 5000; // 5秒自动切换
+
+                this.init();
+            }
+
+            init() {
+                if (!this.track || this.slides.length === 0) return;
+
+                this.createIndicators();
+                this.bindEvents();
+                this.updateCarousel();
+                this.startAutoPlay();
+            }
+
+            createIndicators() {
+                this.indicators.innerHTML = '';
+                this.slides.forEach((_, index) => {
+                    const indicator = document.createElement('div');
+                    indicator.className = 'indicator';
+                    if (index === 0) indicator.classList.add('active');
+                    indicator.addEventListener('click', () => this.goToSlide(index));
+                    this.indicators.appendChild(indicator);
+                });
+            }
+
+            bindEvents() {
+                this.prevBtn.addEventListener('click', () => this.prevSlide());
+                this.nextBtn.addEventListener('click', () => this.nextSlide());
+
+                // 鼠标悬停时暂停自动播放
+                this.track.addEventListener('mouseenter', () => this.stopAutoPlay());
+                this.track.addEventListener('mouseleave', () => this.startAutoPlay());
+
+                // 触摸滑动支持
+                let startX = 0;
+                let isDragging = false;
+
+                this.track.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    isDragging = true;
+                    this.stopAutoPlay();
+                });
+
+                this.track.addEventListener('touchmove', (e) => {
+                    if (!isDragging) return;
+                    e.preventDefault();
+                });
+
+                this.track.addEventListener('touchend', (e) => {
+                    if (!isDragging) return;
+                    isDragging = false;
+
+                    const endX = e.changedTouches[0].clientX;
+                    const diffX = startX - endX;
+
+                    if (Math.abs(diffX) > 50) {
+                        if (diffX > 0) {
+                            this.nextSlide();
+                        } else {
+                            this.prevSlide();
+                        }
+                    }
+
+                    this.startAutoPlay();
+                });
+            }
+
+            updateCarousel() {
+                const translateX = -this.currentIndex * 100;
+                this.track.style.transform = `translateX(${translateX}%)`;
+
+                // 更新指示器
+                document.querySelectorAll('.indicator').forEach((indicator, index) => {
+                    indicator.classList.toggle('active', index === this.currentIndex);
+                });
+
+                // 更新按钮状态
+                this.prevBtn.disabled = this.currentIndex === 0;
+                this.nextBtn.disabled = this.currentIndex === this.slides.length - 1;
+            }
+
+            goToSlide(index) {
+                if (index >= 0 && index < this.slides.length) {
+                    this.currentIndex = index;
+                    this.updateCarousel();
+                    this.restartAutoPlay();
+                }
+            }
+
+            nextSlide() {
+                if (this.currentIndex < this.slides.length - 1) {
+                    this.currentIndex++;
+                } else {
+                    this.currentIndex = 0; // 循环到第一张
+                }
+                this.updateCarousel();
+                this.restartAutoPlay();
+            }
+
+            prevSlide() {
+                if (this.currentIndex > 0) {
+                    this.currentIndex--;
+                } else {
+                    this.currentIndex = this.slides.length - 1; // 循环到最后一张
+                }
+                this.updateCarousel();
+                this.restartAutoPlay();
+            }
+
+            startAutoPlay() {
+                this.stopAutoPlay();
+                this.autoPlayInterval = setInterval(() => {
+                    this.nextSlide();
+                }, this.autoPlayDelay);
+            }
+
+            stopAutoPlay() {
+                if (this.autoPlayInterval) {
+                    clearInterval(this.autoPlayInterval);
+                    this.autoPlayInterval = null;
+                }
+            }
+
+            restartAutoPlay() {
+                this.stopAutoPlay();
+                setTimeout(() => {
+                    this.startAutoPlay();
+                }, 1000); // 1秒后重新开始自动播放
+            }
+        }
+
+        // 图片加载处理
+        function handleImageLoad() {
+            const images = document.querySelectorAll('.image-placeholder img');
+            images.forEach(img => {
+                // 图片加载成功时隐藏图标
+                img.addEventListener('load', function () {
+                    const icon = this.parentElement.querySelector('i');
+                    if (icon) {
+                        icon.style.display = 'none';
+                    }
+                });
+
+                // 图片加载失败时显示图标
+                img.addEventListener('error', function () {
+                    const icon = this.parentElement.querySelector('i');
+                    if (icon) {
+                        icon.style.display = 'block';
+                    }
+                    this.style.display = 'none';
+                });
+            });
+        }
+
+        // 技术详情数据
+        const techDetails = {
+            glm4: {
+                title: '智谱AI GLM-4',
+                icon: 'fas fa-brain',
+                sections: [
+                    {
+                        title: '技术概述',
+                        icon: 'fas fa-info-circle',
+                        content: 'GLM-4是智谱AI推出的新一代预训练语言模型，具有强大的自然语言理解和生成能力，支持多轮对话、代码生成、逻辑推理等多种任务。'
+                    },
+                    {
+                        title: '核心优势',
+                        icon: 'fas fa-star',
+                        content: '• 超强理解能力：支持长文本理解和复杂逻辑推理\n• 多模态支持：文本、图像、代码等多种输入格式\n• 实时响应：流式输出，提供流畅的交互体验\n• 高准确性：在各类NLP任务中表现优异'
+                    }
+                ],
+                features: ['自然语言理解', '文本生成', '逻辑推理', '多轮对话', '代码分析'],
+                stats: [
+                    { number: '1000亿+', label: '参数规模' },
+                    { number: '99.5%', label: '准确率' },
+                    { number: '<100ms', label: '响应时间' }
+                ]
+            },
+            flask: {
+                title: 'Python Flask',
+                icon: 'fab fa-python',
+                sections: [
+                    {
+                        title: '框架介绍',
+                        icon: 'fas fa-code',
+                        content: 'Flask是一个轻量级的Python Web框架，以其简洁性和灵活性著称。我们使用Flask构建了智链的后端API服务，处理用户请求和AI模型调用。'
+                    },
+                    {
+                        title: '应用场景',
+                        icon: 'fas fa-cogs',
+                        content: '• API接口开发：提供RESTful API服务\n• 文件处理：支持多种格式文档上传和解析\n• 数据处理：文本预处理和结果格式化\n• 会话管理：用户状态和对话历史管理'
+                    }
+                ],
+                features: ['轻量级框架', 'RESTful API', '文件上传', '会话管理', '数据处理'],
+                stats: [
+                    { number: '50+', label: 'API接口' },
+                    { number: '99.9%', label: '服务可用性' },
+                    { number: '10MB', label: '最大文件支持' }
+                ]
+            },
+            javascript: {
+                title: 'JavaScript',
+                icon: 'fab fa-js-square',
+                sections: [
+                    {
+                        title: '前端技术',
+                        icon: 'fas fa-desktop',
+                        content: 'JavaScript是智链前端的核心技术，负责用户界面交互、实时通信、动态内容渲染等功能，为用户提供流畅的使用体验。'
+                    },
+                    {
+                        title: '主要功能',
+                        icon: 'fas fa-magic',
+                        content: '• 动态交互：实现丰富的用户界面交互效果\n• 实时通信：WebSocket连接，支持流式数据传输\n• 文件处理：前端文件上传和预览功能\n• 状态管理：应用状态和用户数据管理'
+                    }
+                ],
+                features: ['ES6+语法', '异步编程', 'DOM操作', 'WebSocket', '模块化开发'],
+                stats: [
+                    { number: '5000+', label: '代码行数' },
+                    { number: '20+', label: '交互组件' },
+                    { number: '<50ms', label: '响应延迟' }
+                ]
+            },
+            ocr: {
+                title: 'OCR识别',
+                icon: 'fas fa-eye',
+                sections: [
+                    {
+                        title: '技术原理',
+                        icon: 'fas fa-search',
+                        content: 'OCR（光学字符识别）技术能够将图片中的文字转换为可编辑的文本格式，支持多种语言和字体识别，为用户提供便捷的图片文字提取功能。'
+                    },
+                    {
+                        title: '应用优势',
+                        icon: 'fas fa-thumbs-up',
+                        content: '• 高精度识别：支持印刷体和手写体识别\n• 多语言支持：中英文及其他主流语言\n• 格式保持：保留原文档的排版结构\n• 快速处理：秒级完成图片文字提取'
+                    }
+                ],
+                features: ['文字识别', '多语言支持', '版面分析', '格式保持', '批量处理'],
+                stats: [
+                    { number: '98%+', label: '识别准确率' },
+                    { number: '20+', label: '支持语言' },
+                    { number: '<3s', label: '处理时间' }
+                ]
+            },
+            voice: {
+                title: '语音交互',
+                icon: 'fas fa-microphone',
+                sections: [
+                    {
+                        title: '语音技术',
+                        icon: 'fas fa-volume-up',
+                        content: '集成先进的语音识别和语音合成技术，支持语音输入和语音播报功能，为用户提供更自然的人机交互体验。'
+                    },
+                    {
+                        title: '功能特色',
+                        icon: 'fas fa-headphones',
+                        content: '• 语音输入：支持实时语音转文字功能\n• 语音播报：AI分析结果语音朗读\n• 多音色选择：提供不同的语音合成音色\n• 噪音过滤：智能降噪，提高识别准确性'
+                    }
+                ],
+                features: ['语音识别', '语音合成', '实时转换', '噪音过滤', '多音色支持'],
+                stats: [
+                    { number: '95%+', label: '识别准确率' },
+                    { number: '5+', label: '音色选择' },
+                    { number: '实时', label: '响应速度' }
+                ]
+            },
+            stream: {
+                title: '实时流式响应',
+                icon: 'fas fa-stream',
+                sections: [
+                    {
+                        title: '流式技术',
+                        icon: 'fas fa-bolt',
+                        content: '采用流式数据传输技术，AI生成的内容可以实时显示给用户，无需等待完整响应，大大提升了用户体验和交互流畅性。'
+                    },
+                    {
+                        title: '技术优势',
+                        icon: 'fas fa-rocket',
+                        content: '• 实时显示：内容逐步呈现，减少等待时间\n• 低延迟：毫秒级数据传输延迟\n• 可中断：支持用户随时停止生成\n• 高并发：支持多用户同时使用'
+                    }
+                ],
+                features: ['WebSocket连接', '流式传输', '实时渲染', '断点续传', '并发处理'],
+                stats: [
+                    { number: '<10ms', label: '传输延迟' },
+                    { number: '1000+', label: '并发用户' },
+                    { number: '99.9%', label: '连接稳定性' }
+                ]
+            }
+        };
+
+        // 技术详情弹窗管理
+        class TechModal {
+            constructor() {
+                this.modal = document.getElementById('techModal');
+                this.modalTitle = document.getElementById('techModalTitle');
+                this.modalBody = document.getElementById('techModalBody');
+                this.closeBtn = document.getElementById('techModalClose');
+
+                this.init();
+            }
+
+            init() {
+                // 绑定技术标签点击事件
+                document.querySelectorAll('.tech-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const techKey = item.dataset.tech;
+                        if (techKey && techDetails[techKey]) {
+                            this.showModal(techDetails[techKey]);
+                        }
+                    });
+                });
+
+                // 绑定关闭事件
+                this.closeBtn.addEventListener('click', () => this.hideModal());
+                this.modal.addEventListener('click', (e) => {
+                    if (e.target === this.modal) {
+                        this.hideModal();
+                    }
+                });
+
+                // ESC键关闭
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && this.modal.classList.contains('active')) {
+                        this.hideModal();
+                    }
+                });
+            }
+
+            showModal(techData) {
+                this.modalTitle.innerHTML = `<i class="${techData.icon}"></i> ${techData.title}`;
+                this.modalBody.innerHTML = this.generateModalContent(techData);
+                this.modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            hideModal() {
+                this.modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            generateModalContent(techData) {
+                let content = '';
+
+                // 技术详情部分
+                techData.sections.forEach(section => {
+                    content += `
+                        <div class="tech-detail-section">
+                            <h4><i class="${section.icon}"></i> ${section.title}</h4>
+                            <p>${section.content.replace(/\n/g, '<br>')}</p>
+                        </div>
+                    `;
+                });
+
+                // 特性标签
+                if (techData.features && techData.features.length > 0) {
+                    content += `
+                        <div class="tech-detail-section">
+                            <h4><i class="fas fa-tags"></i> 核心特性</h4>
+                            <div class="tech-features">
+                                ${techData.features.map(feature =>
+                        `<span class="tech-feature-tag">${feature}</span>`
+                    ).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // 统计数据
+                if (techData.stats && techData.stats.length > 0) {
+                    content += `
+                        <div class="tech-detail-section">
+                            <h4><i class="fas fa-chart-bar"></i> 技术指标</h4>
+                            <div class="tech-stats">
+                                ${techData.stats.map(stat => `
+                                    <div class="tech-stat">
+                                        <span class="tech-stat-number">${stat.number}</span>
+                                        <span class="tech-stat-label">${stat.label}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return content;
+            }
+        }
+
+        // 初始化轮播
+        document.addEventListener('DOMContentLoaded', () => {
+            new UseCasesCarousel();
+            handleImageLoad();
+            new TechModal();
+        });
+    </script>
+
+    <!-- 移动端优化脚本 -->
+    <script src="js/mobile.js"></script>
+</body>
+
+</html>

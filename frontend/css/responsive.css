@@ -1,0 +1,1116 @@
+/* ================================
+   智链 - 响应式设计优化
+   专为移动端设备优化的样式表
+   ================================ */
+
+/* 基础响应式变量 */
+:root {
+  /* 移动端专用间距 */
+  --mobile-spacing-xs: 0.25rem;
+  --mobile-spacing-sm: 0.5rem;
+  --mobile-spacing-md: 0.75rem;
+  --mobile-spacing-lg: 1rem;
+  --mobile-spacing-xl: 1.5rem;
+  
+  /* 移动端字体大小 */
+  --mobile-font-xs: 0.75rem;
+  --mobile-font-sm: 0.875rem;
+  --mobile-font-md: 1rem;
+  --mobile-font-lg: 1.125rem;
+  --mobile-font-xl: 1.25rem;
+  
+  /* 移动端触摸目标最小尺寸 */
+  --touch-target-min: 44px;
+  
+  /* 移动端容器宽度 */
+  --mobile-container-padding: 1rem;
+}
+
+/* ================================
+   通用移动端优化
+   ================================ */
+
+/* 确保所有元素在移动端可见 */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* 移动端滚动优化 */
+body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* 移动端输入框优化 */
+input, textarea, select {
+  font-size: 16px; /* 防止iOS缩放 */
+  -webkit-appearance: none;
+  border-radius: 0; /* 重置iOS默认圆角 */
+}
+
+/* ================================
+   断点媒体查询
+   ================================ */
+
+/* 超大屏幕 (1400px+) */
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1320px;
+  }
+  
+  .welcome-screen {
+    max-width: 900px;
+  }
+  
+  .chat-screen {
+    max-width: 1100px;
+  }
+}
+
+/* 大屏幕 (1200px - 1399px) */
+@media (max-width: 1399px) {
+  .hero-container {
+    gap: 60px;
+  }
+  
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* 中等屏幕 (992px - 1199px) */
+@media (max-width: 1199px) {
+  .nav-functions .function-btn span {
+    display: none;
+  }
+  
+  .nav-functions .function-btn {
+    padding: 0.5rem;
+    min-width: 40px;
+    justify-content: center;
+  }
+  
+  .hero-container {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 3rem;
+  }
+  
+  .hero-visual {
+    order: -1;
+  }
+}
+
+/* 小屏幕 (768px - 991px) */
+@media (max-width: 991px) {
+  .app-container {
+    margin-top: 60px;
+  }
+  
+  .main-content {
+    padding: var(--mobile-spacing-lg);
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* 移动端 (768px以下) */
+@media (max-width: 767px) {
+  
+  /* ================================
+     导航栏移动端优化
+     ================================ */
+  
+  .header {
+    height: 60px;
+    padding: 0;
+  }
+  
+  .header-container {
+    height: 60px;
+    padding: 0 var(--mobile-container-padding);
+  }
+  
+  .logo {
+    font-size: var(--mobile-font-lg);
+  }
+  
+  .logo-text {
+    display: none; /* 移动端只显示图标 */
+  }
+  
+  .nav-functions,
+  .nav-tools {
+    display: none;
+  }
+  
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+  }
+  
+  .mobile-menu-toggle:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+  
+  /* ================================
+     移动端菜单优化
+     ================================ */
+  
+  .mobile-menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+  }
+  
+  .mobile-menu-overlay.active {
+    display: block;
+  }
+  
+  .mobile-menu-content {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(320px, 85vw);
+    height: 100vh;
+    background: var(--bg-primary);
+    border-left: 1px solid var(--border-color);
+    padding: var(--mobile-spacing-lg);
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-xl);
+  }
+  
+  .mobile-menu-overlay.active .mobile-menu-content {
+    transform: translateX(0);
+  }
+  
+  .mobile-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--mobile-spacing-xl);
+    padding-bottom: var(--mobile-spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .mobile-menu-close {
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+  }
+  
+  .mobile-menu-close:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+  
+  .mobile-menu-section {
+    margin-bottom: var(--mobile-spacing-xl);
+  }
+  
+  .mobile-menu-section-title {
+    font-size: var(--mobile-font-xs);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--mobile-spacing-md);
+  }
+  
+  .mobile-function-btn {
+    width: 100%;
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--mobile-spacing-md);
+    margin-bottom: var(--mobile-spacing-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    min-height: var(--touch-target-min);
+  }
+  
+  .mobile-function-btn:hover {
+    border-color: var(--primary-color);
+    background: rgba(99, 102, 241, 0.05);
+  }
+  
+  .mobile-function-btn.active {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: white;
+    border-color: transparent;
+  }
+  
+  .mobile-btn-content {
+    display: flex;
+    align-items: center;
+    gap: var(--mobile-spacing-md);
+  }
+  
+  .mobile-btn-content i {
+    font-size: var(--mobile-font-lg);
+    width: 24px;
+    text-align: center;
+  }
+  
+  .mobile-btn-text span {
+    font-weight: 500;
+    font-size: var(--mobile-font-md);
+    display: block;
+  }
+  
+  .mobile-btn-text small {
+    font-size: var(--mobile-font-xs);
+    opacity: 0.7;
+    display: block;
+    margin-top: 2px;
+  }
+  
+  .mobile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--mobile-spacing-md);
+    background: none;
+    border: none;
+    padding: var(--mobile-spacing-md);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    font-size: var(--mobile-font-md);
+    width: 100%;
+    min-height: var(--touch-target-min);
+    margin-bottom: var(--mobile-spacing-sm);
+  }
+  
+  .mobile-menu-item:hover {
+    background: var(--bg-tertiary);
+  }
+  
+  .mobile-menu-item i {
+    width: 20px;
+    text-align: center;
+  }
+  
+  /* ================================
+     主容器移动端优化
+     ================================ */
+  
+  .app-container {
+    margin-top: 60px;
+    min-height: calc(100vh - 60px);
+  }
+  
+  .main-content {
+    padding: var(--mobile-spacing-md);
+  }
+  
+  /* ================================
+     欢迎界面移动端优化
+     ================================ */
+  
+  .welcome-screen {
+    max-width: 100%;
+    padding: var(--mobile-spacing-lg) 0;
+  }
+  
+  .welcome-header {
+    text-align: center;
+    margin-bottom: var(--mobile-spacing-xl);
+    padding: 0 var(--mobile-spacing-sm);
+  }
+  
+  .gradient-text {
+    font-size: 2.5rem;
+    line-height: 1.1;
+  }
+  
+  .subtitle {
+    font-size: var(--mobile-font-lg);
+    margin-top: var(--mobile-spacing-sm);
+  }
+  
+  .welcome-description {
+    font-size: var(--mobile-font-md);
+    padding: 0 var(--mobile-spacing-sm);
+    line-height: 1.6;
+  }
+  
+  /* ================================
+     上传区域移动端优化
+     ================================ */
+  
+  .upload-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--mobile-spacing-lg);
+    margin: 0 var(--mobile-spacing-sm);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .upload-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--mobile-spacing-sm);
+    margin-bottom: var(--mobile-spacing-lg);
+    background: var(--bg-tertiary);
+    padding: var(--mobile-spacing-xs);
+    border-radius: var(--radius-lg);
+  }
+  
+  .upload-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--mobile-spacing-xs);
+    padding: var(--mobile-spacing-sm);
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: var(--mobile-font-sm);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: var(--touch-target-min);
+  }
+  
+  .upload-tab i {
+    font-size: var(--mobile-font-lg);
+  }
+  
+  .upload-tab:hover {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+  }
+  
+  .upload-tab.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: var(--shadow-md);
+  }
+  
+  .input-wrapper textarea {
+    width: 100%;
+    padding: var(--mobile-spacing-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: var(--mobile-font-md);
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 120px;
+    transition: all 0.2s ease;
+  }
+  
+  .file-upload-area,
+  .image-upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--mobile-spacing-xl);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .upload-icon {
+    font-size: 2.5rem;
+    color: var(--text-muted);
+    margin-bottom: var(--mobile-spacing-md);
+  }
+  
+  .upload-text {
+    font-size: var(--mobile-font-md);
+    color: var(--text-secondary);
+    margin-bottom: var(--mobile-spacing-sm);
+    text-align: center;
+  }
+  
+  .upload-hint {
+    font-size: var(--mobile-font-sm);
+    color: var(--text-muted);
+    text-align: center;
+  }
+  
+  /* ================================
+     模型选择器移动端优化
+     ================================ */
+  
+  .welcome-model-selector {
+    margin: var(--mobile-spacing-lg) 0;
+    max-width: 100%;
+  }
+  
+  .selector-button {
+    width: 100%;
+    padding: var(--mobile-spacing-md);
+    font-size: var(--mobile-font-md);
+    min-height: var(--touch-target-min);
+  }
+  
+  .selector-dropdown {
+    position: absolute;
+    top: calc(100% + var(--mobile-spacing-xs));
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+    max-height: 250px;
+    overflow-y: auto;
+  }
+  
+  .dropdown-option {
+    padding: var(--mobile-spacing-md);
+    min-height: var(--touch-target-min);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .dropdown-option .option-name {
+    font-size: var(--mobile-font-md);
+    font-weight: 500;
+  }
+  
+  .dropdown-option .option-desc {
+    font-size: var(--mobile-font-sm);
+    margin-top: 2px;
+  }
+  
+  /* ================================
+     上传操作区域移动端优化
+     ================================ */
+  
+  .upload-actions {
+    margin-top: var(--mobile-spacing-lg);
+  }
+  
+  .upload-actions .btn-primary {
+    width: 100%;
+    padding: var(--mobile-spacing-lg);
+    font-size: var(--mobile-font-lg);
+    font-weight: 600;
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--mobile-spacing-sm);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s ease;
+  }
+  
+  .upload-actions .btn-primary:active {
+    transform: scale(0.98);
+  }
+  
+  /* ================================
+     聊天界面移动端优化
+     ================================ */
+  
+  .chat-screen {
+    max-width: 100%;
+    margin: 0;
+  }
+  
+  .chat-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    height: calc(100vh - 80px);
+    margin: 0 var(--mobile-spacing-sm);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .chat-messages {
+    flex: 1;
+    padding: var(--mobile-spacing-md);
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    min-height: 0;
+  }
+  
+  .message {
+    margin-bottom: var(--mobile-spacing-lg);
+    display: flex;
+    gap: var(--mobile-spacing-sm);
+  }
+  
+  .message-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-md);
+  }
+  
+  .message-content {
+    max-width: calc(100% - 50px);
+    min-width: 0;
+  }
+  
+  .message-bubble {
+    padding: var(--mobile-spacing-md);
+    border-radius: 16px;
+    position: relative;
+    word-wrap: break-word;
+    line-height: 1.5;
+    box-shadow: var(--shadow-md);
+    font-size: var(--mobile-font-md);
+  }
+  
+  .message-time {
+    font-size: var(--mobile-font-xs);
+    color: var(--text-muted);
+    margin-top: var(--mobile-spacing-xs);
+  }
+  
+  /* ================================
+     聊天输入区域移动端优化
+     ================================ */
+  
+  .chat-input-container {
+    padding: var(--mobile-spacing-md);
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-primary);
+  }
+  
+  .simplified-input-area {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--mobile-spacing-sm);
+  }
+  
+  .function-menu-container {
+    position: relative;
+  }
+  
+  .btn-function-menu {
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  
+  .btn-function-menu:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+  }
+  
+  .input-wrapper {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .input-wrapper textarea {
+    width: 100%;
+    padding: var(--mobile-spacing-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: var(--mobile-font-md);
+    line-height: 1.4;
+    resize: none;
+    min-height: var(--touch-target-min);
+    max-height: 120px;
+    transition: all 0.2s ease;
+  }
+  
+  .input-wrapper textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+  
+  .btn-send {
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  
+  .btn-send:active {
+    transform: scale(0.95);
+  }
+  
+  .btn-send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  /* ================================
+     功能菜单下拉框移动端优化
+     ================================ */
+  
+  .function-menu-dropdown {
+    position: absolute;
+    bottom: calc(100% + var(--mobile-spacing-sm));
+    left: 0;
+    min-width: 280px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    z-index: 1000;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .menu-section {
+    padding: var(--mobile-spacing-md);
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .menu-section:last-child {
+    border-bottom: none;
+  }
+  
+  .menu-label {
+    font-size: var(--mobile-font-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--mobile-spacing-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .menu-option {
+    display: flex;
+    align-items: center;
+    gap: var(--mobile-spacing-sm);
+    padding: var(--mobile-spacing-sm);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: var(--touch-target-min);
+    margin-bottom: var(--mobile-spacing-xs);
+  }
+  
+  .menu-option:hover {
+    background: var(--bg-secondary);
+  }
+  
+  .menu-option i {
+    width: 20px;
+    text-align: center;
+    color: var(--primary-color);
+  }
+  
+  .menu-option .option-name {
+    font-size: var(--mobile-font-md);
+    font-weight: 500;
+  }
+  
+  .menu-option .option-desc {
+    font-size: var(--mobile-font-sm);
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+  
+  /* ================================
+     聊天历史面板移动端优化
+     ================================ */
+  
+  .history-panel {
+    position: fixed;
+    top: 60px;
+    left: -100%;
+    width: min(320px, 85vw);
+    height: calc(100vh - 60px);
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    z-index: 90;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-xl);
+  }
+  
+  .history-panel.show {
+    left: 0;
+  }
+  
+  .history-header {
+    padding: var(--mobile-spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .history-header h3 {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: var(--mobile-font-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--mobile-spacing-sm);
+  }
+  
+  .history-controls {
+    display: flex;
+    gap: var(--mobile-spacing-xs);
+  }
+  
+  .history-controls .btn-icon {
+    width: 36px;
+    height: 36px;
+    font-size: var(--mobile-font-sm);
+  }
+  
+  .history-search {
+    padding: var(--mobile-spacing-md);
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .history-search input {
+    width: 100%;
+    padding: var(--mobile-spacing-sm) var(--mobile-spacing-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--mobile-font-md);
+    min-height: var(--touch-target-min);
+  }
+  
+  /* ================================
+     进度界面移动端优化
+     ================================ */
+  
+  .progress-screen {
+    padding: var(--mobile-spacing-md);
+  }
+  
+  .progress-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--mobile-spacing-lg);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .progress-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--mobile-spacing-lg);
+  }
+  
+  .progress-header h2 {
+    font-size: var(--mobile-font-xl);
+    color: var(--text-primary);
+  }
+  
+  .progress-steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mobile-spacing-md);
+  }
+  
+  .progress-step {
+    display: flex;
+    align-items: center;
+    gap: var(--mobile-spacing-md);
+    padding: var(--mobile-spacing-md);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    transition: all 0.2s ease;
+  }
+  
+  .step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: var(--mobile-font-sm);
+    flex-shrink: 0;
+  }
+  
+  .progress-step.active .step-circle {
+    background: var(--primary-color);
+    color: white;
+  }
+  
+  .step-label {
+    font-size: var(--mobile-font-md);
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+}
+
+/* ================================
+   超小屏幕 (480px以下)
+   ================================ */
+
+@media (max-width: 479px) {
+  :root {
+    --mobile-container-padding: 0.75rem;
+  }
+  
+  .header-container {
+    padding: 0 var(--mobile-container-padding);
+  }
+  
+  .main-content {
+    padding: var(--mobile-spacing-sm);
+  }
+  
+  .upload-section {
+    margin: 0;
+    border-radius: var(--radius-lg);
+    padding: var(--mobile-spacing-md);
+  }
+  
+  .gradient-text {
+    font-size: 2rem;
+  }
+  
+  .subtitle {
+    font-size: var(--mobile-font-md);
+  }
+  
+  .welcome-description {
+    font-size: var(--mobile-font-sm);
+  }
+  
+  .upload-tabs {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--mobile-spacing-xs);
+  }
+  
+  .upload-tab {
+    padding: var(--mobile-spacing-xs);
+    font-size: var(--mobile-font-xs);
+  }
+  
+  .upload-tab i {
+    font-size: var(--mobile-font-md);
+  }
+  
+  .chat-container {
+    margin: 0;
+    border-radius: var(--radius-lg);
+    height: calc(100vh - 70px);
+  }
+  
+  .mobile-menu-content {
+    width: min(280px, 90vw);
+    padding: var(--mobile-spacing-md);
+  }
+  
+  .function-menu-dropdown {
+    min-width: 260px;
+    max-height: 300px;
+  }
+}
+
+/* ================================
+   横屏模式优化
+   ================================ */
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .welcome-screen {
+    padding: var(--mobile-spacing-md) 0;
+  }
+  
+  .welcome-header {
+    margin-bottom: var(--mobile-spacing-md);
+  }
+  
+  .gradient-text {
+    font-size: 2rem;
+  }
+  
+  .chat-container {
+    height: calc(100vh - 70px);
+  }
+  
+  .mobile-menu-content {
+    padding: var(--mobile-spacing-sm);
+  }
+  
+  .mobile-menu-section {
+    margin-bottom: var(--mobile-spacing-md);
+  }
+}
+
+/* ================================
+   触摸设备优化
+   ================================ */
+
+@media (hover: none) and (pointer: coarse) {
+  /* 移除hover效果，使用active状态 */
+  .upload-tab:hover,
+  .mobile-function-btn:hover,
+  .mobile-menu-item:hover,
+  .menu-option:hover {
+    background: initial;
+    color: initial;
+    border-color: initial;
+  }
+  
+  .upload-tab:active,
+  .mobile-function-btn:active,
+  .mobile-menu-item:active,
+  .menu-option:active {
+    background: var(--bg-tertiary);
+    transform: scale(0.98);
+  }
+  
+  /* 增加触摸反馈 */
+  .btn-primary:active,
+  .btn-send:active,
+  .btn-function-menu:active {
+    transform: scale(0.95);
+  }
+}
+
+/* ================================
+   可访问性优化
+   ================================ */
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  :root {
+    --border-color: #000000;
+    --text-secondary: #000000;
+  }
+  
+  .light-theme {
+    --border-color: #000000;
+    --text-secondary: #000000;
+  }
+}
+
+/* 减少动画模式支持 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 焦点可见性增强 */
+@media (prefers-reduced-motion: no-preference) {
+  *:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+}
+
+/* ================================
+   打印样式优化
+   ================================ */
+
+@media print {
+  .header,
+  .mobile-menu-overlay,
+  .history-panel,
+  .btn-function-menu,
+  .btn-send,
+  .upload-actions {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-top: 0;
+    padding: 0;
+  }
+  
+  .chat-container,
+  .upload-section {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}

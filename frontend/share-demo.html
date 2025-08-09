@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智链AI分享功能演示</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/share.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            padding-top: 64px;
+        }
+        
+        .demo-main {
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            min-height: calc(100vh - 64px);
+        }
+        
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .demo-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .demo-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+        
+        .demo-section h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        
+        .mock-message {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .mock-message.user {
+            background: rgba(33, 150, 243, 0.2);
+        }
+        
+        .mock-message.assistant {
+            background: rgba(76, 175, 80, 0.2);
+        }
+        
+        .message-header {
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .message-content {
+            line-height: 1.6;
+        }
+        
+        .demo-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .demo-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+        }
+    </style>
+</head>
+<body class="dark-theme">
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="header-container">
+            <a href="home.html" class="logo" title="返回主页">
+                <i class="fas fa-link"></i>
+                <span class="logo-text">智链</span>
+            </a>
+            
+            <nav class="nav">
+                <a href="index.html" class="nav-link">返回应用</a>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-sun"></i>
+                </button>
+                <a href="index.html" class="btn-start">开始使用</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="demo-main">
+        <div class="demo-container">
+        <h1 class="demo-title">
+            <i class="fas fa-share-alt"></i>
+            智链AI分享功能演示
+        </h1>
+        
+        <div class="demo-section">
+            <h3><i class="fas fa-comments"></i> 模拟对话</h3>
+            <div class="mock-message user">
+                <div class="message-header">
+                    <i class="fas fa-user"></i>
+                    用户
+                </div>
+                <div class="message-content">
+                    请帮我分析一下人工智能在教育领域的应用前景。
+                </div>
+            </div>
+            
+            <div class="mock-message assistant">
+                <div class="message-header">
+                    <i class="fas fa-robot"></i>
+                    AI助手
+                </div>
+                <div class="message-content">
+                    <strong># 人工智能在教育领域的应用前景分析</strong>
+                    <br><br>
+                    <strong>## 1. 核心应用方向</strong>
+                    <br><br>
+                    <strong>### 个性化学习</strong><br>
+                    - <strong>智能推荐</strong>：根据学习数据推荐适合的内容<br>
+                    - <strong>学习路径优化</strong>：动态调整学习进度和难度<br>
+                    - <strong>知识图谱构建</strong>：建立个人知识体系
+                    <br><br>
+                    <strong>### 智能辅导系统</strong><br>
+                    1. <strong>24/7在线答疑</strong>：即时解答学生疑问<br>
+                    2. <strong>作业批改</strong>：自动化评估和反馈<br>
+                    3. <strong>学习分析</strong>：深度挖掘学习行为数据
+                    <br><br>
+                    <strong>## 2. 技术实现</strong><br>
+                    - **自然语言处理**：理解和生成教育内容<br>
+                    - **机器学习算法**：预测学习效果和需求<br>
+                    - **计算机视觉**：智能监考和行为分析
+                </div>
+                <div class="message-actions">
+                    <div class="share-buttons">
+                        <button class="share-btn" data-action="download" title="下载图片">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="share-btn" data-action="copy" title="复制内容">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3><i class="fas fa-info-circle"></i> 功能说明</h3>
+            <p>点击AI回复下方的分享按钮来体验分享功能：</p>
+            <ul>
+                <li><strong>📥 下载按钮</strong>：直接下载包含对话内容的PNG图片到本地</li>
+                <li><strong>📋 复制按钮</strong>：将对话内容以文本形式复制到剪贴板</li>
+            </ul>
+            <p><strong>✨ 新功能：Markdown格式支持</strong></p>
+            <ul>
+                <li>🎨 <strong>标题层级</strong>：# ## ### 显示为不同大小和颜色</li>
+                <li>💪 <strong>粗体文本</strong>：**文本** 显示为加粗效果</li>
+                <li>📝 <strong>列表格式</strong>：- 和 1. 显示为格式化列表</li>
+                <li>🌈 <strong>语法高亮</strong>：不同元素使用不同颜色区分</li>
+            </ul>
+        </div>
+        
+        <div class="demo-section">
+            <h3><i class="fas fa-cog"></i> 测试功能</h3>
+            <p>点击下方按钮测试分享功能是否正常工作：</p>
+            <div class="demo-actions">
+                <button class="demo-btn" onclick="testShareFunction()">
+                    <i class="fas fa-play"></i>
+                    测试分享功能
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 模态框容器 -->
+    <div class="modal-overlay" id="modalOverlay" style="display: none;"></div>
+
+    <!-- JavaScript -->
+    <script src="js/share.js"></script>
+    <script>
+        // 模拟聊天消息数据
+        function mockChatMessages() {
+            // 创建模拟的聊天消息容器
+            const mockContainer = document.createElement('div');
+            mockContainer.id = 'chatMessages';
+            mockContainer.style.display = 'none';
+            
+            // 添加模拟消息
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user-message';
+            userMessage.innerHTML = `
+                <div class="message-content">
+                    请帮我分析一下人工智能在教育领域的应用前景。
+                </div>
+            `;
+            
+            const assistantMessage = document.createElement('div');
+            assistantMessage.className = 'message';
+            assistantMessage.innerHTML = `
+                <div class="message-content">
+                    人工智能在教育领域具有广阔的应用前景，主要体现在以下几个方面：
+
+                    1. 个性化学习
+                    AI可以根据学生的学习习惯、能力水平和兴趣偏好，提供个性化的学习内容和路径。
+
+                    2. 智能辅导系统
+                    通过自然语言处理和机器学习技术，AI可以提供24/7的学习辅导服务。
+
+                    3. 自动化评估
+                    AI能够快速、准确地评估学生的作业和考试，提供即时反馈。
+                </div>
+            `;
+            
+            mockContainer.appendChild(userMessage);
+            mockContainer.appendChild(assistantMessage);
+            document.body.appendChild(mockContainer);
+            
+            // 创建模拟的聊天界面
+            const mockChatScreen = document.createElement('div');
+            mockChatScreen.id = 'chatScreen';
+            mockChatScreen.style.display = 'block';
+            document.body.appendChild(mockChatScreen);
+            
+            // 创建模拟的活跃功能按钮
+            const mockFunctionBtn = document.createElement('button');
+            mockFunctionBtn.className = 'function-btn active';
+            mockFunctionBtn.textContent = '智能伴读';
+            document.body.appendChild(mockFunctionBtn);
+        }
+        
+        function testShareFunction() {
+            // 创建模拟数据
+            mockChatMessages();
+            
+            // 测试分享功能
+            if (window.shareManager) {
+                const conversationData = window.shareManager.getCurrentConversationData();
+                if (conversationData) {
+                    window.shareManager.shareAsImage(conversationData)
+                        .then(() => {
+                            console.log('分享功能测试成功');
+                        })
+                        .catch(error => {
+                            console.error('分享功能测试失败:', error);
+                            alert('分享功能测试失败，请检查控制台错误信息');
+                        });
+                } else {
+                    alert('无法获取对话数据');
+                }
+            } else {
+                alert('分享管理器未初始化');
+            }
+        }
+        
+        // 主题切换功能
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        const themeIcon = themeToggle.querySelector('i');
+        
+        // 检查本地存储的主题设置
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        body.className = savedTheme + '-theme';
+        updateThemeIcon(savedTheme);
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = body.classList.contains('dark-theme') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            body.className = newTheme + '-theme';
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+        
+        function updateThemeIcon(theme) {
+            themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('分享功能演示页面已加载');
+            console.log('分享管理器状态:', !!window.shareManager);
+        });
+    </script>
+</body>
+</html>

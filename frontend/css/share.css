@@ -1,0 +1,369 @@
+/* 分享功能样式 */
+
+/* 分享按钮组 */
+.share-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-left: 12px;
+}
+
+.share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    font-size: 14px;
+}
+
+.share-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.share-btn:active {
+    transform: translateY(0);
+}
+
+.share-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 亮色主题下的分享按钮 */
+.light-theme .share-btn {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333333;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.light-theme .share-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 分享预览弹窗 */
+.share-preview-modal {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.share-preview-content {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.share-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.share-preview-header h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.share-preview-header h3 i {
+    color: #4CAF50;
+}
+
+.share-preview-body {
+    padding: 24px;
+}
+
+.preview-image-container {
+    text-align: center;
+    margin-bottom: 24px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 16px;
+}
+
+.preview-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.share-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.share-actions .btn-primary,
+.share-actions .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.share-actions .btn-primary {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: none;
+}
+
+.share-actions .btn-primary:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+}
+
+.share-actions .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.share-actions .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1);
+}
+
+/* 亮色主题下的分享预览 */
+.light-theme .share-preview-content {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    color: #333333;
+}
+
+.light-theme .share-preview-header {
+    border-bottom-color: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.light-theme .share-preview-header h3 {
+    color: #333333;
+}
+
+.light-theme .preview-image-container {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.light-theme .share-actions .btn-secondary {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333333;
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light-theme .share-actions .btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 消息提示样式 */
+.message-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s ease;
+    max-width: 300px;
+}
+
+.message-toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.message-toast.success {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+}
+
+.message-toast.error {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+}
+
+.message-toast.warning {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+}
+
+.message-toast.info {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+}
+
+.message-toast i {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* 聊天消息中的分享按钮 */
+.message-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.light-theme .message-actions {
+    border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+.message-actions .share-buttons {
+    margin-left: 0;
+}
+
+.message-actions .share-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+}
+
+/* 结果操作区域 */
+.result-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.light-theme .result-actions {
+    border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+.result-actions .share-buttons {
+    margin-left: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .share-preview-modal {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .share-preview-header,
+    .share-preview-body {
+        padding: 16px;
+    }
+    
+    .share-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .share-actions .btn-primary,
+    .share-actions .btn-secondary {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .message-toast {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+    
+    .share-buttons {
+        gap: 6px;
+    }
+    
+    .share-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+    
+    .result-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .result-actions .share-buttons {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+/* 动画效果 */
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* 分享按钮的悬浮提示 */
+.share-btn[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    animation: tooltipFadeIn 0.2s ease-out;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}

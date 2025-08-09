@@ -1,0 +1,54 @@
+name: Bug Report
+description: 报告项目中的错误或问题
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您帮助改进智链AI阅读助手！请详细描述您遇到的问题。
+
+  - type: input
+    id: environment
+    attributes:
+      label: 环境信息
+      description: 您的操作系统、浏览器版本等
+      placeholder: 例如：Windows 11, Chrome 131
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 详细描述您遇到的问题
+      placeholder: 请描述问题的具体表现...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 如何复现这个问题？
+      placeholder: |
+        1. 打开应用
+        2. 点击...
+        3. 输入...
+        4. 出现错误
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+      description: 您期望应该发生什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 附加信息
+      description: 任何可能有帮助的额外信息，如截图、日志等

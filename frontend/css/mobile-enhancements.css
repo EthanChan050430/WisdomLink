@@ -1,0 +1,590 @@
+/* ================================
+   智链 - 移动端增强样式
+   触摸反馈、动画和交互优化
+   ================================ */
+
+/* ================================
+   触摸反馈样式
+   ================================ */
+
+/* 通用触摸激活状态 */
+.touch-active {
+  transform: scale(0.98) !important;
+  opacity: 0.8 !important;
+  transition: all 0.1s ease !important;
+}
+
+/* 按钮触摸反馈 */
+button.touch-active,
+.btn.touch-active,
+.btn-primary.touch-active,
+.btn-secondary.touch-active {
+  transform: scale(0.95) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* 上传标签页触摸反馈 */
+.upload-tab.touch-active {
+  background: var(--primary-color) !important;
+  color: white !important;
+  transform: scale(0.98) !important;
+}
+
+/* 功能按钮触摸反馈 */
+.function-btn.touch-active,
+.mobile-function-btn.touch-active {
+  background: var(--primary-color) !important;
+  color: white !important;
+  transform: scale(0.97) !important;
+}
+
+/* 菜单项触摸反馈 */
+.mobile-menu-item.touch-active,
+.menu-option.touch-active {
+  background: var(--bg-tertiary) !important;
+  transform: translateX(4px) scale(0.98) !important;
+}
+
+/* 链接触摸反馈 */
+a.touch-active {
+  opacity: 0.7 !important;
+  transform: scale(0.98) !important;
+}
+
+/* ================================
+   移动端专用动画
+   ================================ */
+
+/* 页面切换动画 */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 移动端页面动画 */
+.mobile-device .welcome-screen {
+  animation: fadeInScale 0.4s ease-out;
+}
+
+.mobile-device .chat-screen {
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+.mobile-device .progress-screen {
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+/* ================================
+   移动端菜单增强
+   ================================ */
+
+/* 菜单打开动画 */
+.mobile-menu-overlay.active {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.mobile-menu-overlay.active .mobile-menu-content {
+  animation: slideInFromRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 菜单项依次出现动画 */
+.mobile-menu-overlay.active .mobile-function-btn {
+  animation: slideInFromRight 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+.mobile-menu-overlay.active .mobile-function-btn:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.mobile-menu-overlay.active .mobile-function-btn:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.mobile-menu-overlay.active .mobile-function-btn:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.mobile-menu-overlay.active .mobile-function-btn:nth-child(4) {
+  animation-delay: 0.25s;
+}
+
+.mobile-menu-overlay.active .mobile-menu-item {
+  animation: slideInFromRight 0.3s ease-out;
+  animation-fill-mode: both;
+  animation-delay: 0.3s;
+}
+
+/* ================================
+   输入框增强
+   ================================ */
+
+/* 聚焦时的输入框动画 */
+.mobile-device input:focus,
+.mobile-device textarea:focus {
+  animation: inputFocusGlow 0.3s ease-out;
+}
+
+@keyframes inputFocusGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+}
+
+/* 输入框错误状态 */
+.mobile-device input.error,
+.mobile-device textarea.error {
+  border-color: var(--error-color) !important;
+  animation: inputShake 0.5s ease-in-out;
+}
+
+@keyframes inputShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* ================================
+   加载状态增强
+   ================================ */
+
+/* 移动端加载动画 */
+.mobile-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: mobileSpinner 1s linear infinite;
+}
+
+@keyframes mobileSpinner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 脉冲加载效果 */
+.mobile-pulse {
+  animation: mobilePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes mobilePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+/* ================================
+   消息气泡增强
+   ================================ */
+
+/* 消息出现动画 */
+.mobile-device .message {
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 用户消息从右侧滑入 */
+.mobile-device .message.user {
+  animation: messageSlideInFromRight 0.3s ease-out;
+}
+
+@keyframes messageSlideInFromRight {
+  from {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* AI消息从左侧滑入 */
+.mobile-device .message.assistant {
+  animation: messageSlideInFromLeft 0.3s ease-out;
+}
+
+@keyframes messageSlideInFromLeft {
+  from {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ================================
+   上传区域增强
+   ================================ */
+
+/* 文件拖拽悬停效果 */
+.mobile-device .file-upload-area.dragover,
+.mobile-device .image-upload-area.dragover {
+  border-color: var(--primary-color);
+  background: rgba(99, 102, 241, 0.1);
+  transform: scale(1.02);
+  animation: uploadAreaPulse 1s ease-in-out infinite;
+}
+
+@keyframes uploadAreaPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(99, 102, 241, 0.1);
+  }
+}
+
+/* 文件上传成功动画 */
+.mobile-device .upload-success {
+  animation: uploadSuccess 0.6s ease-out;
+}
+
+@keyframes uploadSuccess {
+  0% {
+    transform: scale(1);
+    background: var(--bg-tertiary);
+  }
+  50% {
+    transform: scale(1.05);
+    background: var(--success-color);
+    color: white;
+  }
+  100% {
+    transform: scale(1);
+    background: var(--bg-tertiary);
+  }
+}
+
+/* ================================
+   进度指示器增强
+   ================================ */
+
+/* 进度步骤动画 */
+.mobile-device .progress-step.active {
+  animation: progressStepActive 0.5s ease-out;
+}
+
+@keyframes progressStepActive {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 进度条填充动画 */
+.mobile-device .progress-fill {
+  animation: progressFill 0.8s ease-out;
+}
+
+@keyframes progressFill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: var(--progress-width, 0%);
+  }
+}
+
+/* ================================
+   通知和提示增强
+   ================================ */
+
+/* 移动端通知样式 */
+.mobile-notification {
+  position: fixed;
+  top: 70px;
+  left: 16px;
+  right: 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-xl);
+  z-index: 9999;
+  animation: notificationSlideDown 0.4s ease-out;
+}
+
+@keyframes notificationSlideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.mobile-notification.success {
+  border-left: 4px solid var(--success-color);
+}
+
+.mobile-notification.error {
+  border-left: 4px solid var(--error-color);
+}
+
+.mobile-notification.warning {
+  border-left: 4px solid var(--warning-color);
+}
+
+.mobile-notification.info {
+  border-left: 4px solid var(--info-color);
+}
+
+/* ================================
+   滚动增强
+   ================================ */
+
+/* 自定义滚动条（移动端WebKit） */
+.mobile-device ::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.mobile-device ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mobile-device ::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 2px;
+}
+
+.mobile-device ::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.5);
+}
+
+/* 滚动指示器 */
+.mobile-scroll-indicator {
+  position: fixed;
+  top: 60px;
+  right: 4px;
+  width: 4px;
+  height: calc(100vh - 60px);
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.mobile-scroll-indicator::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--scroll-progress, 0%);
+  background: var(--primary-color);
+  transition: height 0.1s ease;
+}
+
+/* ================================
+   虚拟键盘适配
+   ================================ */
+
+/* 键盘显示时的样式调整 */
+.keyboard-visible .chat-container {
+  transition: height 0.3s ease;
+}
+
+.keyboard-visible .chat-input-container {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+}
+
+/* ================================
+   手势提示
+   ================================ */
+
+/* 滑动提示动画 */
+.swipe-hint {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  z-index: 1000;
+  animation: swipeHintFade 3s ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes swipeHintFade {
+  0%, 20% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  30%, 70% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+}
+
+/* ================================
+   性能优化
+   ================================ */
+
+/* 硬件加速 */
+.mobile-device .message-bubble,
+.mobile-device .upload-section,
+.mobile-device .chat-container,
+.mobile-device .mobile-menu-content {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* 减少重绘 */
+.mobile-device .function-btn,
+.mobile-device .upload-tab,
+.mobile-device .mobile-function-btn {
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* ================================
+   暗色主题移动端优化
+   ================================ */
+
+.dark-theme.mobile-device .mobile-notification {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.dark-theme.mobile-device .mobile-scroll-indicator {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ================================
+   可访问性增强
+   ================================ */
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+  .mobile-device .touch-active {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+  
+  .mobile-device .mobile-notification {
+    border-width: 2px;
+  }
+}
+
+/* 减少动画模式 */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-device * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .touch-active {
+    transition: none !important;
+  }
+}
+
+/* ================================
+   调试模式
+   ================================ */
+
+.mobile-debug .touch-active {
+  outline: 2px solid red !important;
+  outline-offset: 2px !important;
+}
+
+.mobile-debug .mobile-device::before {
+  content: 'Mobile Mode Active';
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: red;
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+  z-index: 10000;
+  pointer-events: none;
+}
