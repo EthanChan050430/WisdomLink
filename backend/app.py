@@ -127,19 +127,13 @@ if __name__ == '__main__':
         # 使用HTTPS
         logging.info("检测到SSL证书，启用HTTPS模式")
         try:
-            # 直接使用8443端口，避免443端口冲突
+            # 使用7000端口启用HTTPS
             app.run(
                 host='0.0.0.0', 
-                port=8443,  # 使用备用HTTPS端口
+                port=7000,  # HTTPS也使用7000端口
                 debug=True,
                 ssl_context=(cert_file, key_file)
             )
-        except Exception as e:
-            logging.error(f"HTTPS启动失败: {e}")
-            logging.info("回退到HTTP模式")
-            app.run(host='0.0.0.0', port=7000, debug=True)
-            debug=True,
-            ssl_context=(cert_file, key_file)
         except Exception as e:
             logging.error(f"HTTPS启动失败: {e}")
             logging.info("回退到HTTP模式")

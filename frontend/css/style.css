@@ -2463,8 +2463,10 @@ body.light-theme .function-btn:hover:not(.active) {
 
 /* 修复移动端菜单打开时的body滚动问题 */
 body.mobile-menu-open {
-  overflow: hidden;
-  /* 防止背景滚动 */
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  /* 防止背景滚动，但保持滚动位置 */
 }
 
 /* 优化移动端菜单内容填充 */

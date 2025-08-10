@@ -117,6 +117,33 @@ a.touch-active {
    移动端菜单增强
    ================================ */
 
+/* 折叠菜单动画 */
+.collapse-menu-trigger {
+  animation: slideInFromRight 0.5s ease-out 1s both;
+}
+
+.collapse-menu-container.active {
+  animation: slideInFromRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.collapse-menu-overlay.active {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 菜单触发按钮脉冲提示 */
+@keyframes menuTriggerPulse {
+  0%, 100% {
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow: -2px 0 16px rgba(99, 102, 241, 0.4);
+  }
+}
+
+.collapse-menu-trigger:not(.active) {
+  animation: menuTriggerPulse 2s ease-in-out infinite;
+}
+
 /* 菜单打开动画 */
 .mobile-menu-overlay.active {
   animation: fadeIn 0.3s ease-out;
@@ -126,7 +153,35 @@ a.touch-active {
   animation: slideInFromRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 菜单项依次出现动画 */
+/* 折叠菜单项依次出现动画 */
+.collapse-menu-container.active .mobile-function-btn {
+  animation: slideInFromRight 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+.collapse-menu-container.active .mobile-function-btn:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.collapse-menu-container.active .mobile-function-btn:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.collapse-menu-container.active .mobile-function-btn:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.collapse-menu-container.active .mobile-function-btn:nth-child(4) {
+  animation-delay: 0.25s;
+}
+
+.collapse-menu-container.active .mobile-menu-item {
+  animation: slideInFromRight 0.3s ease-out;
+  animation-fill-mode: both;
+  animation-delay: 0.3s;
+}
+
+/* 保留原有菜单项动画 */
 .mobile-menu-overlay.active .mobile-function-btn {
   animation: slideInFromRight 0.4s ease-out;
   animation-fill-mode: both;
@@ -458,7 +513,7 @@ a.touch-active {
 
 /* 键盘显示时的样式调整 */
 .keyboard-visible .chat-container {
-  transition: height 0.3s ease;
+  transition: height 0.2s ease;
 }
 
 .keyboard-visible .chat-input-container {
@@ -466,6 +521,74 @@ a.touch-active {
   bottom: 0;
   background: var(--bg-primary);
   border-top: 1px solid var(--border-color);
+  z-index: 100;
+}
+
+/* 防止输入框在键盘出现时跳动 */
+.keyboard-visible input,
+.keyboard-visible textarea {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  position: relative;
+  z-index: 1000;
+}
+
+/* 输入框焦点状态优化 */
+.mobile-device input:focus,
+.mobile-device textarea:focus {
+  outline: none !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+  transform: translateZ(0);
+  position: relative;
+  z-index: 1001;
+}
+
+/* 防止输入框失去焦点的样式 */
+[data-input-focused="true"] input:focus,
+[data-input-focused="true"] textarea:focus {
+  pointer-events: auto !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* 输入框容器保护 */
+.input-wrapper {
+  position: relative;
+  z-index: 100;
+}
+
+.keyboard-visible .input-wrapper {
+  z-index: 1000;
+}
+
+/* 防止其他元素干扰输入框 */
+.keyboard-visible .chat-messages,
+.keyboard-visible .upload-section {
+  pointer-events: auto;
+  touch-action: pan-y;
+}
+
+/* 防止iOS Safari自动缩放 */
+.mobile-device input,
+.mobile-device textarea,
+.mobile-device select {
+  font-size: 16px !important;
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+
+/* 输入框容器在键盘显示时的优化 */
+.keyboard-visible .simplified-input-area {
+  position: relative;
+  z-index: 101;
+}
+
+/* 上传区域在键盘显示时的优化 */
+.keyboard-visible .upload-section {
+  transition: max-height 0.2s ease;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ================================
@@ -587,4 +710,263 @@ a.touch-active {
   font-size: 12px;
   z-index: 10000;
   pointer-events: none;
+}
+/
+* ================================
+   触摸滚动优化
+   ================================ */
+
+/* 改善移动端滚动体验 */
+.mobile-device {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.mobile-device .chat-messages,
+.mobile-device .upload-section,
+.mobile-device .mobile-menu-content,
+.mobile-device .history-panel {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+/* 防止输入时页面跳动 */
+.mobile-device input:focus,
+.mobile-device textarea:focus {
+  position: relative;
+  z-index: 10;
+}
+
+/* 输入框展开状态 */
+.mobile-device textarea.expanded {
+  max-height: 200px !important;
+  height: auto !important;
+}
+
+/* 键盘显示时的布局调整 */
+.keyboard-visible {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.keyboard-visible .main-content {
+  height: calc(100vh - 60px);
+  overflow: hidden;
+}
+
+/* 防止键盘弹出时的布局跳动 */
+.mobile-device .chat-input-container {
+  position: relative;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+  padding: var(--mobile-spacing-md);
+  z-index: 100;
+}
+
+/* 改善按钮触摸反馈 */
+.mobile-device button,
+.mobile-device .btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 防止长按选择文本 */
+.mobile-device .upload-tab,
+.mobile-device .function-btn,
+.mobile-device .mobile-function-btn {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* 优化滚动条显示 */
+.mobile-device ::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+.mobile-device ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mobile-device ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 1px;
+}
+
+.mobile-device ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* 暗色主题下的滚动条 */
+.dark-theme.mobile-device ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark-theme.mobile-device ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}/* ========
+========================
+   移动端输入修复样式
+   ================================ */
+
+/* 键盘显示时的特殊样式 */
+.mobile-keyboard-visible {
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+.mobile-keyboard-visible .main-content {
+  height: calc(100vh - 60px) !important;
+  overflow: hidden !important;
+}
+
+.mobile-keyboard-visible .chat-container {
+  transition: height 0.2s ease !important;
+}
+
+/* 输入框焦点状态的特殊处理 */
+[data-mobile-focused="true"] {
+  position: relative !important;
+  z-index: 1000 !important;
+}
+
+/* 防止输入时的布局跳动 */
+[data-input-active="true"] .chat-messages {
+  scroll-behavior: auto !important;
+}
+
+[data-input-active="true"] .upload-section {
+  scroll-behavior: auto !important;
+}
+
+/* iOS特殊处理 */
+@supports (-webkit-touch-callout: none) {
+  .mobile-device input,
+  .mobile-device textarea {
+    font-size: 16px !important;
+    -webkit-appearance: none !important;
+    border-radius: 0 !important;
+  }
+  
+  .mobile-device input:focus,
+  .mobile-device textarea:focus {
+    transform: translateZ(0) !important;
+    -webkit-transform: translateZ(0) !important;
+  }
+}
+
+/* Android特殊处理 */
+@media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: .001dpcm) {
+  .mobile-device input,
+  .mobile-device textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* 防止输入框在键盘出现时被遮挡 */
+.mobile-keyboard-visible [data-mobile-focused="true"] {
+  position: fixed !important;
+  z-index: 10000 !important;
+  background: var(--bg-primary) !important;
+  border: 2px solid var(--primary-color) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 恢复正常状态 */
+.mobile-device input:not([data-mobile-focused]),
+.mobile-device textarea:not([data-mobile-focused]) {
+  position: relative !important;
+  z-index: auto !important;
+}/* ====
+============================
+   移动端输入框保护样式
+   ================================ */
+
+/* 受保护的输入框样式 */
+[data-mobile-protected="true"] {
+  position: relative !important;
+  z-index: 10000 !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+}
+
+/* 键盘激活状态 */
+.mobile-keyboard-active {
+  overflow: hidden;
+}
+
+.mobile-keyboard-active .main-content {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.mobile-keyboard-active [data-mobile-protected="true"] {
+  background: var(--bg-primary) !important;
+  border: 2px solid var(--primary-color) !important;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3) !important;
+}
+
+/* 防止输入框被其他元素遮挡 */
+.mobile-keyboard-active .chat-container,
+.mobile-keyboard-active .upload-section {
+  position: relative;
+  z-index: 1;
+}
+
+.mobile-keyboard-active .input-wrapper {
+  position: relative;
+  z-index: 10001;
+}
+
+/* iOS特殊处理 */
+@supports (-webkit-touch-callout: none) {
+  [data-mobile-protected="true"] {
+    -webkit-user-select: text !important;
+    -webkit-touch-callout: default !important;
+  }
+  
+  .mobile-keyboard-active [data-mobile-protected="true"] {
+    -webkit-appearance: none !important;
+    border-radius: var(--radius-md) !important;
+  }
+}
+
+/* Android特殊处理 */
+@media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: .001dpcm) {
+  [data-mobile-protected="true"] {
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+}
+
+/* 防止输入框在保护状态下的样式冲突 */
+.mobile-keyboard-active .touch-active {
+  transform: none !important;
+}
+
+.mobile-keyboard-active [data-mobile-protected="true"]:focus {
+  outline: 2px solid var(--primary-color) !important;
+  outline-offset: 2px !important;
+}
+
+/* 调试模式 */
+.mobile-debug [data-mobile-protected="true"] {
+  border: 3px solid red !important;
+  background: rgba(255, 0, 0, 0.1) !important;
+}
+
+.mobile-debug [data-mobile-protected="true"]::before {
+  content: 'PROTECTED';
+  position: absolute;
+  top: -20px;
+  left: 0;
+  background: red;
+  color: white;
+  padding: 2px 6px;
+  font-size: 10px;
+  z-index: 10002;
 }

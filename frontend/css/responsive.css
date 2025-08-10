@@ -134,6 +134,11 @@ input, textarea, select {
   .header {
     height: 60px;
     padding: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
   }
   
   .header-container {
@@ -155,11 +160,87 @@ input, textarea, select {
   }
   
   .mobile-menu-toggle {
+    display: none; /* 隐藏汉堡菜单按钮 */
+  }
+  
+  /* ================================
+     移动端折叠菜单优化
+     ================================ */
+  
+  /* 折叠菜单触发按钮 */
+  .collapse-menu-trigger {
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 80px;
+    background: var(--primary-color);
+    border: none;
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 1001;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .collapse-menu-trigger:hover {
+    background: var(--primary-hover);
+    transform: translateY(-50%) translateX(-5px);
+  }
+  
+  .collapse-menu-trigger.active {
+    transform: translateY(-50%) translateX(-280px);
+    background: var(--primary-hover);
+  }
+  
+  /* 折叠菜单容器 */
+  .collapse-menu-container {
+    position: fixed;
+    top: 0;
+    right: -320px;
+    width: 320px;
+    height: 100vh;
+    background: var(--bg-primary);
+    border-left: 1px solid var(--border-color);
+    z-index: 1000;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .collapse-menu-container.active {
+    right: 0;
+  }
+  
+  /* 菜单内容 */
+  .collapse-menu-content {
+    padding: var(--mobile-spacing-lg);
+    height: 100%;
+  }
+  
+  /* 菜单头部 */
+  .collapse-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--mobile-spacing-xl);
+    padding-bottom: var(--mobile-spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .collapse-menu-close {
     width: var(--touch-target-min);
     height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
     color: var(--text-secondary);
@@ -169,29 +250,33 @@ input, textarea, select {
     transition: all 0.2s ease;
   }
   
-  .mobile-menu-toggle:hover {
+  .collapse-menu-close:hover {
     background: var(--bg-tertiary);
     color: var(--text-primary);
   }
   
-  /* ================================
-     移动端菜单优化
-     ================================ */
-  
-  .mobile-menu-overlay {
-    display: none;
+  /* 菜单遮罩层（可选，用于点击外部关闭） */
+  .collapse-menu-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9999;
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
   }
   
-  .mobile-menu-overlay.active {
-    display: block;
+  .collapse-menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  /* 保留原有的移动端菜单样式作为备用 */
+  .mobile-menu-overlay {
+    display: none;
   }
   
   .mobile-menu-content {
@@ -576,6 +661,8 @@ input, textarea, select {
     margin: 0 var(--mobile-spacing-sm);
     display: flex;
     flex-direction: column;
+    position: relative;
+    touch-action: pan-y;
   }
   
   .chat-messages {
@@ -584,6 +671,8 @@ input, textarea, select {
     overflow-y: auto;
     scroll-behavior: smooth;
     min-height: 0;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
   
   .message {
@@ -678,12 +767,14 @@ input, textarea, select {
     border-radius: var(--radius-lg);
     color: var(--text-primary);
     font-family: var(--font-sans);
-    font-size: var(--mobile-font-md);
+    font-size: 16px; /* 防止iOS缩放 */
     line-height: 1.4;
     resize: none;
     min-height: var(--touch-target-min);
     max-height: 120px;
     transition: all 0.2s ease;
+    -webkit-appearance: none;
+    touch-action: manipulation;
   }
   
   .input-wrapper textarea:focus {
