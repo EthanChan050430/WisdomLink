@@ -1,6 +1,7 @@
 import requests
 import json
 import re
+import base64
 from typing import Generator, Dict, Any
 from config import AI_CONFIG
 
@@ -10,6 +11,16 @@ class AIService:
         self.api_key = AI_CONFIG['api_key']
         self.simple_model = AI_CONFIG['simple_model']
         self.complex_model = AI_CONFIG['complex_model']
+        self.vision_model = 'GLM-4V-Flash'  # 固定使用视觉模型
+    
+    def _encode_image(self, image_path: str) -> str:
+        """将图片编码为base64"""
+        try:
+            with open(image_path, "rb") as image_file:
+                return base64.b64encode(image_file.read()).decode('utf-8')
+        except Exception as e:
+            print(f"Error encoding image {image_path}: {e}")
+            return None
     
     def _make_request(self, messages: list, model: str, stream: bool = True) -> Generator[str, None, None]:
         """发送请求到AI模型"""
@@ -111,6 +122,41 @@ class AIService:
         for chunk in self.simple_chat(prompt, system_prompt, model):
             content += chunk
         return content
+    
+    def analyze_image(self, image_paths: list, prompt: str = "请分析这张图片的内容", system_prompt: str = None) -> Generator[str, None, None]:
+        """分析图片内容，固定使用GLM-4V-Flash模型"""
+        messages = []
+        
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        
+        # 构建包含图片和文本的消息
+        content = []
+        
+        # 添加图片
+        for image_path in image_paths:
+            base64_image = self._encode_image(image_path)
+            if base64_image:
+                content.append({
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{base64_image}"
+                    }
+                })
+        
+        # 添加文本提示
+        content.append({
+            "type": "text",
+            "text": prompt
+        })
+        
+        messages.append({
+            "role": "user",
+            "content": content
+        })
+        
+        # 固定使用视觉模型
+        return self._make_request(messages, self.vision_model)
     
     def complex_chat_complete(self, prompt: str, system_prompt: str = None, model: str = None) -> str:
         """复杂任务聊天（非流式，返回完整响应）"""

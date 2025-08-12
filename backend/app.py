@@ -119,6 +119,13 @@ def check_ssl_certificates():
 if __name__ == '__main__':
     # 确保数据目录存在
     os.makedirs('data', exist_ok=True)
+    os.makedirs('backend/data', exist_ok=True)
+    os.makedirs('temp', exist_ok=True)
+    
+    # 从环境变量获取配置
+    debug_mode = os.getenv('FLASK_ENV', 'development') == 'development'
+    port = int(os.getenv('PORT', 7000))
+    host = os.getenv('HOST', '0.0.0.0')
     
     # 检查SSL证书
     cert_file, key_file = check_ssl_certificates()
@@ -127,18 +134,17 @@ if __name__ == '__main__':
         # 使用HTTPS
         logging.info("检测到SSL证书，启用HTTPS模式")
         try:
-            # 使用7000端口启用HTTPS
             app.run(
-                host='0.0.0.0', 
-                port=7000,  # HTTPS也使用7000端口
-                debug=True,
+                host=host, 
+                port=port,
+                debug=debug_mode,
                 ssl_context=(cert_file, key_file)
             )
         except Exception as e:
             logging.error(f"HTTPS启动失败: {e}")
             logging.info("回退到HTTP模式")
-            app.run(host='0.0.0.0', port=7000, debug=True)
+            app.run(host=host, port=port, debug=debug_mode)
     else:
         # 使用HTTP
         logging.info("未检测到SSL证书，使用HTTP模式")
-        app.run(host='0.0.0.0', port=7000, debug=True)
+        app.run(host=host, port=port, debug=debug_mode)

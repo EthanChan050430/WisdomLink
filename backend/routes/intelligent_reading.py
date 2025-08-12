@@ -69,19 +69,70 @@ def start_reading():
                     extracted_content += f"\n\n=== {file_path} ===\n{file_content}"
         
         elif content_type == 'image':
-            # 图片OCR
+            # 图片分析 - 直接使用GLM-4V-Flash模型分析图片
             images = request.files.getlist('images')
-            saved_paths = ocr_service.save_uploaded_images(images)
-            ocr_results = ocr_service.extract_text_from_multiple_images(saved_paths)
             
-            for result in ocr_results:
-                if result['success']:
-                    extracted_content += f"\n\n=== 图片文字 ===\n{result['text']}"
-                    content_info[result['image_path']] = {
-                        'word_count': result['word_count']
-                    }
-                else:
-                    extracted_content += f"\n\n错误：无法识别图片 {result['image_path']} 的文字：{result['error']}"
+            if not images:
+                def generate_error_response():
+                    yield f"data: {json.dumps({'type': 'session_id', 'session_id': str(uuid.uuid4())})}\n\n"
+                    yield f"data: {json.dumps({'type': 'error', 'message': '没有找到要分析的图片'})}\n\n"
+                    yield f"data: {json.dumps({'type': 'done'})}\n\n"
+                
+                return Response(
+                    generate_error_response(),
+                    mimetype='text/plain'
+                )
+            
+            # 保存上传的图片
+            saved_paths = ocr_service.save_uploaded_images(images)
+            
+            if not saved_paths:
+                def generate_error_response():
+                    yield f"data: {json.dumps({'type': 'session_id', 'session_id': str(uuid.uuid4())})}\n\n"
+                    yield f"data: {json.dumps({'type': 'error', 'message': '图片保存失败'})}\n\n"
+                    yield f"data: {json.dumps({'type': 'done'})}\n\n"
+                
+                return Response(
+                    generate_error_response(),
+                    mimetype='text/plain'
+                )
+            
+            # 生成会话ID
+            session_id = str(uuid.uuid4())
+            
+            # 构建图片分析提示
+            analysis_prompt = f"""请分析这些图片的内容。根据智能伴读的要求，请提供：
+
+1. 图片内容的详细描述
+2. 如果图片包含文字，请提取并整理文字内容
+3. 对图片内容的深入解读和分析
+4. 相关的背景知识或延伸思考
+
+用户的具体需求：{content_data if content_data else '全面分析图片内容'}
+
+请以智能伴读助手的身份，用友好、专业的语气进行分析。"""
+            
+            def generate_image_analysis():
+                try:
+                    yield f"data: {json.dumps({'type': 'session_id', 'session_id': session_id})}\n\n"
+                    yield f"data: {json.dumps({'type': 'step', 'step': 1, 'title': '图片解析', 'status': 'processing'})}\n\n"
+                    
+                    # 使用GLM-4V-Flash分析图片
+                    for chunk in ai_service.analyze_image(saved_paths, analysis_prompt):
+                        if chunk.strip():
+                            yield f"data: {json.dumps({'type': 'content', 'content': chunk, 'step': 1})}\n\n"
+                    
+                    yield f"data: {json.dumps({'type': 'step', 'step': 1, 'status': 'completed'})}\n\n"
+                    yield f"data: {json.dumps({'type': 'done'})}\n\n"
+                    
+                except Exception as e:
+                    yield f"data: {json.dumps({'type': 'error', 'message': f'图片分析失败：{str(e)}'})}\n\n"
+                    yield f"data: {json.dumps({'type': 'done'})}\n\n"
+            
+            return Response(
+                generate_image_analysis(),
+                mimetype='text/plain'
+            )
         
         if not extracted_content.strip():
             # 统一使用流式响应格式返回错误

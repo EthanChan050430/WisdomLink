@@ -1,62 +1,81 @@
+<center>
+
 # 智链 - AI智能阅读助手
 
-> 一个基于大模型的智能内容分析平台，支持多种输入方式和分析角度
+<p style="text-align: center; font-size: 24px;">
+万卷风烟静，一链定云心
+</p>
+</center>
 
-<img src='https://i0.hdslb.com/bfs/new_dyn/cf7e35f947332bc125224f63c8878b1e141432942.gif'>
+<center>
+<img src="https://i0.hdslb.com/bfs/new_dyn/bc9374ed7909bd1715ea5d9fc453341b141432942.jpg" style="max-width: 50%; height: auto;">
+</center>
 
-## 📖 项目简介
+## 项目简介
 
-智链是一个功能丰富的AI智能阅读助手，旨在帮助用户更好地理解和分析各种内容。通过集成先进的大语言模型API，提供智能伴读、全面总结、大师分析、真伪鉴定四大核心功能，并新增语音交互功能，让AI阅读体验更加便捷和自然。
+智链是一款基于大语言模型（GLM-4-Flash/GLM-4V-Flash）的智能内容分析平台，支持文本、链接、文档、图片等多种输入，适配桌面和移动端。通过流式AI分析、专家角色切换、事实核查等功能，助力高效阅读与深度理解。
 
-## ✨ 主要特性
+## 主要特性
 
-### 🎯 四大核心功能
-- **🤖 智能伴读**: 深入解读内容，持续对话答疑
-- **📊 全面总结**: 四步分析（概要→细节→思考→总结）
-- **👨‍🎓 大师分析**: 多角色视角分析（鲁迅、胡适、可莉等）
-- **🔍 真伪鉴定**: 四步验证内容真实性和可信度
+- 智能伴读、全面总结、大师分析、真伪鉴定四大核心模式
+- 支持文本、网页链接、PDF/DOCX/TXT文档、图片（GLM-4V-Flash视觉模型）
+- 实时流式AI回复，思考过程可视化
+- 多专家角色切换（如鲁迅、胡适、爱因斯坦等）
+- 语音输入与朗读，移动端友好，自动主题切换
+- 聊天历史保存、导出与多会话管理
 
-### 📤 多样化输入支持
-- **网页链接**: 自动爬取网页内容
-- **图片文件**: OCR识别图片中的文字
-- **文档上传**: 支持TXT、PDF、DOCX等格式
-- **直接输入**: 纯文本内容输入
-- **🎤 语音输入**: 支持语音转文字（Web Speech API）
+## 快速开始
 
-### 🎨 精美UI设计
-- **毛玻璃效果**: 现代化的透明质感设计
-- **动态背景**: 自动切换的渐变背景动画
-- **主题切换**: 支持亮色/暗色/自动主题
-- **响应式布局**: 完美适配桌面端和移动端
+### 环境要求
+- Python 3.8+
+- 现代浏览器（Chrome、Firefox、Edge等）
 
-### 💬 智能聊天体验
-- **流式响应**: 实时显示AI回复过程
-- **思考过程**: AI思考内容可折叠显示
-- **聊天历史**: 会话保存、切换、导出功能
-- **快捷操作**: 一键复制、搜索历史记录
-- **🔊 语音朗读**: 支持消息内容朗读（TTS + 浏览器语音合成）
+### 安装依赖
+```bash
+cd backend
+pip install -r requirements.txt
+```
 
-### 🆕 最新功能
+### 配置
+1. 编辑 `backend/config.py`，填写你的 GLM_API_KEY（智谱AI开放平台获取）
+2. 可选：配置 TTS_API_TOKEN 以启用语音朗读
 
-#### 🎤 语音输入功能
-- **一键语音识别**: 点击麦克风图标即可开始语音输入
-- **实时转换**: 语音实时转换为文字并填入输入框
-- **中文优化**: 针对中文语音识别进行优化
-- **浏览器兼容**: 支持现代浏览器的Web Speech API
+### 启动
+```bash
+cd backend
+python app.py
+```
+访问 http://localhost:7000 或 http://127.0.0.1:7000
 
-#### 🔊 智能语音朗读
-- **多音源选择**: 支持百度和讯飞两大主流语音平台
-- **角色匹配**: 根据当前分析角色自动选择合适音色
-  - 鲁迅 → 度书严-沉稳男声
-  - 胡适 → 度悠然-旁白男声  
-  - 可莉 → 讯飞-芳芳（儿童-女）
-  - 爱因斯坦 → 度书道-沉稳男声
-- **智能降级**: TTS服务不可用时自动切换浏览器语音合成
-- **播放控制**: 支持播放、暂停、停止等操作
+## 技术架构
 
-## 🚀 快速开始
+- 前端：HTML5 + CSS3 + 原生JavaScript（响应式设计，支持移动端）
+- 后端：Python Flask + 蓝图路由
+- AI服务：智谱AI GLM-4-Flash/GLM-4V-Flash（支持图片理解）
+- 文件处理：PyPDF2、python-docx、Pillow、OCR
+- 语音：Web Speech API（浏览器）、TTS API（可选）
 
-<img src="https://i0.hdslb.com/bfs/new_dyn/bc9374ed7909bd1715ea5d9fc453341b141432942.jpg">
+## 主要目录结构
+
+```
+backend/    # Flask后端，API与AI服务
+frontend/   # 前端静态页面与资源
+data/       # 用户数据、上传文件、聊天历史
+```
+
+## 常见问题
+
+- 语音功能异常：请检查浏览器支持、麦克风权限、TTS Token
+- 上传失败：请检查文件大小（≤10MB）、格式、网络
+- AI回复慢：请检查API密钥、网络、配额
+- 端口修改：编辑 `backend/config.py` 或环境变量 PORT
+
+## 贡献
+
+欢迎提交Issue和Pull Request！
+
+---
+此项目为澳门城市大学参赛作品，仅供学习交流使用。
 
 ### 环境要求
 - Python 3.8+
@@ -480,8 +499,8 @@ cp config.py.example config.py
 python app.py
 ```
 
-<img src='https://mumu-apk.fp.ps.netease.com/file/67c8fb5fcb38681ea1000f49urcsHD1q06' alt='维护公告' align='center' width='600'>
-
+<center>
+<img src='https://mumu-apk.fp.ps.netease.com/file/67c8fb5fcb38681ea1000f49urcsHD1q06' alt='维护公告' width='600' style="max-width: 50%; height: auto;"></center>
 
 ### 新功能开发
 
@@ -524,7 +543,7 @@ const supportedTypes = [
 ];
 ```
 
-#### 3. 添加新的语音服务 🆕
+#### 3. 添加新的语音服务 
 ```python
 # 在routes/tts.py中添加新的TTS提供商
 def call_new_tts_provider(text, voice_config):

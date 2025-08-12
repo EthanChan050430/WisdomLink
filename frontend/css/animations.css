@@ -574,3 +574,46 @@
 .animate-delay-5 {
     animation-delay: 0.5s;
 }
+
+/* 图片模型通知动画 */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.image-model-notification {
+    animation: slideInRight 0.3s ease-out;
+}
+
+.image-model-notification i {
+    font-size: 16px;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+    .image-model-notification {
+        top: 60px !important;
+        right: 10px !important;
+        left: 10px !important;
+        width: auto !important;
+        font-size: 13px !important;
+        padding: 10px 16px !important;
+    }
+}

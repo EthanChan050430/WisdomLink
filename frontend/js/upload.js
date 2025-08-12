@@ -119,10 +119,111 @@ class UploadManager {
             panel.classList.toggle('active', panel.dataset.type === type);
         });
 
+        // 处理图片上传的特殊逻辑
+        this.handleImageUploadLogic(type);
+
         // 在移动端滚动到激活的选项卡
         if (window.innerWidth <= 768) {
             this.scrollToActiveUploadTab();
         }
+    }
+
+    /**
+     * 处理图片上传的特殊逻辑
+     * @param {string} type - 内容类型
+     */
+    handleImageUploadLogic(type) {
+        const welcomeModelSelector = document.getElementById('welcomeModelSelector');
+        const modelButton = document.getElementById('welcomeModelSelectorBtn');
+        const modelButtonText = document.getElementById('welcomeModelButtonText');
+
+        if (!welcomeModelSelector || !modelButton || !modelButtonText) return;
+
+        if (type === 'image') {
+            // 图片类型：固定显示GLM-4V-Flash并禁用选择
+            modelButtonText.textContent = 'GLM-4V-Flash（图片分析专用）';
+            modelButton.disabled = true;
+            modelButton.style.opacity = '0.7';
+            modelButton.title = '图片分析固定使用GLM-4V-Flash模型';
+            
+            // 添加提示信息
+            this.showImageModelNotification();
+        } else {
+            // 非图片类型：恢复正常模型选择
+            modelButtonText.textContent = this.getCurrentModelName();
+            modelButton.disabled = false;
+            modelButton.style.opacity = '1';
+            modelButton.title = '选择AI模型';
+            
+            // 清除提示信息
+            this.clearImageModelNotification();
+        }
+    }
+
+    /**
+     * 显示图片模型提示
+     */
+    showImageModelNotification() {
+        // 避免重复创建通知
+        if (document.getElementById('imageModelNotification')) return;
+
+        const notification = document.createElement('div');
+        notification.id = 'imageModelNotification';
+        notification.className = 'image-model-notification';
+        notification.innerHTML = `
+            <i class="fas fa-info-circle"></i>
+            <span>图片分析将使用GLM-4V-Flash视觉模型</span>
+        `;
+
+        // 添加样式
+        notification.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            font-size: 14px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideInRight 0.3s ease-out;
+        `;
+
+        document.body.appendChild(notification);
+
+        // 3秒后自动消失
+        setTimeout(() => {
+            this.clearImageModelNotification();
+        }, 3000);
+    }
+
+    /**
+     * 清除图片模型提示
+     */
+    clearImageModelNotification() {
+        const notification = document.getElementById('imageModelNotification');
+        if (notification) {
+            notification.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }
+    }
+
+    /**
+     * 获取当前模型名称
+     */
+    getCurrentModelName() {
+        const modelSelect = document.getElementById('chatModelSelect');
+        if (modelSelect && modelSelect.value) {
+            const option = modelSelect.querySelector(`option[value="${modelSelect.value}"]`);
+            return option ? option.textContent.split('（')[0] : 'GLM-4-Flash';
+        }
+        return 'GLM-4-Flash';
     }
 
     /**

@@ -235,14 +235,59 @@ def start_expert_analysis():
         
         elif content_type == 'image':
             images = request.files.getlist('images')
-            saved_paths = ocr_service.save_uploaded_images(images)
-            ocr_results = ocr_service.extract_text_from_multiple_images(saved_paths)
+            if not images:
+                return jsonify({'success': False, 'message': '未检测到上传的图片'})
             
-            for result in ocr_results:
-                if result['success']:
-                    extracted_content += f"\n\n=== 图片文字 ===\n{result['text']}"
-                else:
-                    extracted_content += f"\n\n错误：无法识别图片文字：{result['error']}"
+            # 保存上传的图片
+            saved_paths = ocr_service.save_uploaded_images(images)
+            
+            if not saved_paths:
+                return jsonify({'success': False, 'message': '图片保存失败'})
+            
+            # 生成会话ID
+            session_id = str(uuid.uuid4())
+            
+            persona = EXPERT_PERSONAS[persona_key]
+            
+            # 构建专家角色的图片分析提示
+            analysis_prompt = f"""作为{persona['name']}，请以您的专业视角分析这些图片。
+
+{persona['system_prompt']}
+
+请从以下角度进行分析：
+1. **专业视角的内容描述**：用您的专业知识描述图片内容
+2. **文字信息提取**：如果有文字，请准确提取
+3. **专业分析**：基于您的专业背景进行深入分析
+4. **专业见解**：提供只有您这个领域专家才能给出的独特见解
+5. **实际应用建议**：如果适用，请给出专业建议
+
+用户需求：{content_data if content_data else '请用专业角度全面分析'}
+
+请以{persona['name']}的身份和语气进行分析。"""
+            
+            def generate_expert_image_analysis():
+                try:
+                    yield f"data: {json.dumps({'type': 'session_id', 'session_id': session_id}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'expert_info', 'expert': persona}, ensure_ascii=False)}\n\n"
+                    
+                    step_title = f"{persona['name']}正在分析图片"
+                    yield f"data: {json.dumps({'type': 'step_start', 'step': 1, 'title': step_title}, ensure_ascii=False)}\n\n"
+                    
+                    # 使用GLM-4V-Flash分析图片
+                    for chunk in ai_service.analyze_image(saved_paths, analysis_prompt):
+                        if chunk.strip():
+                            yield f"data: {json.dumps({'type': 'content', 'content': chunk, 'step': 1}, ensure_ascii=False)}\n\n"
+                    
+                    yield f"data: {json.dumps({'type': 'step_complete', 'step': 1}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'analysis_complete'}, ensure_ascii=False)}\n\n"
+                    
+                except Exception as e:
+                    yield f"data: {json.dumps({'type': 'error', 'message': f'专家图片分析失败：{str(e)}'}, ensure_ascii=False)}\n\n"
+            
+            return Response(
+                generate_expert_image_analysis(),
+                mimetype='text/plain; charset=utf-8'
+            )
         
         if not extracted_content.strip():
             return jsonify({'success': False, 'message': '没有提取到任何内容'})

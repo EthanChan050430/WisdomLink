@@ -60,15 +60,53 @@ def start_fact_checking():
             images = request.files.getlist('images')
             if not images:
                 return jsonify({'success': False, 'message': '未检测到上传的图片'})
-                
-            saved_paths = ocr_service.save_uploaded_images(images)
-            ocr_results = ocr_service.extract_text_from_multiple_images(saved_paths)
             
-            for result in ocr_results:
-                if result['success']:
-                    extracted_content += f"\n\n=== 图片文字 ===\n{result['text']}"
-                else:
-                    extracted_content += f"\n\n错误：无法识别图片文字：{result['error']}"
+            # 保存上传的图片
+            saved_paths = ocr_service.save_uploaded_images(images)
+            
+            if not saved_paths:
+                return jsonify({'success': False, 'message': '图片保存失败'})
+            
+            # 生成会话ID
+            session_id = str(uuid.uuid4())
+            
+            # 构建图片事实核查提示
+            analysis_prompt = f"""请对这些图片进行事实核查分析。重点关注：
+
+1. **图片内容描述**：详细描述图片中的信息、文字、数据等
+2. **文字信息提取**：如果图片包含文字、数据、声明等，请准确提取
+3. **事实核查分析**：
+   - 识别图片中可能的事实性声明
+   - 分析这些信息的可信度
+   - 指出可能存在的误导性或虚假信息
+   - 提供相关的背景事实
+4. **真实性评估**：对图片内容的真实性给出专业判断
+5. **建议**：如何进一步验证图片中的信息
+
+用户关注的内容：{content_data if content_data else '请全面核查图片信息的真实性'}
+
+请以事实核查专家的身份，客观、严谨地进行分析。"""
+            
+            def generate_image_fact_check():
+                try:
+                    yield f"data: {json.dumps({'type': 'session_id', 'session_id': session_id}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'step_start', 'step': 1, 'title': '图片信息提取与分析'}, ensure_ascii=False)}\n\n"
+                    
+                    # 使用GLM-4V-Flash分析图片
+                    for chunk in ai_service.analyze_image(saved_paths, analysis_prompt):
+                        if chunk.strip():
+                            yield f"data: {json.dumps({'type': 'content', 'content': chunk, 'step': 1}, ensure_ascii=False)}\n\n"
+                    
+                    yield f"data: {json.dumps({'type': 'step_complete', 'step': 1}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'analysis_complete'}, ensure_ascii=False)}\n\n"
+                    
+                except Exception as e:
+                    yield f"data: {json.dumps({'type': 'error', 'message': f'图片事实核查失败：{str(e)}'}, ensure_ascii=False)}\n\n"
+            
+            return Response(
+                generate_image_fact_check(),
+                mimetype='text/plain; charset=utf-8'
+            )
         
         if not extracted_content.strip():
             return jsonify({'success': False, 'message': '没有提取到任何有效内容，请检查上传的内容'})

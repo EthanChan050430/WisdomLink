@@ -69,9 +69,9 @@ def check_config():
     # 检查关键配置项
     try:
         sys.path.insert(0, str(Path(__file__).parent / "backend"))
-        import config
-        
-        if not hasattr(config, 'GLM_API_KEY') or config.GLM_API_KEY == "your_glm_api_key_here":
+        import backend.config
+
+        if not hasattr(backend.config, 'GLM_API_KEY') or backend.config.GLM_API_KEY == "your_glm_api_key_here":
             print("⚠️  警告: 请在config.py中配置您的GLM_API_KEY")
             return False
             
