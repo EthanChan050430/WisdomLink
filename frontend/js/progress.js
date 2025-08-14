@@ -223,26 +223,26 @@ class ProgressManager {
             'fact-checking': [
                 {
                     id: 1,
-                    title: '问题分析',
+                    title: '文章解析',
                     description: '解析文章内容和关键声明',
                     icon: '📖'
                 },
                 {
                     id: 2,
-                    title: '搜索结果',
-                    description: '提取需要验证的关键词',
-                    icon: '🔑'
+                    title: '智能搜索',
+                    description: '搜索验证资料并进行可信度评分',
+                    icon: '🎯'
                 },
                 {
                     id: 3,
                     title: '深度分析',
-                    description: '搜索相关资料进行对比验证',
-                    icon: '🔍'
+                    description: '结合可信度评分进行深度分析',
+                    icon: '�'
                 },
                 {
                     id: 4,
-                    title: '结果汇总',
-                    description: '基于搜索结果进行真伪判定',
+                    title: '智能真伪鉴定',
+                    description: '基于可信度评分进行综合真伪判定',
                     icon: '⚖️'
                 }
             ]
@@ -1078,67 +1078,45 @@ class ProgressManager {
      * @param {string} html - 渲染后的HTML内容
      */
     enhanceRenderedContent(html) {
-        console.log('=== 增强渲染内容开始 ===');
-        console.log('原始HTML长度:', html.length);
+        console.log('=== 简化内容渲染开始 ===');
         
-        // 1. 为深度分析相关标题添加特殊样式
+        // 简化可信度评分显示
         html = html.replace(
-            /<h([1-6])[^>]*>([^<]*(?:深度分析|深入分析|分析报告)[^<]*)<\/h\1>/gi,
-            '<h$1 class="analysis-title glass-card">$2</h$1>'
+            /📊\s*\*\*可信度\*\*:\s*(\d+)\/100\s*\(([^)]+)\)/gi,
+            '<span class="credibility-score-highlight">📊 $1/100 ($2)</span>'
         );
-
-        // 2. 为关键信息点添加样式
-        html = html.replace(
-            /<h([1-6])[^>]*>([^<]*(?:关键信息|重要信息|核心要点)[^<]*)<\/h\1>/gi,
-            '<h$1 class="key-info-title glass-card">$2</h$1>'
-        );
-
-        // 3. 为结构性标题添加样式
-        html = html.replace(
-            /<h([1-6])[^>]*>([^<]*(?:文章结构|内容结构|组织结构)[^<]*)<\/h\1>/gi,
-            '<h$1 class="structure-title glass-card">$2</h$1>'
-        );
-
-        // 4. 为总结性标题添加样式
-        html = html.replace(
-            /<h([1-6])[^>]*>([^<]*(?:总结|结论|结果汇总|最终结果)[^<]*)<\/h\1>/gi,
-            '<h$1 class="summary-title glass-card">$2</h$1>'
-        );
-
-        // 5. 为数据统计段落添加特殊样式
-        html = html.replace(
-            /<p>([^<]*(?:数据统计|统计数据|统计信息)[^<]*)<\/p>/gi,
-            '<p class="data-statistics glass-card">$1</p>'
-        );
-
-        // 6. 为关键词和分类信息添加样式
-        html = html.replace(
-            /<p>([^<]*(?:类型|分类|关键词)[：:][^<]*)<\/p>/gi,
-            '<p class="category-info glass-card">$1</p>'
-        );
-
-        // 7. 为重要提示添加样式
-        html = html.replace(
-            /<p>([^<]*(?:注意|提示|重要)[：:]?[^<]*)<\/p>/gi,
-            '<p class="important-note glass-card">$1</p>'
-        );
-
-        // 8. 为列表项添加更好的样式
-        html = html.replace(/<ul>/gi, '<ul class="enhanced-list">');
-        html = html.replace(/<ol>/gi, '<ol class="enhanced-list">');
-
-        // 9. 为代码块添加样式
-        html = html.replace(/<pre>/gi, '<pre class="code-block glass-card">');
-
-        // 10. 为表格添加样式
-        html = html.replace(/<table>/gi, '<table class="data-table glass-card">');
-
-        // 11. 为强调文本添加更好的样式
-        html = html.replace(/<strong>/gi, '<strong class="highlight-text">');
-
-        console.log('增强后HTML长度:', html.length);
-        console.log('=== 增强渲染内容完成 ===');
         
+        // 简化原文可信度评分显示
+        html = html.replace(
+            /📊\s*\*\*?原文.*?可信度评分\*\*?[：:]?\s*(\d+)\s*分?\/?100\s*分?/gi,
+            '<div class="simple-rating">📊 原文可信度评分: $1/100</div>'
+        );
+        
+        // 简化最终可信度判定显示
+        html = html.replace(
+            /原文信息可信度评分[：:]?\s*(\d+)\s*分?\/?100\s*分?/gi,
+            '<div class="simple-rating">📊 可信度评分: $1/100</div>'
+        );
+        
+        // 基本内容格式化
+        html = html.replace(
+            /\*\*([^*]+)\*\*:/gi,
+            '<strong>$1:</strong>'
+        );
+        
+        // 只在特定上下文中强调评级显示（避免过度强调普通文本中的真实/虚假）
+        html = html.replace(
+            /真实性评级[：:]?\s*(真实|大部分真实|部分真实|存疑|大部分虚假|虚假)/gi,
+            '真实性评级：<span class="simple-rating">$1</span>'
+        );
+        
+        // 处理评级结果格式
+        html = html.replace(
+            /-真实性评级[：:]?\s*(真实|大部分真实|部分真实|存疑|大部分虚假|虚假)/gi,
+            '-真实性评级：<span class="simple-rating">$1</span>'
+        );
+        
+        console.log('内容渲染完成');
         return html;
     }
 

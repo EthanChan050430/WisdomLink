@@ -4500,3 +4500,1051 @@ body.dynamic-bg-active .welcome-description {
 .subtitle {
   font-weight: 500;
 }
+
+/* ==================== 可信度评分系统样式 ==================== */
+
+/* 可信度评分容器 */
+.credibility-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+/* 可信度等级样式 */
+.credibility-score.level-extreme-high,
+.credibility-score.level-极高 {
+  background: linear-gradient(135deg, #10b981, #065f46);
+  color: white;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+.credibility-score.level-high,
+.credibility-score.level-高 {
+  background: linear-gradient(135deg, #22c55e, #166534);
+  color: white;
+  box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+}
+
+.credibility-score.level-medium,
+.credibility-score.level-中等 {
+  background: linear-gradient(135deg, #f59e0b, #92400e);
+  color: white;
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+.credibility-score.level-low,
+.credibility-score.level-低 {
+  background: linear-gradient(135deg, #f97316, #9a3412);
+  color: white;
+  box-shadow: 0 2px 4px rgba(249, 115, 22, 0.3);
+}
+
+.credibility-score.level-extreme-low,
+.credibility-score.level-极低 {
+  background: linear-gradient(135deg, #ef4444, #7f1d1d);
+  color: white;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+/* 可信度图标 */
+.credibility-icon {
+  font-size: 1rem;
+  margin-right: 0.2rem;
+}
+
+/* 可信度详情展开区域 */
+.credibility-details {
+  background: rgba(var(--background-rgb), 0.5);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  backdrop-filter: blur(10px);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.credibility-details .detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.credibility-details .detail-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.credibility-details .detail-label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.credibility-details .detail-value {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* 搜索结果中的可信度展示 */
+.search-result-item {
+  position: relative;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  background: rgba(var(--background-rgb), 0.5);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.search-result-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary-color);
+}
+
+.search-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.search-result-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: none;
+  flex-grow: 1;
+  margin-right: 1rem;
+}
+
+.search-result-title:hover {
+  color: var(--primary-color);
+}
+
+.search-result-snippet {
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+.search-result-url {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.search-result-url:hover {
+  color: var(--primary-color);
+}
+
+/* 整体可信度评估面板 */
+.overall-credibility-panel {
+  background: linear-gradient(135deg, 
+    rgba(var(--primary-rgb), 0.1), 
+    rgba(var(--secondary-rgb), 0.1)
+  );
+  border: 2px solid var(--primary-color);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  backdrop-filter: blur(15px);
+  position: relative;
+  overflow: hidden;
+}
+
+.overall-credibility-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  border-radius: 1rem 1rem 0 0;
+}
+
+.overall-credibility-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.overall-credibility-icon {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+.overall-credibility-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.overall-credibility-score {
+  font-size: 2rem;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.overall-credibility-summary {
+  background: rgba(var(--background-rgb), 0.7);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  border-left: 4px solid var(--primary-color);
+}
+
+.credibility-distribution {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.credibility-distribution-item {
+  text-align: center;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background: rgba(var(--background-rgb), 0.5);
+  border: 1px solid var(--border-color);
+}
+
+.credibility-distribution-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.credibility-distribution-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+/* 可信度提示工具 */
+.credibility-tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.credibility-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--modal-background);
+  color: var(--text-primary);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+
+.credibility-tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 情感风险指示器样式 */
+.emotion-risk-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-left: 0.3rem;
+}
+
+.emotion-risk-indicator.risk-low,
+.emotion-risk-indicator.risk-客观中性 {
+  background: linear-gradient(135deg, #10b981, #065f46);
+  color: white;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+.emotion-risk-indicator.risk-medium,
+.emotion-risk-indicator.risk-中等风险 {
+  background: linear-gradient(135deg, #f59e0b, #92400e);
+  color: white;
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+.emotion-risk-indicator.risk-high,
+.emotion-risk-indicator.risk-高风险 {
+  background: linear-gradient(135deg, #f97316, #9a3412);
+  color: white;
+  box-shadow: 0 2px 4px rgba(249, 115, 22, 0.3);
+}
+
+.emotion-risk-indicator.risk-extreme,
+.emotion-risk-indicator.risk-极高风险 {
+  background: linear-gradient(135deg, #ef4444, #7f1d1d);
+  color: white;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+  animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.6);
+    transform: scale(1.02);
+  }
+}
+
+/* 谣言特征警告面板 */
+.rumor-warning-panel {
+  background: linear-gradient(135deg, 
+    rgba(239, 68, 68, 0.1), 
+    rgba(127, 29, 29, 0.1)
+  );
+  border: 2px solid #ef4444;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  backdrop-filter: blur(15px);
+  position: relative;
+  overflow: hidden;
+}
+
+.rumor-warning-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+  border-radius: 1rem 1rem 0 0;
+  animation: warning-pulse 3s infinite;
+}
+
+@keyframes warning-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.rumor-warning-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.rumor-warning-icon {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+  animation: shake 0.5s infinite alternate;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(2px); }
+}
+
+.rumor-warning-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #dc2626;
+  margin: 0;
+}
+
+/* 情感分析详情面板 */
+.emotion-analysis-panel {
+  background: rgba(var(--background-rgb), 0.5);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  backdrop-filter: blur(10px);
+}
+
+.emotion-analysis-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.emotion-analysis-icon {
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
+}
+
+.emotion-analysis-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.detected-issues-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.detected-issues-list li {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0;
+  color: var(--text-secondary);
+}
+
+.detected-issues-list li::before {
+  content: '⚠️';
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* 偏见检测标记 */
+.bias-detected {
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 0 0.25rem;
+  display: inline-block;
+}
+
+.panic-detected {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 0 0.25rem;
+  display: inline-block;
+  animation: blink-warning 1.5s infinite;
+}
+
+@keyframes blink-warning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.incitement-detected {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 0 0.25rem;
+  display: inline-block;
+}
+
+/* 评级选择框样式 */
+.rating-option {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  margin: 0.25rem 0;
+  border-radius: 0.5rem;
+  background: rgba(var(--background-rgb), 0.5);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.rating-option:hover {
+  background: rgba(var(--primary-rgb), 0.1);
+  border-color: var(--primary-color);
+}
+.rating-option {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  margin: 0.25rem 0;
+  border-radius: 0.5rem;
+  background: rgba(var(--background-rgb), 0.5);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.rating-option:hover {
+  background: rgba(var(--primary-rgb), 0.1);
+  border-color: var(--primary-color);
+}
+
+.rating-option input[type="checkbox"] {
+  margin-right: 0.5rem;
+  accent-color: var(--primary-color);
+}
+
+.rating-text {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* 可信度指示器样式 */
+.credibility-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background: rgba(var(--background-rgb), 0.7);
+  border: 1px solid var(--border-color);
+  margin: 0.25rem 0;
+}
+
+.credibility-text {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* 搜索结果关闭标签 */
+.search-result-item::after {
+  content: '</div>';
+  display: none;
+}
+
+/* 修复可信度分布网格布局 */
+.credibility-distribution {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  justify-content: space-around;
+}
+
+.credibility-distribution-item {
+  flex: 1;
+  min-width: 100px;
+  text-align: center;
+  padding: 0.75rem 0.5rem;
+  border-radius: 0.5rem;
+  background: rgba(var(--background-rgb), 0.5);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.credibility-distribution-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary-color);
+}
+
+/* 整体可信度面板关闭标签 */
+.overall-credibility-panel .overall-credibility-header + * {
+  margin-top: 1rem;
+}
+
+/* 增强可信度评分的视觉效果 */
+.credibility-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.8rem;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-left: 0.5rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.credibility-score:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .credibility-score {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+  }
+  
+  .search-result-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .credibility-distribution {
+    flex-direction: column;
+  }
+  
+  .credibility-distribution-item {
+    min-width: auto;
+  }
+  
+  .overall-credibility-score {
+    font-size: 1.5rem;
+  }
+  
+  .overall-credibility-panel {
+    padding: 1rem;
+  }
+  
+  .rating-option {
+    padding: 0.4rem;
+  }
+}
+
+/* ================================
+   情感分析与谣言检测样式
+   ================================ */
+
+/* 检测到的问题列表 */
+.detected-issues-list {
+    background-color: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    color: #856404;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+}
+
+.detected-issues-list li {
+    margin: 4px 0;
+    padding-left: 20px;
+    position: relative;
+    list-style: none;
+}
+
+.detected-issues-list li::before {
+    content: '⚠️';
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* 谣言特征警告面板 */
+.rumor-warning-panel {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(253, 126, 20, 0.1) 100%);
+    border: 2px solid rgba(220, 53, 69, 0.3);
+    border-radius: 12px;
+    margin: 16px 0;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.1);
+    animation: pulse-warning 2s infinite;
+    backdrop-filter: blur(10px);
+}
+
+.rumor-warning-header {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.2) 0%, rgba(253, 126, 20, 0.2) 100%);
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(220, 53, 69, 0.2);
+    display: flex;
+    align-items: center;
+}
+
+.rumor-warning-icon {
+    font-size: 20px;
+    margin-right: 10px;
+    animation: shake 1s infinite;
+}
+
+.rumor-warning-title {
+    color: #dc3545;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* 情感分析面板 */
+.emotion-analysis-panel {
+    background: linear-gradient(135deg, rgba(111, 66, 193, 0.1) 0%, rgba(52, 144, 220, 0.1) 100%);
+    border: 2px solid rgba(111, 66, 193, 0.3);
+    border-radius: 12px;
+    margin: 16px 0;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(111, 66, 193, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.emotion-analysis-header {
+    background: linear-gradient(135deg, rgba(111, 66, 193, 0.2) 0%, rgba(52, 144, 220, 0.2) 100%);
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(111, 66, 193, 0.2);
+    display: flex;
+    align-items: center;
+}
+
+.emotion-analysis-icon {
+    font-size: 20px;
+    margin-right: 10px;
+    animation: brain-pulse 2s infinite ease-in-out;
+}
+
+.emotion-analysis-title {
+    color: #6f42c1;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* 情感风险等级样式增强 */
+.emotion-risk-indicator.risk-高风险 {
+    background: linear-gradient(135deg, #dc3545, #ff6b6b);
+    color: white;
+    font-weight: bold;
+    animation: risk-pulse 1.5s infinite;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+}
+
+.emotion-risk-indicator.risk-中等风险 {
+    background: linear-gradient(135deg, #fd7e14, #ffa94d);
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(253, 126, 20, 0.3);
+}
+
+.emotion-risk-indicator.risk-低风险 {
+    background: linear-gradient(135deg, #28a745, #51cf66);
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+/* 动画效果 */
+@keyframes pulse-warning {
+    0% { box-shadow: 0 4px 15px rgba(220, 53, 69, 0.1); }
+    50% { box-shadow: 0 4px 25px rgba(220, 53, 69, 0.2); }
+    100% { box-shadow: 0 4px 15px rgba(220, 53, 69, 0.1); }
+}
+
+@keyframes shake {
+    0%, 50%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+}
+
+@keyframes brain-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+@keyframes risk-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6); }
+}
+
+/* 响应式适配 - 移动设备 */
+@media (max-width: 768px) {
+    .rumor-warning-panel,
+    .emotion-analysis-panel {
+        margin: 12px 0;
+    }
+    
+    .rumor-warning-header,
+    .emotion-analysis-header {
+        padding: 10px 12px;
+    }
+    
+    .rumor-warning-icon,
+    .emotion-analysis-icon {
+        font-size: 18px;
+        margin-right: 8px;
+    }
+    
+    .detected-issues-list {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+}
+
+/* ================================
+   简洁评级系统样式
+   ================================ */
+
+/* 评级摘要 */
+.rating-summary {
+    background: rgba(var(--background-rgb), 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px 0;
+}
+
+.rating-item {
+    display: inline-block;
+    margin-right: 20px;
+    margin-bottom: 8px;
+    padding: 6px 12px;
+    background: rgba(var(--accent-color-rgb), 0.1);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.rating-item strong {
+    color: var(--text-primary);
+    margin-right: 6px;
+}
+
+/* 简洁的评级显示 */
+.simple-rating {
+    background: rgba(var(--primary-color-rgb), 0.1);
+    border-left: 4px solid var(--primary-color);
+    padding: 12px 16px;
+    margin: 8px 0;
+    border-radius: 4px;
+}
+
+.simple-rating strong {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* 简洁的证据清单 */
+.evidence-section h4 {
+    background: rgba(var(--text-secondary-rgb), 0.1);
+    padding: 8px 12px;
+    margin: 12px 0 6px 0;
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 0.95em;
+    font-weight: 600;
+}
+
+/* 可信度分数高亮 */
+.credibility-score-highlight {
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    display: inline-block;
+    margin: 0 4px;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+    .rating-summary {
+        padding: 12px;
+    }
+    
+    .rating-item {
+        display: block;
+        margin-right: 0;
+        margin-bottom: 8px;
+    }
+}
+
+/* ================================
+   原文可信度评分显示系统
+   ================================ */
+
+/* 原文可信度评分组件 */
+.original-credibility-score {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(103, 58, 183, 0.1) 100%);
+    border: 3px solid rgba(33, 150, 243, 0.3);
+    border-radius: 16px;
+    margin: 20px 0;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.15);
+    backdrop-filter: blur(15px);
+    animation: score-highlight 3s ease-in-out infinite;
+}
+
+.score-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.score-icon {
+    font-size: 24px;
+    margin-right: 8px;
+}
+
+.score-label {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.score-value {
+    font-size: 48px;
+    font-weight: bold;
+    padding: 16px 24px;
+    border-radius: 24px;
+    display: inline-block;
+    min-width: 120px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 评分颜色系统 */
+.score-value[class*="score-"]:is([class*="score-9"], [class*="score-10"]),
+.score-value.score-85, .score-value.score-86, .score-value.score-87,
+.score-value.score-88, .score-value.score-89, .score-value.score-90,
+.score-value.score-91, .score-value.score-92, .score-value.score-93,
+.score-value.score-94, .score-value.score-95, .score-value.score-96,
+.score-value.score-97, .score-value.score-98, .score-value.score-99,
+.score-value.score-100 {
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
+}
+
+.score-value[class*="score-"]:is([class*="score-6"], [class*="score-7"], [class*="score-8"]),
+.score-value.score-60, .score-value.score-61, .score-value.score-62,
+.score-value.score-63, .score-value.score-64, .score-value.score-65,
+.score-value.score-66, .score-value.score-67, .score-value.score-68,
+.score-value.score-69, .score-value.score-70, .score-value.score-71,
+.score-value.score-72, .score-value.score-73, .score-value.score-74,
+.score-value.score-75, .score-value.score-76, .score-value.score-77,
+.score-value.score-78, .score-value.score-79, .score-value.score-80,
+.score-value.score-81, .score-value.score-82, .score-value.score-83,
+.score-value.score-84 {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+}
+
+.score-value[class*="score-"]:is([class*="score-0"], [class*="score-1"], 
+[class*="score-2"], [class*="score-3"], [class*="score-4"], [class*="score-5"]),
+.score-value.score-0, .score-value.score-1, .score-value.score-2,
+.score-value.score-3, .score-value.score-4, .score-value.score-5,
+.score-value.score-6, .score-value.score-7, .score-value.score-8,
+.score-value.score-9, .score-value.score-10, .score-value.score-11,
+.score-value.score-12, .score-value.score-13, .score-value.score-14,
+.score-value.score-15, .score-value.score-16, .score-value.score-17,
+.score-value.score-18, .score-value.score-19, .score-value.score-20,
+.score-value.score-21, .score-value.score-22, .score-value.score-23,
+.score-value.score-24, .score-value.score-25, .score-value.score-26,
+.score-value.score-27, .score-value.score-28, .score-value.score-29,
+.score-value.score-30, .score-value.score-31, .score-value.score-32,
+.score-value.score-33, .score-value.score-34, .score-value.score-35,
+.score-value.score-36, .score-value.score-37, .score-value.score-38,
+.score-value.score-39, .score-value.score-40, .score-value.score-41,
+.score-value.score-42, .score-value.score-43, .score-value.score-44,
+.score-value.score-45, .score-value.score-46, .score-value.score-47,
+.score-value.score-48, .score-value.score-49, .score-value.score-50,
+.score-value.score-51, .score-value.score-52, .score-value.score-53,
+.score-value.score-54, .score-value.score-55, .score-value.score-56,
+.score-value.score-57, .score-value.score-58, .score-value.score-59 {
+    background: linear-gradient(135deg, #f44336, #d32f2f);
+}
+
+/* 最终可信度结果 */
+.final-credibility-result {
+    background: rgba(33, 150, 243, 0.1);
+    border: 2px solid rgba(33, 150, 243, 0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(10px);
+}
+
+.final-score-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.final-score-value {
+    font-size: 24px;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 16px;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 最终结论面板 */
+.final-conclusion-panel {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%);
+    border: 2px solid rgba(76, 175, 80, 0.3);
+    border-radius: 12px;
+    margin: 16px 0;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.final-conclusion-header {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(139, 195, 74, 0.2) 100%);
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(76, 175, 80, 0.2);
+    display: flex;
+    align-items: center;
+}
+
+.final-conclusion-icon {
+    font-size: 20px;
+    margin-right: 10px;
+}
+
+.final-conclusion-title {
+    color: #388e3c;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* 动画效果 */
+@keyframes score-highlight {
+    0%, 100% { 
+        box-shadow: 0 6px 20px rgba(33, 150, 243, 0.15);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 8px 25px rgba(33, 150, 243, 0.25);
+        transform: scale(1.02);
+    }
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+    .original-credibility-score {
+        padding: 16px;
+        margin: 16px 0;
+    }
+    
+    .score-value {
+        font-size: 36px;
+        padding: 12px 20px;
+        min-width: 100px;
+    }
+    
+    .score-label {
+        font-size: 16px;
+    }
+    
+    .final-credibility-result {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .final-score-label {
+        margin-bottom: 8px;
+    }
+    
+    .final-score-value {
+        font-size: 20px;
+    }
+}

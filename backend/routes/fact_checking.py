@@ -5,6 +5,7 @@ import requests
 from services.ai_service import ai_service
 from services.web_crawler import web_crawler
 from services.ocr_service import ocr_service
+from services.credibility_service import credibility_service
 from utils.file_handler import save_uploaded_files, extract_text_from_file
 
 fact_checking_bp = Blueprint('fact_checking', __name__)
@@ -124,7 +125,7 @@ def start_fact_checking():
         return jsonify({'success': False, 'message': f'开始真伪鉴定失败：{str(e)}'})
 
 def search_information(query):
-    """搜索相关信息"""
+    """搜索相关信息并进行可信度评分"""
     try:
         params = {
             'q': query,
@@ -134,6 +135,34 @@ def search_information(query):
         response.raise_for_status()
         
         data = response.json()
+        
+        # 为每个搜索结果添加可信度评分
+        if 'results' in data and data['results']:
+            scored_results = []
+            for i, result in enumerate(data['results']):
+                url = result.get('url', '')
+                title = result.get('title', '')
+                snippet = result.get('snippet', result.get('description', ''))
+                
+                # 计算可信度评分
+                credibility = credibility_service.calculate_source_credibility(url, title, snippet)
+                
+                scored_result = {
+                    **result,  # 保留原有信息
+                    'credibility': credibility,
+                    'position': i + 1  # 搜索结果位置
+                }
+                scored_results.append(scored_result)
+            
+            # 按可信度排序（可选：保持原始排序或按可信度排序）
+            # scored_results.sort(key=lambda x: x['credibility']['score'], reverse=True)
+            
+            data['results'] = scored_results
+            
+            # 添加整体可信度评估
+            overall_credibility = credibility_service.calculate_overall_credibility(scored_results)
+            data['overall_credibility'] = overall_credibility
+        
         return data
         
     except Exception as e:
@@ -253,6 +282,8 @@ IAEA报告
         
         # 执行搜索
         search_results = []
+        all_scored_results = []  # 存储所有带评分的结果用于最终评估
+        
         for keyword in keywords:
             yield f"data: {json.dumps({'type': 'thinking', 'step': 2, 'content': f'正在搜索关键词: {keyword}'})}\n\n"
             
@@ -271,14 +302,55 @@ IAEA报告
                         title = item.get('title', '无标题')
                         url = item.get('url', '')
                         snippet = item.get('snippet', item.get('description', '无描述'))
+                        credibility = item.get('credibility', {})
                         
-                        # 使用简洁的文本格式
-                        result_content += f"{i}. **{title}**\\n"
+                        # 获取可信度信息
+                        cred_score = credibility.get('score', 0)
+                        cred_level = credibility.get('level', '未知')
+                        emotion_analysis = credibility.get('emotion_analysis', {})
+                        
+                        # 可信度图标
+                        cred_icon = "🔴" if cred_score < 35 else "🟡" if cred_score < 65 else "🟢"
+                        
+                        # 情感风险图标
+                        emotion_risk = emotion_analysis.get('risk_level', '低风险')
+                        if emotion_risk in ['极高风险', '高风险']:
+                            emotion_icon = "⚠️"
+                        elif emotion_risk == '中等风险':
+                            emotion_icon = "⚡"
+                        else:
+                            emotion_icon = "✅"
+                        
+                        # 使用丰富的格式显示结果
+                        result_content += f"**{i}. {title}** {cred_icon} {emotion_icon}\\n"
+                        result_content += f"   📊 **可信度**: {cred_score}/100 ({cred_level})\\n"
+                        result_content += f"   🧠 **情感分析**: {emotion_risk}\\n"
+                        
                         if snippet and snippet != '无描述':
-                            result_content += f"   {snippet}\\n"
+                            result_content += f"   📝 {snippet}\\n"
                         if url:
-                            result_content += f"   链接: {url}\\n"
+                            result_content += f"   🔗 [查看来源]({url})\\n"
+                        
+                        # 显示可信度详情（折叠显示）
+                        if credibility.get('details'):
+                            result_content += f"   💡 评分依据: {' | '.join(credibility['details'])}\\n"
+                        
+                        # 显示情感分析详情
+                        detected_issues = emotion_analysis.get('detected_issues', [])
+                        if detected_issues:
+                            result_content += f"   ⚠️ 检测到的问题: {' | '.join(detected_issues)}\\n"
+                        
                         result_content += "\\n"
+                    
+                    # 收集所有结果用于整体评估
+                    all_scored_results.extend(search_result['results'])
+                    
+                    # 显示该关键词的整体可信度
+                    if 'overall_credibility' in search_result:
+                        overall = search_result['overall_credibility']
+                        result_content += f"**该关键词搜索结果整体可信度**: {overall['overall_score']}/100 ({overall['overall_level']})\\n"
+                        result_content += f"*{overall['summary']}*\\n\\n"
+                
                 else:
                     result_content += "未找到相关搜索结果\\n\\n"
                 
@@ -287,66 +359,124 @@ IAEA报告
                 error_msg = search_result.get('error', '未知错误')
                 yield f"data: {json.dumps({'type': 'thinking', 'step': 2, 'content': f'搜索 {keyword} 失败: {error_msg}'})}\n\n"
         
-        # 总结搜索结果
-        summary_content = f"\\n\\n## 📊 搜索结果总结\\n\\n"
-        summary_content += f"- 成功搜索关键词: {len(search_results)}/{len(keywords)}\\n"
-        summary_content += f"- 总共获取到 {sum(len(sr['results'].get('results', [])) for sr in search_results)} 条验证资料\\n"
-        
-        if search_results:
-            summary_content += "\\n这些搜索结果将用于下一步的事实验证和真伪鉴定分析。"
+        # 计算所有搜索结果的整体可信度评估
+        if all_scored_results:
+            final_credibility = credibility_service.calculate_overall_credibility(all_scored_results)
+            
+            # 总结搜索结果
+            summary_content = f"\\n\\n## 📊 搜索结果与可信度总结\\n\\n"
+            summary_content += f"- ✅ 成功搜索关键词: {len(search_results)}/{len(keywords)}\\n"
+            summary_content += f"- 📄 总共获取验证资料: {len(all_scored_results)} 条\\n"
+            summary_content += f"- 🎯 **整体可信度评分**: **{final_credibility['overall_score']}/100** ({final_credibility['overall_level']})\\n"
+            summary_content += f"- 📈 高可信度来源占比: {final_credibility['high_credibility_ratio']}%\\n\\n"
+            
+            # 可信度分布
+            summary_content += "**可信度分布**:\\n"
+            for level, count in final_credibility['distribution'].items():
+                if count > 0:
+                    percentage = round(count / final_credibility['total_sources'] * 100, 1)
+                    summary_content += f"- {level}: {count} 条 ({percentage}%)\\n"
+            
+            summary_content += f"\\n💬 **评估总结**: {final_credibility['summary']}\\n\\n"
+            
+            if search_results:
+                summary_content += "这些搜索结果和可信度评估将用于下一步的事实验证和真伪鉴定分析。"
+        else:
+            summary_content = f"\\n\\n## 📊 搜索结果总结\\n\\n"
+            summary_content += f"- 成功搜索关键词: {len(search_results)}/{len(keywords)}\\n"
+            summary_content += f"- ⚠️ 未获取到有效的验证资料，可能影响真伪鉴定的准确性\\n"
         
         yield f"data: {json.dumps({'type': 'content', 'step': 2, 'content': summary_content})}\n\n"
         
         yield f"data: {json.dumps({'type': 'step_complete', 'step': 2})}\n\n"
         
         # 第三步：深度分析
-        yield f"data: {json.dumps({'type': 'step_start', 'step': 3, 'name': '深度分析', 'description': '对比搜索结果与原文进行深度分析'})}\n\n"
+        yield f"data: {json.dumps({'type': 'step_start', 'step': 3, 'name': '深度分析', 'description': '结合可信度评分进行深度分析'})}\n\n"
         
-        # 将搜索结果整理为文本
+        # 将搜索结果整理为文本，包含可信度信息
         search_context = ""
+        total_credibility_scores = []
+        
         for sr in search_results:
             search_context += f"关键词 '{sr['keyword']}' 的搜索结果：\n"
             if 'results' in sr['results'] and sr['results']['results']:
                 for item in sr['results']['results'][:2]:  # 每个关键词取前2个结果
                     title = item.get('title', '无标题')
                     snippet = item.get('snippet', item.get('description', ''))
-                    search_context += f"- {title}: {snippet}\n"
+                    url = item.get('url', '')
+                    credibility = item.get('credibility', {})
+                    
+                    cred_score = credibility.get('score', 0)
+                    cred_level = credibility.get('level', '未知')
+                    total_credibility_scores.append(cred_score)
+                    
+                    search_context += f"- 标题: {title}\n"
+                    search_context += f"  内容: {snippet}\n"
+                    search_context += f"  来源: {url}\n"
+                    search_context += f"  可信度评分: {cred_score}/100 ({cred_level})\n"
+                    
+                    if credibility.get('details'):
+                        search_context += f"  评分详情: {'; '.join(credibility['details'])}\n"
+                    search_context += "\n"
             search_context += "\n"
         
-        # 第四步：真伪鉴定
-        yield f"data: {json.dumps({'type': 'step_start', 'step': 4, 'name': '真伪鉴定', 'description': '基于搜索结果进行真伪分析'})}\n\n"
+        # 计算平均可信度
+        avg_credibility = sum(total_credibility_scores) / len(total_credibility_scores) if total_credibility_scores else 0
         
-        analysis_prompt = f"""基于文章解析和搜索结果进行深度分析：
+        analysis_prompt = f"""基于文章解析和带有可信度评分的搜索结果进行深度分析：
 
-文章解析：
+**文章解析：**
 {parsed_content}
 
-原文：
+**原文：**
 {content}
 
-搜索得到的验证资料：
+**带可信度评分和情感分析的验证资料：**
 {search_context}
 
-请结合搜索到的资料对原文进行深度分析：
+**搜索结果可信度概况：**
+- 平均可信度评分: {avg_credibility:.1f}/100
+- 评分范围: {min(total_credibility_scores) if total_credibility_scores else 0}-{max(total_credibility_scores) if total_credibility_scores else 0}
+- 高可信度来源(≥65分)数量: {sum(1 for score in total_credibility_scores if score >= 65)}
+- 低可信度来源(≤35分)数量: {sum(1 for score in total_credibility_scores if score <= 35)}
+
+请结合搜索资料的可信度评分和情感偏见分析对原文进行深度分析：
 
 ## 1. 信息对比分析
-- 原文声明与搜索资料的一致性分析
-- 发现的矛盾或不一致之处
+- 对比原文声明与不同可信度搜索资料的一致性
+- **重点关注辟谣和澄清信息**：如果搜索结果中包含官方辟谣、澄清声明或否认信息，需要特别重视
+- 重点关注高可信度来源的信息与原文的匹配度
+- 识别低可信度来源可能带来的误导信息
+- **优先级顺序**：官方辟谣 > 权威媒体澄清 > 一般可信来源 > 低可信度来源
 
-## 2. 可信度评估
-- 基于搜索资料评估原文信息的可信度
-- 识别可能的误导性信息
+## 2. 情感偏见检测分析
+- 分析原文和搜索结果中的情感色彩和偏见倾向
+- 识别可能利用恐慌、愤怒等极端情绪的内容
+- 检测煽动性表达、夸大修辞和未验证声明
+- 评估信息传播中的情感操控风险
 
-## 3. 补充信息
-- 搜索资料中的额外背景信息
-- 原文未提及的重要相关信息
+## 3. 加权可信度评估
+- 基于来源可信度和情感客观性对验证信息进行加权分析
+- 高可信度且情感客观的来源支持或反驳原文的程度
+- 低可信度或情感极端的来源对判断可能造成的偏差
 
-## 4. 争议点分析
-- 识别存在争议的观点
-- 分析不同来源的观点差异
+## 4. 谣言传播模式识别
+- 识别典型的网络谣言传播特征
+- 分析利用社会热点、群体偏见进行传播的手段
+- 检测故意制造对立、引发争议的内容策略
+
+## 5. 风险评估与预警
+- 基于来源可信度和情感分析识别信息传播风险
+- 评估可能引发恐慌、仇恨或极端行为的内容风险
+- 分析对特定群体可能造成的负面影响
+
+## 6. 综合判断建议
+- 结合可信度评分和情感客观性给出更准确的真伪判断建议
+- 基于来源质量和情感风险的信任度建议
+- 针对不同风险等级的处理建议
 
 <think>
-我需要仔细对比原文和搜索到的资料，找出事实的准确性，识别可能的偏见或错误信息。
+我需要仔细分析这些带有可信度评分和情感分析的搜索结果，重点关注高可信度且情感客观的来源，同时警惕低可信度或情感极端的来源可能的误导。特别要注意识别利用恐慌、愤怒等情绪进行传播的谣言特征。
 </think>"""
         
         analysis_content = ""
@@ -361,51 +491,150 @@ IAEA报告
         yield f"data: {json.dumps({'type': 'step_complete', 'step': 3})}\n\n"
         
         # 第四步：真伪鉴定
-        yield f"data: {json.dumps({'type': 'step_start', 'step': 4, 'name': '真伪鉴定', 'description': '基于搜索结果进行真伪分析'})}\n\n"
+        yield f"data: {json.dumps({'type': 'step_start', 'step': 4, 'name': '智能真伪鉴定', 'description': '基于可信度评分进行综合真伪判定'})}\n\n"
         
-        verification_prompt = f"""请基于以下信息进行真伪鉴定：
+        # 准备可信度统计信息
+        credibility_stats = {
+            'total_sources': len(total_credibility_scores),
+            'average_score': avg_credibility,
+            'high_credibility_count': sum(1 for score in total_credibility_scores if score >= 65),
+            'medium_credibility_count': sum(1 for score in total_credibility_scores if 35 <= score < 65),
+            'low_credibility_count': sum(1 for score in total_credibility_scores if score < 35),
+            'score_range': f"{min(total_credibility_scores) if total_credibility_scores else 0}-{max(total_credibility_scores) if total_credibility_scores else 0}"
+        }
+        
+        verification_prompt = f"""请基于以下信息进行智能真伪鉴定：
 
-原文内容：
+**原文内容：**
 {content}
 
-文章解析：
+**文章解析：**
 {parsed_content}
 
-提取的关键词：
+**提取的关键词：**
 {keywords_content}
 
-搜索得到的验证资料：
+**带可信度评分和情感分析的验证资料：**
 {search_context}
 
-深度分析结果：
+**深度分析结果：**
 {analysis_content}
 
-请进行综合分析并提供：
+**可信度统计信息：**
+- 总验证来源数量: {credibility_stats['total_sources']}
+- 平均可信度评分: {credibility_stats['average_score']:.1f}/100
+- 高可信度来源(≥65分): {credibility_stats['high_credibility_count']} 个
+- 中等可信度来源(35-64分): {credibility_stats['medium_credibility_count']} 个
+- 低可信度来源(<35分): {credibility_stats['low_credibility_count']} 个
+- 可信度评分范围: {credibility_stats['score_range']}
 
-## 1. 真实性评估
-- 对文章中各个声明的真实性评估
-- 基于搜索结果的事实核查
+**🎯 重要要求**：
+1. 必须明确给出原文信息的具体可信度评分（0-100分的数字）
+2. 必须基于搜索到的验证资料进行加权计算
+3. 如果存在官方辟谣信息，必须重点考虑并大幅降低原文可信度
+4. 在多个章节中反复明确显示这个评分
 
-## 2. 对比分析
-- 原文与搜索结果的一致性分析
-- 发现的矛盾或不一致之处
+请按以下格式进行综合分析并提供智能真伪鉴定结果：
 
-## 3. 可信度评级
-- 整体可信度评级（高/中/低）
-- 具体声明的可信度分析
+# 🔍 核查结论
 
-## 4. 风险提示
-- 需要进一步核实的信息
-- 可能的误导性内容
+**📊 信息真实性：**
+根据验证分析，此信息为：[真实/大部分真实/部分真实/存疑/大部分虚假/虚假]
 
-## 5. 总体结论
-- 客观的真伪判定结论
-- 对读者的建议
+**📈 可信度评分：**
+原文信息可信度评分：X分/100分 (等级：X级)
 
-请客观、严谨地进行分析，避免绝对化的判断。
+---
+
+以下是按照您的要求进行的智能真伪鉴定和分析结果：
+
+## 1. 🎯 综合真实性评估
+- **优先考虑权威辟谣信息**：如果搜索结果中存在官方辟谣、澄清或否认信息，应作为判断的重要依据
+- 基于加权可信度和情感客观性的整体真实性判断
+- 高可信度且情感客观来源支持/反驳原文的证据强度
+- 考虑来源质量和情感风险的事实核查结论
+- **特别注意**：权威机构明确标注为"谣言"、"不实信息"的内容应被判定为虚假
+
+**📊 原文信息可信度评分**: 基于验证结果，给出原文信息的具体可信度评分（0-100分）和评级等级
+
+## 2. 🧠 情感偏见影响分析
+- 原文和验证资料中的情感色彩对判断的影响
+- 识别利用恐慌、愤怒等极端情绪进行传播的内容
+- 分析煽动性表达、偏见歧视对信息可信度的影响
+- 评估情感操控对公众认知的潜在影响
+
+## 3. 📊 智能评级系统
+请明确给出以下评级：
+- **原文可信度评分**: X分/100分（基于验证证据的综合评分）
+- **真实性评级**: 真实/大部分真实/部分真实/存疑/大部分虚假/虚假
+- **可信度等级**: A级(90-100)/B级(80-89)/C级(70-79)/D级(60-69)/E级(50-59)/F级(<50)
+- **情感风险等级**: 客观中性/低风险/中等风险/高风险/极高风险
+- **谣言传播风险**: 低风险/中等风险/高风险/极高风险
+
+## 4. 🚨 谣言特征识别与预警
+- 识别典型网络谣言的传播模式和特征
+- 分析利用社会热点、群体偏见进行传播的手段
+- 检测故意制造恐慌、对立情绪的内容策略
+- 评估对特定群体可能造成的负面社会影响
+
+## 5. 📋 详细证据清单
+**官方辟谣和澄清证据：**
+（优先列出政府、权威机构的辟谣、澄清、否认信息）
+
+**支持原文的高可信度且情感客观证据：**
+（列出可信度≥65分且情感风险为低风险的支持性证据）
+
+**反驳原文的高可信度且情感客观证据：**
+（列出可信度≥65分且情感风险为低风险的反驳性证据）
+
+**需要警惕的情感极端或低可信度信息：**
+（列出可信度<35分或情感风险为高风险的可疑信息）
+
+**潜在的情感操控内容：**
+（列出利用恐慌、愤怒、偏见等进行传播的内容）
+
+## 6. 🎯 最终结论与专业建议
+**📊 最终可信度判定**：
+- 原文信息可信度评分：X分/100分
+- 基于验证证据的可信度等级：X级
+- 真实性评级：真实/虚假等
+
+**💡 专业建议**：
+- 基于可信度和情感客观性加权的综合判定结论
+- 对信息使用者的专业建议（传播、分享、讨论注意事项）
+- 针对不同风险等级的具体处理建议
+- 如何理性看待和讨论相关话题的指导
+
+## 7. 🛡️ 防范谣言传播建议
+- 如何识别和抵制情感操控型谣言
+- 提高媒体素养和批判性思维的建议
+- 理性传播信息的指导原则
+
+**评判原则：**
+- **必须给出明确的数字评分**：在分析结果中必须包含"原文信息可信度评分：XX分/100分"
+- 优先采信高可信度且情感客观的来源
+- 对情感极端或煽动性内容保持高度警惕
+- **特别注意识别辟谣、澄清、官方否认信息**：
+  * 如果搜索结果中包含官方辟谣、澄清声明，需要重点分析
+  * 政府机构、权威媒体的辟谣信息具有很高的可信度权重
+  * 包含"辟谣"、"澄清"、"不实"、"谣言"、"虚假信息"等词汇的权威来源内容应给予更高权重
+  * 官方否认或澄清的信息通常表明原文内容存在问题
+- 识别和防范利用偏见、恐慌进行传播的谣言
+- 综合考虑来源权威性、信息客观性和社会影响
+- 提供负责任、有助于社会理性讨论的判断结果
+
+**评分计算方法**：
+1. 如果存在高可信度(≥65分)的官方辟谣信息 → 原文可信度应≤30分
+2. 如果高可信度来源主要反驳原文 → 原文可信度应≤40分
+3. 如果高可信度来源主要支持原文 → 原文可信度应≥70分
+4. 如果证据相互矛盾 → 原文可信度应在40-60分之间
+5. 如果缺乏足够验证资料 → 根据原文自身特征评分
+
+**重要提醒：**
+在分析过程中，如果发现权威来源（如政府官网、权威媒体）明确标注某信息为"谣言"、"不实信息"或进行"辟谣"，应当将此类信息作为反驳原文的强力证据，并在最终判断中给予重要考量。
 
 <think>
-现在我需要综合所有信息，客观地分析文章的真实性。我要对比原文声明和搜索到的资料，找出一致性和矛盾之处。
+我需要综合所有信息，特别注意识别利用情感操控进行传播的谣言特征。要重点关注那些试图引起恐慌、愤怒或偏见的内容，同时优先采信那些客观中性且来源可靠的信息。这不仅是事实核查，更是对社会负责的信息评估。
 </think>"""
         
         for chunk in ai_service.complex_chat(verification_prompt):
@@ -557,6 +786,7 @@ def generate_fact_checking_analysis_json(content, session_id):
         keywords = keywords[:5]  # 限制最多5个关键词
         
         fact_check_content = "## 事实核查结果\n\n"
+        all_search_results = []  # 收集所有搜索结果用于可信度评估
         
         for i, keyword in enumerate(keywords, 1):
             fact_check_content += f"### {i}. 核查要点：{keyword}\n\n"
@@ -564,15 +794,53 @@ def generate_fact_checking_analysis_json(content, session_id):
             search_data = search_information(keyword)
             if 'error' not in search_data and 'results' in search_data:
                 results = search_data['results'][:3]  # 取前3个结果
+                all_search_results.extend(results)  # 收集结果
+                
                 for j, result in enumerate(results, 1):
                     title = result.get('title', '未知标题')
                     snippet = result.get('snippet', '无描述')
                     url = result.get('url', '#')
+                    credibility = result.get('credibility', {})
                     
-                    fact_check_content += f"**参考资料 {j}**：[{title}]({url})\n"
-                    fact_check_content += f"{snippet}\n\n"
+                    # 获取可信度信息
+                    cred_score = credibility.get('score', 0)
+                    cred_level = credibility.get('level', '未知')
+                    cred_details = credibility.get('details', [])
+                    
+                    # 可信度图标
+                    cred_icon = "🔴" if cred_score < 35 else "🟡" if cred_score < 65 else "🟢"
+                    
+                    fact_check_content += f"**参考资料 {j}** {cred_icon}：[{title}]({url})\n"
+                    fact_check_content += f"📊 **可信度评分**: {cred_score}/100 ({cred_level})\n"
+                    fact_check_content += f"📝 **内容**: {snippet}\n"
+                    if cred_details:
+                        fact_check_content += f"💡 **评分依据**: {' | '.join(cred_details)}\n"
+                    fact_check_content += "\n"
+                
+                # 添加该关键词的整体可信度评估
+                if 'overall_credibility' in search_data:
+                    overall = search_data['overall_credibility']
+                    fact_check_content += f"**关键词 '{keyword}' 搜索结果整体可信度**: {overall['overall_score']}/100 ({overall['overall_level']})\n"
+                    fact_check_content += f"*{overall['summary']}*\n\n"
+                
             else:
                 fact_check_content += f"搜索 '{keyword}' 时出现错误或无结果\n\n"
+        
+        # 添加全局可信度评估
+        if all_search_results:
+            global_credibility = credibility_service.calculate_overall_credibility(all_search_results)
+            fact_check_content += "\n## 🎯 整体验证资料可信度评估\n\n"
+            fact_check_content += f"- **总体评分**: {global_credibility['overall_score']}/100 ({global_credibility['overall_level']})\n"
+            fact_check_content += f"- **高可信度来源占比**: {global_credibility['high_credibility_ratio']}%\n"
+            fact_check_content += f"- **验证来源总数**: {global_credibility['total_sources']} 个\n"
+            fact_check_content += f"- **评估结论**: {global_credibility['summary']}\n\n"
+            
+            # 可信度分布
+            fact_check_content += "**可信度等级分布**:\n"
+            for level, count in global_credibility['distribution'].items():
+                if count > 0:
+                    percentage = round(count / global_credibility['total_sources'] * 100, 1)
+                    fact_check_content += f"- {level}: {count} 个来源 ({percentage}%)\n"
         
         analysis_result['steps'].append({
             'step': 2,
@@ -586,32 +854,42 @@ def generate_fact_checking_analysis_json(content, session_id):
         credibility_prompt = f"""基于前面的内容解析：
 {content_analysis}
 
-以及事实核查结果：
+以及带有可信度评分的事实核查结果：
 {fact_check_content}
 
 以及原始内容：
 {content}
 
-请进行可信度分析，包括：
+请进行综合可信度分析：
 
 ## 可信度分析
 
-### 信息源可信度
-分析信息来源的权威性和可靠性
+### 验证来源质量评估
+- 分析搜索到的验证来源的整体可信度水平
+- 评估高可信度来源与低可信度来源的比例
+- 识别最权威和最可疑的信息来源
 
-### 逻辑一致性
-检查内容的逻辑是否一致、论证是否合理
+### 加权信息一致性分析
+- 重点关注高可信度来源(≥65分)的信息与原文的一致性
+- 分析中等可信度来源(35-64分)提供的补充信息
+- 识别低可信度来源(<35分)可能的误导信息
 
-### 证据支撑度
-评估有多少可靠证据支持相关声明
+### 证据强度评估
+- 基于来源可信度对支持/反驳证据进行加权评估
+- 计算高可信度证据对原文声明的支撑程度
+- 评估证据质量对最终判断的影响
 
-### 疑点识别
-指出内容中存在的疑点或矛盾之处
+### 风险点识别
+- 识别基于低可信度来源可能导致的判断偏差
+- 分析信息传播中的潜在风险
+- 评估需要进一步验证的关键点
 
-### 风险评估
-评估信息传播可能带来的风险
+### 综合可信度评级
+- 结合来源质量给出内容的综合可信度等级
+- 基于验证资料质量的风险评估
+- 对信息使用的建议等级
 
-请使用标准的markdown格式。"""
+请使用标准的markdown格式，特别关注不同可信度来源的影响权重。"""
         
         credibility_analysis = ai_service.complex_chat_complete(credibility_prompt)
         analysis_result['steps'].append({
@@ -628,7 +906,7 @@ def generate_fact_checking_analysis_json(content, session_id):
 **内容解析：**
 {content_analysis}
 
-**事实核查：**
+**带可信度评分的事实核查：**
 {fact_check_content}
 
 **可信度分析：**
@@ -637,26 +915,68 @@ def generate_fact_checking_analysis_json(content, session_id):
 **原始内容：**
 {content}
 
-请给出最终的真伪判定结论：
+请给出基于可信度评分的最终真伪判定结论：
 
-## 真伪判定结论
+## 智能真伪判定结论
 
-### 总体判定
-给出明确的真假判断（真实/部分真实/存疑/虚假）
+### 📊 可信度加权评估结果
+- 基于验证来源可信度的加权真实性评估
+- 高可信度来源支持/反驳原文的证据强度
+- 整体验证质量对判定结果的可靠性影响
 
-### 判定依据
-详细说明判定的主要依据
+### ⚖️ 智能评级系统
+请给出以下具体评级：
 
-### 核心证据
-列出支持或反驳的核心证据
+**真实性评级**：
+- [ ] 真实 (高可信度来源强力支持，无明显反驳)
+- [ ] 大部分真实 (多数高可信度来源支持，少量争议)
+- [ ] 部分真实 (真实与虚假信息混合)
+- [ ] 存疑 (证据不足或高可信度来源意见分歧)
+- [ ] 大部分虚假 (多数高可信度来源反驳)
+- [ ] 虚假 (高可信度来源一致反驳或证实为假)
 
-### 建议处理
-针对该信息给出处理建议
+**验证质量评级**：
+- [ ] A级 (90-100分) - 多个权威来源，证据充分
+- [ ] B级 (80-89分) - 较多可靠来源，证据较充分
+- [ ] C级 (70-79分) - 部分可靠来源，证据一般
+- [ ] D级 (60-69分) - 来源质量参差，证据有限
+- [ ] E级 (50-59分) - 来源质量较差，证据不足
+- [ ] F级 (<50分) - 来源不可靠，难以验证
 
-### 注意事项
-提醒用户需要注意的相关问题
+**风险等级**：
+- [ ] 低风险 - 信息基本可靠，传播风险小
+- [ ] 中等风险 - 存在部分争议，需要谨慎对待
+- [ ] 高风险 - 可能误导公众，不建议传播
+- [ ] 极高风险 - 明确虚假信息，严重误导风险
 
-请使用标准的markdown格式，提供准确、负责任的判定结果。"""
+### 🎯 核心判定依据
+**支持原文的高可信度证据（≥65分）：**
+（列出具体的高可信度支持性证据）
+
+**反驳原文的高可信度证据（≥65分）：**
+（列出具体的高可信度反驳性证据）
+
+**需要警惕的低可信度信息（<35分）：**
+（列出可能误导的低可信度信息）
+
+### 📋 专业建议
+**对信息使用者的建议：**
+- 基于验证质量的信任度建议
+- 信息使用和传播的注意事项
+- 建议的后续验证方向
+
+**风险提示：**
+- 可能存在的误导性内容
+- 需要特别关注的争议点
+- 传播时应注意的问题
+
+### 🔍 最终结论
+给出明确、负责任的判定结论，说明判定的主要依据和可信度水平。
+
+**评判原则说明：**
+本判定基于智能可信度评分系统，优先采信高可信度来源（政府机构、权威媒体、学术机构等），对低可信度来源保持审慎态度，综合考虑来源多样性和证据一致性。
+
+请使用标准的markdown格式，提供准确、客观、负责任的判定结果。"""
         
         conclusion = ai_service.complex_chat_complete(conclusion_prompt)
         analysis_result['steps'].append({
