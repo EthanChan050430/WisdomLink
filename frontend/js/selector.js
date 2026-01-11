@@ -75,24 +75,59 @@ class SelectorManager {
 
     selectOption(option) {
         const dropdown = option.closest('.selector-dropdown');
-        const button = dropdown.previousElementSibling;
+        const wrapper = dropdown.closest('.selector-button-wrapper');
+        const button = wrapper.querySelector('.selector-button');
         const value = option.dataset.value;
-        const name = option.querySelector('.option-name').textContent;
+        
+        let name = option.querySelector('.option-name').textContent;
         
         console.log('选择选项:', value, name);
         
-        // 更新按钮文本
-        const buttonText = button.querySelector('span');
+        // 更新按钮文本和图标
+        const buttonText = button.querySelector('.button-text');
         if (buttonText) {
             buttonText.textContent = name;
         }
+        const buttonIcon = button.querySelector('i:first-child');
+        const optionIcon = option.querySelector('i');
+        if (buttonIcon && optionIcon) {
+            buttonIcon.className = optionIcon.className;
+        }
 
         // 更新隐藏的select
-        const select = dropdown.querySelector('select');
+        const select = wrapper.querySelector('select');
         if (select) {
             select.value = value;
             // 触发change事件
             select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        // 如果是自定义角色
+        if (value === '自定义') {
+            const customRole = prompt('请输入自定义角色名称（如：马云、乔布斯等）:');
+            if (customRole) {
+                // 添加新选项到隐藏的select
+                const newOption = new Option(customRole, customRole, false, true);
+                select.add(newOption);
+                select.value = customRole;
+                
+                // 更新按钮文本
+                buttonText.textContent = customRole;
+                name = customRole; // 更新name以便后续使用
+
+                // 添加新选项到下拉菜单
+                const newDropdownOption = document.createElement('div');
+                newDropdownOption.className = 'dropdown-option';
+                newDropdownOption.dataset.value = customRole;
+                newDropdownOption.innerHTML = `<span class="option-name">${customRole}</span><span class="option-desc">自定义</span>`;
+                option.parentNode.insertBefore(newDropdownOption, option);
+                
+            } else {
+                // 如果用户取消输入，则恢复之前的选择
+                select.value = select.options[0].value;
+                buttonText.textContent = select.options[0].text;
+                return; // 提前退出
+            }
         }
 
         // 更新当前下拉框的选中状态
@@ -111,6 +146,16 @@ class SelectorManager {
 
         // 强制同步其他选择器
         this.forceSyncSelectors();
+
+        // 分发通用选择变更事件，便于其他模块联动（如上传类型切换）
+        try {
+            const wrapperId = wrapper?.id || null;
+            const eventDetail = { id: wrapperId, value, name };
+            const evt = new CustomEvent('selectorChanged', { detail: eventDetail });
+            document.dispatchEvent(evt);
+        } catch (err) {
+            console.warn('分发 selectorChanged 事件失败:', err);
+        }
     }
 
     // 同步所有模型选择器

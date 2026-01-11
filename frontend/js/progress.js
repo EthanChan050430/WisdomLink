@@ -1369,22 +1369,48 @@ class ProgressManager {
      * 显示最终结果并自动折叠步骤过程
      */
     showFinalResultAndCollapseSteps() {
-        // 获取最后一步（结果汇总）的内容
         const lastStepId = this.currentSteps.length;
         const finalResult = this.currentStepData[lastStepId]?.content;
-        
+
         if (!finalResult) {
             console.warn('没有找到最终结果内容');
             return;
         }
 
-        // 显示结果容器
         const resultWrapper = document.getElementById('analysisResultWrapper');
         const resultContent = document.getElementById('resultContent');
-        
-        if (resultWrapper && resultContent) {
-            // 清理和渲染最终结果
-            const cleanedContent = this.cleanupContent(finalResult);
+
+        if (!resultWrapper || !resultContent) {
+            return;
+        }
+
+        const cleanedContent = this.cleanupContent(finalResult);
+        const isFactCheckReport = this.analysisType === 'fact-checking';
+        let renderedCustomView = false;
+
+        if (isFactCheckReport) {
+            const structuredResult = this.parseFactCheckJson(cleanedContent);
+            if (structuredResult) {
+                const reportElement = this.renderFactCheckReport(structuredResult);
+                if (reportElement) {
+                    resultContent.classList.remove('markdown-container');
+                    resultContent.innerHTML = '';
+                    resultContent.appendChild(reportElement);
+
+                    const actions = document.createElement('div');
+                    actions.className = 'result-actions';
+                    if (window.shareManager) {
+                        actions.innerHTML = window.shareManager.createShareButtons();
+                    }
+                    resultContent.appendChild(actions);
+
+                    this.renderMermaidDiagrams(reportElement);
+                    renderedCustomView = true;
+                }
+            }
+        }
+
+        if (!renderedCustomView) {
             resultContent.innerHTML = `
                 <div class="markdown-container">${this.renderMarkdown(cleanedContent)}</div>
                 <div class="result-actions">
@@ -1392,34 +1418,448 @@ class ProgressManager {
                 </div>
             `;
             resultContent.classList.add('markdown-container');
-            
-            // 显示结果容器
-            resultWrapper.style.display = 'block';
-            
-            // 自动折叠步骤过程
-            setTimeout(() => {
-                const toggleBtn = document.getElementById('toggleStepsBtn');
-                const stepsContent = document.getElementById('analysisStepsContent');
-                
-                if (toggleBtn && stepsContent) {
-                    stepsContent.style.display = 'none';
-                    
-                    const icon = toggleBtn.querySelector('i');
-                    const text = toggleBtn.querySelector('span');
-                    
-                    if (icon && text) {
-                        icon.className = 'fas fa-chevron-down';
-                        text.textContent = '展开过程';
-                    }
-                }
-                
-                // 滚动到结果区域
-                resultWrapper.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start' 
-                });
-            }, 500);
+        } else {
+            resultContent.classList.remove('markdown-container');
         }
+
+        resultWrapper.style.display = 'block';
+
+        setTimeout(() => {
+            const toggleBtn = document.getElementById('toggleStepsBtn');
+            const stepsContent = document.getElementById('analysisStepsContent');
+
+            if (toggleBtn && stepsContent) {
+                stepsContent.style.display = 'none';
+
+                const icon = toggleBtn.querySelector('i');
+                const text = toggleBtn.querySelector('span');
+
+                if (icon && text) {
+                    icon.className = 'fas fa-chevron-down';
+                    text.textContent = '展开过程';
+                }
+            }
+
+            resultWrapper.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }, 500);
+    }
+
+    parseFactCheckJson(rawContent) {
+        if (!rawContent) return null;
+        const trimmed = rawContent.trim();
+        if (!trimmed) return null;
+
+        const firstBrace = trimmed.indexOf('{');
+        const lastBrace = trimmed.lastIndexOf('}');
+        if (firstBrace === -1 || lastBrace === -1 || firstBrace >= lastBrace) {
+            console.warn('真伪鉴定结果中未找到有效的 JSON 结构');
+            return null;
+        }
+
+        try {
+            return JSON.parse(trimmed.slice(firstBrace, lastBrace + 1));
+        } catch (error) {
+            console.warn('解析真伪鉴定 JSON 失败:', error);
+            return null;
+        }
+    }
+
+    renderFactCheckReport(result) {
+        if (!result || typeof result !== 'object') return null;
+
+        const score = this.normalizeFactCheckScore(result.confidenceScore);
+        const label = this.escapeHtml(result.confidenceLabel || '未标注');
+        const level = this.escapeHtml(result.confidenceLevel || '未评级');
+        const description = this.escapeHtml(result.confidenceDescription || '');
+        const summary = this.escapeHtml(result.verdictSummary || '');
+        const tone = this.getFactCheckTone(score);
+
+        const supportingHtml = this.buildFactCheckPoints(result.supportingPoints, '暂未找到支持原文的证据', 'supporting');
+        const contradictingHtml = this.buildFactCheckPoints(result.contradictingPoints, '暂未找到反驳原文的证据', 'contradicting');
+        const analysisHighlights = this.buildAnalysisHighlights(result.analysisHighlights);
+        const riskAssessment = this.buildRiskAssessment(result.riskAssessment);
+        const recommendations = this.buildRecommendations(result.recommendations);
+        const evidenceList = this.buildEvidenceCards(result.evidence);
+        const mermaidSection = this.buildMermaidSection(result.mermaidDiagram, result.mermaidDescription);
+
+        const container = document.createElement('div');
+        container.className = `fact-check-report fact-check-tone-${tone}`;
+        container.innerHTML = `
+            <section class="fact-check-header">
+                <div class="fact-check-score">
+                    <div class="fact-check-score-circle">
+                        <div class="fact-check-score-inner">
+                            <span class="fact-check-score-number">${score}</span>
+                            <span class="fact-check-score-unit">/100</span>
+                        </div>
+                    </div>
+                    <div class="fact-check-score-meta">
+                        <div class="fact-check-score-tags">
+                            <span class="fact-check-label">${label}</span>
+                            <span class="fact-check-level">${level}</span>
+                        </div>
+                        ${description ? `<p class="fact-check-score-desc">${description}</p>` : ''}
+                    </div>
+                </div>
+                <div class="fact-check-summary">
+                    <h3><i class="fas fa-flag-checkered"></i> 结论摘要</h3>
+                    <p>${summary || '系统未提供结论摘要。'}</p>
+                </div>
+            </section>
+            <section class="fact-check-section">
+                <h3><i class="fas fa-balance-scale"></i> 证据对比</h3>
+                <div class="fact-check-points">
+                    <div class="fact-check-card fact-check-card--supporting">
+                        <h4><i class="fas fa-check-circle"></i> 支持原文的证据</h4>
+                        ${supportingHtml}
+                    </div>
+                    <div class="fact-check-card fact-check-card--contradicting">
+                        <h4><i class="fas fa-times-circle"></i> 反驳原文的证据</h4>
+                        ${contradictingHtml}
+                    </div>
+                </div>
+            </section>
+            ${analysisHighlights}
+            ${riskAssessment}
+            ${evidenceList}
+            ${recommendations}
+            ${mermaidSection}
+        `;
+
+        this.decorateScoreCircle(container, score, tone);
+
+        const mermaidHolder = container.querySelector('[data-mermaid]');
+        if (mermaidHolder && typeof result.mermaidDiagram === 'string') {
+            mermaidHolder.textContent = result.mermaidDiagram.trim();
+        }
+
+        return container;
+    }
+
+    normalizeFactCheckScore(rawScore) {
+        const num = Number(rawScore);
+        if (!Number.isFinite(num)) return 0;
+        return Math.min(100, Math.max(0, Math.round(num)));
+    }
+
+    getFactCheckTone(score) {
+        if (score >= 75) return 'high';
+        if (score >= 55) return 'medium';
+        return 'low';
+    }
+
+    buildFactCheckPoints(items, emptyMessage, variant = 'neutral') {
+        if (!Array.isArray(items) || items.length === 0) {
+            return `<p class="fact-check-empty">${this.escapeHtml(emptyMessage)}</p>`;
+        }
+
+        const iconMap = {
+            supporting: 'fa-check-circle',
+            contradicting: 'fa-times-circle',
+            neutral: 'fa-info-circle'
+        };
+        const icon = iconMap[variant] || iconMap.neutral;
+
+        return `
+            <ul class="fact-check-points-list">
+                ${items.map(item => `
+                    <li>
+                        <i class="fas ${icon}"></i>
+                        <span>${this.escapeHtml(item)}</span>
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+    }
+
+    buildAnalysisHighlights(highlights) {
+        if (!Array.isArray(highlights) || highlights.length === 0) {
+            return '';
+        }
+
+        const cards = highlights.map(block => {
+            const title = this.escapeHtml(block?.title || '分析要点');
+            const body = this.escapeHtml(block?.body || '');
+            return `
+                <div class="fact-check-highlight">
+                    <h4>${title}</h4>
+                    <p>${body}</p>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <section class="fact-check-section">
+                <h3><i class="fas fa-lightbulb"></i> 分析亮点</h3>
+                <div class="fact-check-highlights">${cards}</div>
+            </section>
+        `;
+    }
+
+    buildRiskAssessment(assessment) {
+        if (!assessment || typeof assessment !== 'object') {
+            return '';
+        }
+
+        const emotion = this.escapeHtml(assessment.emotionRisk || '未知');
+        const rumor = this.escapeHtml(assessment.rumorRisk || '未知');
+        const notesHtml = this.buildSimpleList(assessment.notes, '暂无风险提示');
+
+        return `
+            <section class="fact-check-section">
+                <h3><i class="fas fa-exclamation-triangle"></i> 风险评估</h3>
+                <div class="fact-check-risk-chips">
+                    <div class="fact-check-risk-chip">
+                        <span class="chip-label">情感风险</span>
+                        <span class="chip-value">${emotion}</span>
+                    </div>
+                    <div class="fact-check-risk-chip">
+                        <span class="chip-label">谣言传播风险</span>
+                        <span class="chip-value">${rumor}</span>
+                    </div>
+                </div>
+                ${notesHtml}
+            </section>
+        `;
+    }
+
+    buildSimpleList(items, emptyMessage) {
+        if (!Array.isArray(items) || items.length === 0) {
+            return `<p class="fact-check-empty">${this.escapeHtml(emptyMessage)}</p>`;
+        }
+
+        return `
+            <ul class="fact-check-note-list">
+                ${items.map(item => `<li>${this.escapeHtml(item)}</li>`).join('')}
+            </ul>
+        `;
+    }
+
+    buildRecommendations(items) {
+        if (!Array.isArray(items) || items.length === 0) {
+            return '';
+        }
+
+        return `
+            <section class="fact-check-section">
+                <h3><i class="fas fa-compass"></i> 专业建议</h3>
+                <ol class="fact-check-recommendations">
+                    ${items.map(item => `<li>${this.escapeHtml(item)}</li>`).join('')}
+                </ol>
+            </section>
+        `;
+    }
+
+    buildEvidenceCards(evidence) {
+        if (!Array.isArray(evidence) || evidence.length === 0) {
+            return '';
+        }
+
+        const stanceMap = {
+            supporting: { icon: 'fas fa-thumbs-up', label: '支持', cls: 'fact-check-evidence-card--supporting' },
+            contradicting: { icon: 'fas fa-thumbs-down', label: '反驳', cls: 'fact-check-evidence-card--contradicting' },
+            neutral: { icon: 'fas fa-balance-scale', label: '参考', cls: 'fact-check-evidence-card--neutral' }
+        };
+
+        const cards = evidence.map(item => {
+            const stanceKey = (item?.stance || 'neutral').toLowerCase();
+            const stance = stanceMap[stanceKey] || stanceMap.neutral;
+            const title = this.escapeHtml(item?.title || '未命名证据');
+            const source = this.escapeHtml(item?.source || '未知来源');
+            const credibility = Number.isFinite(Number(item?.credibilityScore))
+                ? `${this.normalizeFactCheckScore(item.credibilityScore)}`
+                : '—';
+            const url = typeof item?.url === 'string' ? item.url.trim() : '';
+
+            return `
+                <div class="fact-check-evidence-card ${stance.cls}">
+                    <div class="evidence-header">
+                        <span class="evidence-stance"><i class="${stance.icon}"></i> ${stance.label}</span>
+                        <span class="evidence-score">可信度 ${credibility}</span>
+                    </div>
+                    <h4 class="evidence-title">${title}</h4>
+                    <p class="evidence-source">${source}</p>
+                    ${url ? `<a href="${this.escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="evidence-link">查看来源</a>` : ''}
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <section class="fact-check-section">
+                <h3><i class="fas fa-database"></i> 证据清单</h3>
+                <div class="fact-check-evidence-grid">${cards}</div>
+            </section>
+        `;
+    }
+
+    buildMermaidSection(diagramText, description) {
+        if (!diagramText || typeof diagramText !== 'string') {
+            return '';
+        }
+
+        const desc = description ? `<p class="fact-check-mermaid-desc">${this.escapeHtml(description)}</p>` : '';
+        return `
+            <section class="fact-check-section">
+                <h3><i class="fas fa-project-diagram"></i> 鉴定数据可视化</h3>
+                <div class="fact-check-mermaid">
+                    <div class="mermaid" data-mermaid></div>
+                </div>
+                ${desc}
+            </section>
+        `;
+    }
+
+    ensureMermaid() {
+        if (window.mermaid) {
+            return Promise.resolve(window.mermaid);
+        }
+
+        if (this.mermaidLoadPromise) {
+            return this.mermaidLoadPromise;
+        }
+
+        this.mermaidLoadPromise = new Promise((resolve, reject) => {
+            const existingScript = document.getElementById('mermaidScript');
+
+            const handleLoad = () => {
+                if (window.mermaid) {
+                    resolve(window.mermaid);
+                } else {
+                    reject(new Error('Mermaid 未定义'));
+                }
+            };
+
+            const handleError = (error) => {
+                console.error('Mermaid 脚本加载失败:', error);
+                this.mermaidLoadPromise = null;
+                const target = error?.target;
+                if (target && target.parentNode) {
+                    target.parentNode.removeChild(target);
+                }
+                reject(error instanceof Error ? error : new Error('Mermaid 脚本加载失败'));
+            };
+
+            if (existingScript) {
+                existingScript.addEventListener('load', handleLoad, { once: true });
+                existingScript.addEventListener('error', handleError, { once: true });
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.id = 'mermaidScript';
+            script.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+            script.async = true;
+            script.onload = handleLoad;
+            script.onerror = handleError;
+            document.head.appendChild(script);
+        });
+
+        return this.mermaidLoadPromise;
+    }
+
+    decorateScoreCircle(container, score, tone) {
+        const circle = container.querySelector('.fact-check-score-circle');
+        if (!circle) return;
+
+        const fillDeg = score * 3.6;
+        const colorMap = {
+            high: 'var(--success-color, #2ecc71)',
+            medium: 'var(--warning-color, #f1c40f)',
+            low: 'var(--error-color, #e74c3c)'
+        };
+        const fillColor = colorMap[tone] || 'var(--accent-color, #3498db)';
+
+        circle.style.background = `conic-gradient(${fillColor} 0deg ${fillDeg}deg, var(--fc-score-track, rgba(255,255,255,0.1)) ${fillDeg}deg 360deg)`;
+
+        const numberEl = circle.querySelector('.fact-check-score-number');
+        if (numberEl) {
+            numberEl.textContent = score.toString().padStart(2, '0');
+        }
+    }
+
+    renderMermaidDiagrams(rootElement) {
+        if (!rootElement) return;
+
+        const mermaidNodes = rootElement.querySelectorAll('[data-mermaid]');
+        if (!mermaidNodes.length) return;
+
+        const renderNodes = () => {
+            const theme = document.body.classList.contains('light-theme') ? 'default' : 'dark';
+            if (!window.__factCheckMermaidTheme || window.__factCheckMermaidTheme !== theme) {
+                window.mermaid.initialize({ startOnLoad: false, securityLevel: 'loose', theme });
+                window.__factCheckMermaidTheme = theme;
+            }
+
+            mermaidNodes.forEach((node, index) => {
+                const code = (node.textContent || '').trim();
+                if (!code) return;
+
+                const renderId = `fact-check-mermaid-${Date.now()}-${index}`;
+                try {
+                    const normalizedCode = this.normalizeMermaidCode(code);
+                    const renderResult = window.mermaid.render(renderId, normalizedCode);
+                    if (renderResult && typeof renderResult.then === 'function') {
+                        renderResult
+                            .then(output => {
+                                const svg = output?.svg || '';
+                                node.innerHTML = svg || '<pre class="mermaid-error">Mermaid 渲染失败</pre>';
+                            })
+                            .catch(error => {
+                                console.error('Mermaid 渲染失败:', error);
+                                node.innerHTML = `<pre class="mermaid-error">${this.escapeHtml(error.message || 'Mermaid 渲染失败')}</pre>`;
+                            });
+                    } else if (typeof renderResult === 'string') {
+                        node.innerHTML = renderResult;
+                    } else if (renderResult && renderResult.svg) {
+                        node.innerHTML = renderResult.svg;
+                    }
+                } catch (error) {
+                    console.error('Mermaid 渲染失败:', error);
+                    node.innerHTML = `<pre class="mermaid-error">${this.escapeHtml(error.message || 'Mermaid 渲染失败')}</pre>`;
+                }
+            });
+        };
+
+        this.ensureMermaid()
+            .then(renderNodes)
+            .catch(error => {
+                console.warn('Mermaid 加载失败，无法渲染图表', error);
+                mermaidNodes.forEach(node => {
+                    node.innerHTML = `<pre class="mermaid-error">${this.escapeHtml('Mermaid 加载失败')}</pre>`;
+                });
+            });
+    }
+
+    normalizeMermaidCode(code) {
+        let normalized = code.trim();
+
+    // 修复 graph/flowchart 指令紧贴方向字符串的情况，例如 graphTD -> graph TD
+    normalized = normalized.replace(/^(graph|flowchart)\s*([A-Za-z]{2})(\b)/i, (_, keyword, dir, boundary) => `${keyword} ${dir}${boundary}`);
+
+        // 确保 graph 指令后有换行
+        normalized = normalized.replace(/^(graph\s+[A-Za-z]{2})(?!\s)/i, '$1\n');
+
+        // 将分号替换为换行以兼容部分生成内容
+        normalized = normalized.replace(/;+/g, '\n');
+
+        // 移除重复空行
+        normalized = normalized.replace(/\n{3,}/g, '\n\n');
+
+        return normalized;
+    }
+
+    escapeHtml(text) {
+        if (text === null || text === undefined) return '';
+        return text
+            .toString()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     handleOverlayScroll(event) {

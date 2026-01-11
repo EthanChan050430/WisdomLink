@@ -2,6 +2,13 @@
    智链 - 移动端增强样式
    触摸反馈、动画和交互优化
    ================================ */
+/* 安全区域变量（适配刘海/底部手势条） */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
 
 /* ================================
    触摸反馈样式
@@ -574,6 +581,7 @@ a.touch-active {
 .mobile-device textarea,
 .mobile-device select {
   font-size: 16px !important;
+  appearance: none;
   -webkit-appearance: none;
   border-radius: 0;
 }
@@ -711,10 +719,9 @@ a.touch-active {
   z-index: 10000;
   pointer-events: none;
 }
-/
-* ================================
-   触摸滚动优化
-   ================================ */
+/* ================================
+  触摸滚动优化
+  ================================ */
 
 /* 改善移动端滚动体验 */
 .mobile-device {
@@ -808,8 +815,9 @@ a.touch-active {
 
 .dark-theme.mobile-device ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
-}/* ========
-========================
+}
+
+/* ================================
    移动端输入修复样式
    ================================ */
 
@@ -848,6 +856,7 @@ a.touch-active {
   .mobile-device input,
   .mobile-device textarea {
     font-size: 16px !important;
+    appearance: none !important;
     -webkit-appearance: none !important;
     border-radius: 0 !important;
   }
@@ -881,10 +890,11 @@ a.touch-active {
 .mobile-device textarea:not([data-mobile-focused]) {
   position: relative !important;
   z-index: auto !important;
-}/* ====
-============================
-   移动端输入框保护样式
-   ================================ */
+}
+
+/* ================================
+  移动端输入框保护样式
+  ================================ */
 
 /* 受保护的输入框样式 */
 [data-mobile-protected="true"] {
@@ -925,11 +935,13 @@ a.touch-active {
 /* iOS特殊处理 */
 @supports (-webkit-touch-callout: none) {
   [data-mobile-protected="true"] {
+    user-select: text !important;
     -webkit-user-select: text !important;
     -webkit-touch-callout: default !important;
   }
   
   .mobile-keyboard-active [data-mobile-protected="true"] {
+    appearance: none !important;
     -webkit-appearance: none !important;
     border-radius: var(--radius-md) !important;
   }
@@ -969,4 +981,21 @@ a.touch-active {
   padding: 2px 6px;
   font-size: 10px;
   z-index: 10002;
+}
+
+/* ================================
+   安全区域适配（输入栏与菜单）
+   ================================ */
+.mobile-device .chat-input-container {
+  position: sticky;
+  bottom: 0;
+  padding-bottom: calc(var(--mobile-spacing-md, 0.75rem) + var(--safe-bottom));
+}
+
+.mobile-device .header {
+  padding-top: var(--safe-top);
+}
+
+.mobile-device .mobile-menu-content {
+  padding-bottom: calc(var(--mobile-spacing-lg, 1rem) + var(--safe-bottom));
 }

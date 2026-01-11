@@ -24,6 +24,12 @@
   
   /* 移动端容器宽度 */
   --mobile-container-padding: 1rem;
+
+  /* 安全区域（刘海/底部手势条） */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 /* ================================
@@ -45,6 +51,7 @@ body {
 /* 移动端输入框优化 */
 input, textarea, select {
   font-size: 16px; /* 防止iOS缩放 */
+  appearance: none;
   -webkit-appearance: none;
   border-radius: 0; /* 重置iOS默认圆角 */
 }
@@ -132,7 +139,7 @@ input, textarea, select {
      ================================ */
   
   .header {
-    height: 60px;
+    height: calc(60px + var(--safe-top));
     padding: 0;
     position: fixed;
     top: 0;
@@ -142,8 +149,47 @@ input, textarea, select {
   }
   
   .header-container {
-    height: 60px;
-    padding: 0 var(--mobile-container-padding);
+    height: calc(60px + var(--safe-top));
+    padding: var(--safe-top) var(--mobile-container-padding) 0 var(--mobile-container-padding);
+  }
+
+  /* 分析步骤与结果在手机上一列显示，避免挤压导致文字竖排 */
+  .steps-grid {
+    grid-template-columns: 1fr;
+    gap: var(--mobile-spacing-md);
+  }
+
+  /* 卡片与容器的外边距与宽度控制，防止横向溢出 */
+  .analysis-steps-wrapper,
+  .analysis-result-wrapper {
+    width: auto;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: var(--mobile-spacing-md) var(--mobile-spacing-sm);
+    overflow-x: hidden;
+  }
+
+  /* 步骤卡片在手机上更紧凑，同时避免文字被挤成竖排 */
+  .progress-step-card {
+    padding: var(--mobile-spacing-md);
+  }
+  .step-card-title,
+  .step-card-description {
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  /* 结果内容内的媒体缩放以适配屏幕宽度 */
+  .result-content img,
+  .result-content canvas,
+  .result-content .chart,
+  .result-content .card,
+  .result-content table {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    box-sizing: border-box;
   }
   
   .logo {
@@ -288,6 +334,7 @@ input, textarea, select {
     background: var(--bg-primary);
     border-left: 1px solid var(--border-color);
     padding: var(--mobile-spacing-lg);
+    padding-bottom: calc(var(--mobile-spacing-lg) + var(--safe-bottom));
     overflow-y: auto;
     transform: translateX(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -421,8 +468,8 @@ input, textarea, select {
      ================================ */
   
   .app-container {
-    margin-top: 60px;
-    min-height: calc(100vh - 60px);
+    margin-top: calc(60px + var(--safe-top));
+    min-height: calc(100vh - 60px - var(--safe-top));
   }
   
   .main-content {
@@ -657,7 +704,7 @@ input, textarea, select {
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);
     overflow: hidden;
-    height: calc(100vh - 80px);
+    height: calc(100vh - 80px - var(--safe-top) - var(--safe-bottom));
     margin: 0 var(--mobile-spacing-sm);
     display: flex;
     flex-direction: column;
@@ -773,6 +820,7 @@ input, textarea, select {
     min-height: var(--touch-target-min);
     max-height: 120px;
     transition: all 0.2s ease;
+    appearance: none;
     -webkit-appearance: none;
     touch-action: manipulation;
   }

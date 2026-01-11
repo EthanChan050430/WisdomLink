@@ -34,13 +34,12 @@ class UploadManager {
             console.log('UploadManager 接收到功能切换:', this.currentFeature);
         });
 
-        // 上传类型切换
-        const uploadTabs = document.querySelectorAll('.upload-tab');
-        uploadTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const type = tab.dataset.type;
-                this.switchContentType(type);
-            });
+        // 监听通用选择器变更事件（用于上传类型切换）
+        document.addEventListener('selectorChanged', (e) => {
+            const { id, value } = e.detail || {};
+            if (id === 'uploadTypeSelector' && value) {
+                this.switchContentType(value);
+            }
         });
 
         // 处理移动端上传选项卡的水平滚动
@@ -109,11 +108,6 @@ class UploadManager {
 
         this.currentContentType = type;
 
-        // 更新选项卡状态
-        document.querySelectorAll('.upload-tab').forEach(tab => {
-            tab.classList.toggle('active', tab.dataset.type === type);
-        });
-
         // 更新面板显示
         document.querySelectorAll('.upload-panel').forEach(panel => {
             panel.classList.toggle('active', panel.dataset.type === type);
@@ -122,10 +116,15 @@ class UploadManager {
         // 处理图片上传的特殊逻辑
         this.handleImageUploadLogic(type);
 
-        // 在移动端滚动到激活的选项卡
-        if (window.innerWidth <= 768) {
-            this.scrollToActiveUploadTab();
+        // 通知其他模块内容类型已切换（例如聊天输入框形态）
+        try {
+            const evt = new CustomEvent('contentTypeChanged', { detail: { type } });
+            document.dispatchEvent(evt);
+        } catch (err) {
+            console.warn('分发 contentTypeChanged 事件失败:', err);
         }
+
+        // 旧的上传Tab滚动逻辑已移除（使用下拉选择器）
     }
 
     /**

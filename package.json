@@ -1,0 +1,11 @@
+{
+  "name": "wisdomlink-root",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "node backend/node-server.js",
+    "dev": "npm --prefix backend run dev",
+    "install:backend": "npm --prefix backend install"
+  }
+}

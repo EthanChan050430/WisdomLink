@@ -8,6 +8,8 @@ class ChatManager {
         this.currentSessionId = null;
         this.isProcessing = false;
         this.currentFunction = 'intelligent-reading';
+        this.currentMode = 'normal'; // normal, summary, expert
+        this.currentExpertRole = null;
         this.messageHistory = [];
         // 新增：获取聊天容器元素
         this.chatMessagesContainer = document.getElementById('chatMessages');
@@ -20,30 +22,56 @@ class ChatManager {
     init() {
         this.bindEvents();
         this.createNewSession();
+        // 初始化时根据当前上传类型调整输入框外观
+        if (window.uploadManager && uploadManager.currentContentType) {
+            this.configureChatInputForType(uploadManager.currentContentType);
+        }
+    }
+
+    /**
+     * 设置当前功能
+     */
+    setCurrentFunction(functionName) {
+        this.currentFunction = functionName;
+        console.log('ChatManager: 设置当前功能为', functionName);
+    }
+
+    /**
+     * 设置模式
+     */
+    setMode(mode) {
+        this.currentMode = mode;
+        console.log('ChatManager: 设置模式为', mode);
+    }
+
+    /**
+     * 设置专家角色
+     */
+    setExpertRole(role) {
+        this.currentExpertRole = role;
+        console.log('ChatManager: 设置专家角色为', role);
     }
 
     /**
      * 配置markdown渲染器
      */
     setupMarkdown() {
-        if (typeof marked !== 'undefined') {
-            // 配置marked选项
-            marked.setOptions({
-                highlight: function(code, lang) {
-                    if (typeof hljs !== 'undefined' && lang && hljs.getLanguage(lang)) {
-                        try {
-                            return hljs.highlight(code, { language: lang }).value;
-                        } catch (ex) {}
-                    }
-                    return code;
-                },
-                breaks: true,
-                gfm: true,
-                sanitize: false,
-                headerIds: true,
-                mangle: false
-            });
-        }
+        // 配置marked选项
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (typeof hljs !== 'undefined' && lang && hljs.getLanguage(lang)) {
+                    try {
+                        return hljs.highlight(code, { language: lang }).value;
+                    } catch (ex) {}
+                }
+                return code;
+            },
+            breaks: true,
+            gfm: true,
+            sanitize: false,
+            headerIds: true,
+            mangle: false
+        });
     }
 
     /**
@@ -221,6 +249,93 @@ class ChatManager {
                 // 否则，只要不在底部，就认为是用户在手动滚动，打开开关
                 this.isUserScrolling = !isAtBottom;
             });
+        }
+
+        // 监听上传内容类型变化，动态调整聊天输入框形态
+        document.addEventListener('contentTypeChanged', (e) => {
+            const { type } = e.detail || {};
+            this.configureChatInputForType(type);
+        });
+    }
+
+    /**
+     * 根据内容类型配置聊天输入框形态
+     * text/url -> 文本输入框；file/image -> 可点击上传占位框
+     */
+    configureChatInputForType(type) {
+        const inputWrapper = document.querySelector('.chat-input-container .input-wrapper');
+        if (!inputWrapper) return;
+
+        // 确保占位元素存在或被移除
+        let placeholder = inputWrapper.querySelector('.chat-upload-placeholder');
+        let textarea = document.getElementById('searchInput');
+
+        const ensurePlaceholder = (mode) => {
+            if (!placeholder) {
+                placeholder = document.createElement('div');
+                placeholder.className = 'chat-upload-placeholder';
+                placeholder.innerHTML = `
+                    <div class="upload-inner">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <div class="upload-title">点击或拖拽${mode === 'image' ? '图片' : '文件'}到此处</div>
+                        <div class="upload-hint">支持常见${mode === 'image' ? '图片' : '文档'}格式，最大 10MB</div>
+                    </div>
+                `;
+                inputWrapper.appendChild(placeholder);
+
+                // 绑定点击触发隐藏输入框
+                placeholder.addEventListener('click', () => {
+                    const inputId = mode === 'image' ? 'imageInput' : 'fileInput';
+                    const hiddenInput = document.getElementById(inputId);
+                    if (hiddenInput) hiddenInput.click();
+                });
+
+                // 基础拖拽支持（委托给上传管理器）
+                ['dragenter','dragover','dragleave','drop'].forEach(evt => {
+                    placeholder.addEventListener(evt, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (evt === 'dragenter' || evt === 'dragover') {
+                            placeholder.classList.add('dragover');
+                        } else {
+                            placeholder.classList.remove('dragover');
+                        }
+                        if (evt === 'drop') {
+                            const files = Array.from(e.dataTransfer.files || []);
+                            if (files.length) {
+                                if (mode === 'image') uploadManager?.addImages(files);
+                                else uploadManager?.addFiles(files);
+                            }
+                        }
+                    });
+                });
+            } else {
+                // 更新文案
+                const title = placeholder.querySelector('.upload-title');
+                const hint = placeholder.querySelector('.upload-hint');
+                const icon = placeholder.querySelector('i');
+                if (title) title.textContent = `点击或拖拽${mode === 'image' ? '图片' : '文件'}到此处`;
+                if (hint) hint.textContent = `支持常见${mode === 'image' ? '图片' : '文档'}格式，最大 10MB`;
+                if (icon) icon.className = `fas ${mode === 'image' ? 'fa-image' : 'fa-cloud-upload-alt'}`;
+            }
+        };
+
+        if (type === 'file' || type === 'image') {
+            // 隐藏文本框，显示占位
+            if (textarea) textarea.style.display = 'none';
+            ensurePlaceholder(type);
+            placeholder.style.display = 'flex';
+            inputWrapper.classList.add('upload-mode');
+        } else {
+            // 显示文本框，隐藏占位
+            if (placeholder) placeholder.style.display = 'none';
+            if (textarea) textarea.style.display = '';
+            inputWrapper.classList.remove('upload-mode');
+
+            // 根据类型优化占位符
+            if (textarea) {
+                textarea.placeholder = type === 'url' ? '粘贴链接，按 Enter 发送...' : '继续对话...';
+            }
         }
     }
 
@@ -407,24 +522,39 @@ class ChatManager {
             }
         }
 
-        // 添加专家角色（如果是大师分析）
+        // 添加专家角色（如果是大师分析或智能伴读专家模式）
+        // 角色/人格设定
         if (this.currentFunction === 'expert-analysis') {
-            let role;
-            if (isInitial) {
-                // 初始分析时弹出角色选择模态框
-                role = await this.selectExpertRole();
-                if (!role) {
-                    throw new Error('请选择分析角色');
-                }
-            } else {
-                // 继续聊天时从聊天界面的专家选择器获取当前角色
+            // 大师分析：优先已有选择，没有再考虑弹窗
+            let role = this.currentExpertRole || null;
+            if (!role) {
                 const chatExpertSelect = document.getElementById('chatExpertSelect');
-                role = chatExpertSelect?.value;
-                if (!role) {
-                    throw new Error('请先选择分析专家角色');
-                }
+                role = chatExpertSelect?.value || null;
             }
-            data.role = role;
+            if (!role && isInitial) {
+                role = await this.selectExpertRole(); // 仅大师分析保留兜底弹窗
+            }
+            if (role) {
+                // 大师分析沿用后端字段 persona（使用ID更合适，这里尝试映射）
+                const personaKey = this.mapRoleNameToPersonaKey(role) || role;
+                data.persona = personaKey;
+            }
+        } else if (this.currentFunction === 'intelligent-reading' && this.currentMode === 'expert') {
+            // 智能伴读：不弹窗，使用下拉框/当前设置
+            let roleName = this.currentExpertRole;
+            if (!roleName) {
+                const roleSelect = document.getElementById('roleSelect');
+                roleName = roleSelect?.value;
+            }
+            const personaKey = this.mapRoleNameToPersonaKey(roleName);
+            if (personaKey) {
+                data.persona = personaKey;
+            }
+        }
+
+        // 添加总结模式参数（如果是智能伴读总结模式）
+        if (this.currentFunction === 'intelligent-reading' && this.currentMode === 'summary') {
+            data.summary_mode = true;
         }
 
         // 添加模型选择（智能伴读和大师分析）
@@ -493,6 +623,21 @@ class ChatManager {
         }
 
         return data;
+    }
+
+    /** 将中文角色名映射为后台persona键 **/
+    mapRoleNameToPersonaKey(name) {
+        if (!name) return null;
+        const map = {
+            '鲁迅': 'luxun',
+            '胡适': 'hushi',
+            '可莉': 'keli',
+            '苏格拉底': 'socrates',
+            '爱因斯坦': 'einstein',
+            '星野': 'hoshino',
+            '莎士比亚': 'shakespeare'
+        };
+        return map[name] || null;
     }
 
     /**
@@ -793,7 +938,12 @@ class ChatManager {
 
                                 case 'content_parsed':
                                     console.log('收到内容解析结果:', data.result);
-                                    this.handleContentParsed(data.result);
+                                    // 在智能伴读的“总结模式”下，不展示解析结果卡片，直接进入流式要点/概要
+                                    if (this.currentFunction === 'intelligent-reading' && this.currentMode === 'summary') {
+                                        console.log('总结模式下，跳过解析结果卡片展示');
+                                    } else {
+                                        this.handleContentParsed(data.result);
+                                    }
                                     break;
 
                                 case 'status':

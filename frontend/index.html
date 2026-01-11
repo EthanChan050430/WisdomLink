@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 
 <head>
@@ -52,20 +52,10 @@
                         <i class="fas fa-book-reader"></i>
                         <span>智能伴读</span>
                     </button>
-                    <button class="function-btn" id="comprehensiveAnalysis" data-function="comprehensive-analysis"
-                        data-target="welcomeScreen">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>全面总结</span>
-                    </button>
-                    <button class="function-btn" id="expertAnalysis" data-function="expert-analysis"
-                        data-target="welcomeScreen">
-                        <i class="fas fa-user-graduate"></i>
-                        <span>大师分析</span>
-                    </button>
                     <button class="function-btn" id="factChecking" data-function="fact-checking"
                         data-target="welcomeScreen">
-                        <i class="fas fa-shield-alt"></i>
-                        <span>真伪鉴定</span>
+                        <i class="fas fa-search"></i>
+                        <span>可信度分析</span>
                     </button>
                 </div>
 
@@ -128,31 +118,13 @@
                             </div>
                         </div>
                     </button>
-                    <button class="mobile-function-btn" id="mobileComprehensiveAnalysis"
-                        data-function="comprehensive-analysis">
+                    <button class="mobile-function-btn" id="mobileFactChecking"
+                        data-function="fact-checking">
                         <div class="mobile-btn-content">
-                            <i class="fas fa-chart-bar"></i>
+                            <i class="fas fa-search"></i>
                             <div class="mobile-btn-text">
-                                <span>全面总结</span>
-                                <small>深度分析与总结</small>
-                            </div>
-                        </div>
-                    </button>
-                    <button class="mobile-function-btn" id="mobileExpertAnalysis" data-function="expert-analysis">
-                        <div class="mobile-btn-content">
-                            <i class="fas fa-user-graduate"></i>
-                            <div class="mobile-btn-text">
-                                <span>大师分析</span>
-                                <small>专家级解读分析</small>
-                            </div>
-                        </div>
-                    </button>
-                    <button class="mobile-function-btn" id="mobileFactChecking" data-function="fact-checking">
-                        <div class="mobile-btn-content">
-                            <i class="fas fa-shield-alt"></i>
-                            <div class="mobile-btn-text">
-                                <span>真伪鉴定</span>
-                                <small>事实核查与验证</small>
+                                <span>事实核查</span>
+                                <small>验证内容真实性</small>
                             </div>
                         </div>
                     </button>
@@ -225,125 +197,204 @@
         <main class="main-content">
             <!-- 欢迎界面 -->
             <div class="welcome-screen" id="welcomeScreen">
-                <div class="welcome-content">
-                    <div class="welcome-header">
-                        <h1 class="welcome-title">
-                            <span class="gradient-text hero-title">智链</span>
-                            <span class="subtitle">万卷风烟静，一链定云心</span>
-                        </h1>
-                        <p class="welcome-description">
-                            上传链接、文档或图片，让AI助手为您提供智能分析和深度解读
-                        </p>
+                <div class="chat-like-container">
+                    <!-- 聊天消息区域 -->
+                    <div class="chat-like-messages" id="chatLikeMessages">
+                        <!-- 欢迎消息 -->
+                        <div class="message assistant welcome-message">
+                            <div class="message-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    <p>你好！我是你的AI智能助手，可以帮你进行智能伴读和事实核查。</p>
+                                    <p>请在下方选择功能并输入内容开始使用吧！</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- 上传区域 -->
-                    <div class="upload-section">
-                        <div class="upload-tabs">
-                            <button class="upload-tab active" data-type="text">
-                                <i class="fas fa-keyboard"></i>
-                                <span>文本输入</span>
-                            </button>
-                            <button class="upload-tab" data-type="url">
-                                <i class="fas fa-link"></i>
-                                <span>链接</span>
-                            </button>
-                            <button class="upload-tab" data-type="file">
-                                <i class="fas fa-file-alt"></i>
-                                <span>文档</span>
-                            </button>
-                            <button class="upload-tab" data-type="image">
-                                <i class="fas fa-image"></i>
-                                <span>图片</span>
-                            </button>
-                        </div>
+                    <!-- 输入区域 -->
+                    <div class="chat-like-input-area">
+                        <!-- 上传区域（将控制行移入此处） -->
+                        <div class="upload-section">
+                            <!-- 模式与上传控制行（已移入卡片内，更紧凑） -->
+                            <div class="input-controls-row">
+                                <!-- 总结模式开关 -->
+                                <!-- <div class="mode-toggle compact-toggle"> -->
+                                    <label class="toggle-label" title="开启后将对输入内容进行总结提炼">
+                                        <input type="checkbox" id="summaryModeToggle">
+                                        <span class="toggle-slider"></span>
+                                        <span class="toggle-text">总结模式</span>
+                                    </label>
+                                <!-- </div> -->
 
-                        <div class="upload-content">
-                            <!-- 文本输入面板 -->
-                            <div class="upload-panel active" data-type="text">
-                                <div class="input-wrapper">
-                                    <textarea id="textInput" placeholder="请输入要分析的文本内容..." rows="6"></textarea>
+                                <!-- 上传类型选择器 -->
+                                <div class="selector-button-wrapper" id="uploadTypeSelector">
+                                    <button class="selector-button">
+                                        <i class="fas fa-keyboard"></i>
+                                        <span class="button-text">文本输入</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="selector-dropdown" style="display: none;">
+                                        <div class="dropdown-options">
+                                            <div class="dropdown-option" data-value="text">
+                                                <i class="fas fa-keyboard"></i>
+                                                <span class="option-name">文本输入</span>
+                                            </div>
+                                            <div class="dropdown-option" data-value="url">
+                                                <i class="fas fa-link"></i>
+                                                <span class="option-name">链接</span>
+                                            </div>
+                                            <div class="dropdown-option" data-value="file">
+                                                <i class="fas fa-file-alt"></i>
+                                                <span class="option-name">文档</span>
+                                            </div>
+                                            <div class="dropdown-option" data-value="image">
+                                                <i class="fas fa-image"></i>
+                                                <span class="option-name">图片</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 角色选择器 -->
+                                <div class="selector-button-wrapper" id="roleSelectorWrapper">
+                                    <button class="selector-button">
+                                        <i class="fas fa-user-graduate"></i>
+                                        <span class="button-text">AI助手</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="selector-dropdown" style="display: none;">
+                                        <div class="dropdown-options">
+                                            <div class="dropdown-option" data-value="AI助手">
+                                                <span class="option-name">AI助手</span>
+                                                <span class="option-desc">智能分析助手</span>
+                                            </div>
+                                            <div class="dropdown-option" data-value="鲁迅">
+                                                <span class="option-name">鲁迅</span>
+                                                <span class="option-desc">犀利的文学批判家</span>
+                                            </div>
+                                            <div class="dropdown-option" data-value="胡适">
+                                                <span class="option-name">胡适</span>
+                                                <span class="option-desc">理性的学者思辨</span>
+                                            </div>
+                                            <div class="dropdown-option" data-value="可莉">
+                                                <span class="option-name">可莉</span>
+                                                <span class="option-desc">活泼的元素使者</span>
+                                            </div>
+                                            <div class="dropdown-option" data-value="苏格拉底">
+                                                <span class="option-name">苏格拉底</span>
+                                                <span class="option-desc">哲学的启发者</span>
+                                            </div>
+                                            <div class="dropdown-option" data-value="爱因斯坦">
+                                                <span class="option-name">爱因斯坦</span>
+                                                <span class="option-desc">科学的探索者</span>
+                                            </div>
+                                            <div class="dropdown-option" data-value="自定义">
+                                                <span class="option-name">自定义角色</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <select id="roleSelect" style="display: none;">
+                                        <option value="AI助手">AI助手</option>
+                                        <option value="鲁迅">鲁迅</option>
+                                        <option value="胡适">胡适</option>
+                                        <option value="可莉">可莉</option>
+                                        <option value="苏格拉底">苏格拉底</option>
+                                        <option value="爱因斯坦">爱因斯坦</option>
+                                        <option value="自定义">自定义</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="upload-content">
+                                <!-- 文本输入面板 -->
+                                <div class="upload-panel active" data-type="text">
+                                    <div class="input-wrapper">
+                                        <textarea id="textInput" placeholder="请输入要分析的文本内容..." rows="3"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- URL输入面板 -->
+                                <div class="upload-panel" data-type="url">
+                                    <div class="input-wrapper">
+                                        <textarea id="urlInput" placeholder="请输入网页链接（支持多个，每行一个）" rows="3"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- 文件上传面板 -->
+                                <div class="upload-panel" data-type="file">
+                                    <div class="file-upload-area" id="fileUploadArea">
+                                        <div class="upload-icon">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                        </div>
+                                        <p class="upload-text">拖拽文件到此处或<span class="click-to-upload">点击选择</span></p>
+                                        <p class="upload-hint">支持 PDF、DOCX、DOC、TXT、MD、CSV 格式，最大 10MB</p>
+                                        <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt,.md,.csv" multiple
+                                            style="display: none;">
+                                    </div>
+                                    <div class="file-list" id="fileList"></div>
+                                </div>
+
+                                <!-- 图片上传面板 -->
+                                <div class="upload-panel" data-type="image">
+                                    <div class="image-upload-area" id="imageUploadArea">
+                                        <div class="upload-icon">
+                                            <i class="fas fa-image"></i>
+                                        </div>
+                                        <p class="upload-text">拖拽图片到此处或<span class="click-to-upload">点击选择</span></p>
+                                        <p class="upload-hint">支持 JPG、PNG、GIF 格式，最大 10MB</p>
+                                        <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+                                    </div>
+                                    <div class="image-preview" id="imagePreview"></div>
                                 </div>
                             </div>
 
-                            <!-- URL输入面板 -->
-                            <div class="upload-panel" data-type="url">
-                                <div class="input-wrapper">
-                                    <textarea id="urlInput" placeholder="请输入网页链接（支持多个，每行一个）" rows="4"></textarea>
+                            <!-- 专家选择器 (保留，但隐藏) -->
+                            <div class="expert-selector" id="expertSelector" style="display: none;">
+                                <div class="selector-header">
+                                    <i class="fas fa-user-graduate"></i>
+                                    <span>选择分析专家</span>
+                                </div>
+                                <div class="expert-dropdown">
+                                    <select id="expertSelect" class="expert-select">
+                                        <option value="">选择专家角色...</option>
+                                        <!-- 专家选项将通过JavaScript动态加载 -->
+                                    </select>
                                 </div>
                             </div>
 
-                            <!-- 文件上传面板 -->
-                            <div class="upload-panel" data-type="file">
-                                <div class="file-upload-area" id="fileUploadArea">
-                                    <div class="upload-icon">
-                                        <i class="fas fa-cloud-upload-alt"></i>
-                                    </div>
-                                    <p class="upload-text">拖拽文件到此处或<span class="click-to-upload">点击选择</span></p>
-                                    <p class="upload-hint">支持 PDF、DOCX、DOC、TXT、MD、CSV 格式，最大 10MB</p>
-                                    <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt,.md,.csv" multiple
-                                        style="display: none;">
-                                </div>
-                                <div class="file-list" id="fileList"></div>
-                            </div>
-
-                            <!-- 图片上传面板 -->
-                            <div class="upload-panel" data-type="image">
-                                <div class="image-upload-area" id="imageUploadArea">
-                                    <div class="upload-icon">
-                                        <i class="fas fa-image"></i>
-                                    </div>
-                                    <p class="upload-text">拖拽图片到此处或<span class="click-to-upload">点击选择</span></p>
-                                    <p class="upload-hint">支持 JPG、PNG、GIF 格式，最大 10MB</p>
-                                    <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
-                                </div>
-                                <div class="image-preview" id="imagePreview"></div>
-                            </div>
-                        </div>
-
-                        <!-- 专家选择器 -->
-                        <div class="expert-selector" id="expertSelector" style="display: none;">
-                            <div class="selector-header">
-                                <i class="fas fa-user-graduate"></i>
-                                <span>选择分析专家</span>
-                            </div>
-                            <div class="expert-dropdown">
-                                <select id="expertSelect" class="expert-select">
-                                    <option value="">选择专家角色...</option>
-                                    <!-- 专家选项将通过JavaScript动态加载 -->
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- 主页模型选择器 -->
-                        <div class="welcome-model-selector" id="welcomeModelSelector">
-                            <button class="selector-button model-button" id="welcomeModelSelectorBtn">
-                                <i class="fas fa-brain"></i>
-                                <span id="welcomeModelButtonText">GLM-4-Flash</span>
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                            <div class="selector-dropdown" id="welcomeModelDropdown" style="display: none;">
-                                <div class="dropdown-options" id="welcomeModelOptions">
-                                    <div class="dropdown-option" data-value="GLM-4-Flash">
-                                        <span class="option-name">GLM-4-Flash</span>
-                                        <span class="option-desc">快速响应</span>
-                                    </div>
-                                    <div class="dropdown-option" data-value="GLM-Z1-Flash">
-                                        <span class="option-name">GLM-Z1-Flash</span>
-                                        <span class="option-desc">推理优化</span>
-                                    </div>
-                                    <div class="dropdown-option" data-value="DeepSeek-R1-Distill-Qwen-7B">
-                                        <span class="option-name">DeepSeek-R1-Distill-Qwen-7B</span>
-                                        <span class="option-desc">深度分析</span>
+                            <!-- 主页模型选择器 -->
+                            <div class="welcome-model-selector" id="welcomeModelSelector">
+                                <button class="selector-button model-button" id="welcomeModelSelectorBtn">
+                                    <i class="fas fa-brain"></i>
+                                    <span id="welcomeModelButtonText">GLM-4-Flash</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="selector-dropdown" id="welcomeModelDropdown" style="display: none;">
+                                    <div class="dropdown-options" id="welcomeModelOptions">
+                                        <div class="dropdown-option" data-value="GLM-4-Flash">
+                                            <span class="option-name">GLM-4-Flash</span>
+                                            <span class="option-desc">快速响应</span>
+                                        </div>
+                                        <div class="dropdown-option" data-value="GLM-Z1-Flash">
+                                            <span class="option-name">GLM-Z1-Flash</span>
+                                            <span class="option-desc">推理优化</span>
+                                        </div>
+                                        <div class="dropdown-option" data-value="DeepSeek-R1-Distill-Qwen-7B">
+                                            <span class="option-name">DeepSeek-R1-Distill-Qwen-7B</span>
+                                            <span class="option-desc">深度分析</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="upload-actions">
-                            <button class="btn-primary" id="startAnalysisBtn">
-                                <i class="fas fa-paper-plane"></i>
-                                开始分析
-                            </button>
+                            <div class="upload-actions">
+                                <button class="btn-primary" id="startAnalysisBtn">
+                                    <i class="fas fa-paper-plane"></i>
+                                    <span>开始分析</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

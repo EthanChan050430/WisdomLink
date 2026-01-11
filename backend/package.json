@@ -1,0 +1,25 @@
+{
+	"name": "wisdomlink-backend",
+	"version": "1.0.0",
+	"private": true,
+	"type": "commonjs",
+	"main": "node-server.js",
+	"scripts": {
+		"start": "node node-server.js",
+		"dev": "node node-server.js"
+	},
+	"dependencies": {
+		"cookie-parser": "^1.4.6",
+		"cors": "^2.8.5",
+		"express": "^4.19.2",
+		"fs-extra": "^11.2.0",
+			"multer": "^1.4.5-lts.1",
+			"uuid": "^9.0.1",
+			"axios": "^1.7.7",
+			"cheerio": "^1.0.0-rc.12",
+			"mammoth": "^1.6.0",
+			"pdf-parse": "^1.1.1",
+			"openai": "^4.57.0",
+			"tesseract.js": "^5.1.0"
+	}
+}

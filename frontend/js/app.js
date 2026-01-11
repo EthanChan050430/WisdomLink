@@ -103,6 +103,9 @@ class AIReaderApp {
         // 工具栏事件绑定
         this.bindToolbarEvents();
         
+        // 模式选择事件绑定
+        this.bindModeSelectionEvents();
+        
         // 响应式处理
         this.handleResponsive();
     }
@@ -116,18 +119,27 @@ class AIReaderApp {
             this.switchFunction('intelligent-reading');
         });
 
-        // 全面分析
-        document.getElementById('comprehensiveAnalysis')?.addEventListener('click', () => {
-            this.switchFunction('comprehensive-analysis');
-        });
-
-        // 专家解读/大师分析
-        document.getElementById('expertAnalysis')?.addEventListener('click', () => {
-            this.switchFunction('expert-analysis');
-        });
-
-        // 真伪判定/真伪鉴定
+        // 事实核查
         document.getElementById('factChecking')?.addEventListener('click', () => {
+            this.switchFunction('fact-checking');
+        });
+
+        // 移动端智能伴读
+        document.getElementById('mobileIntelligentReading')?.addEventListener('click', () => {
+            this.switchFunction('intelligent-reading');
+        });
+
+        // 移动端事实核查
+        document.getElementById('mobileFactChecking')?.addEventListener('click', () => {
+            this.switchFunction('fact-checking');
+        });
+
+        // 聊天样式功能标签
+        document.getElementById('intelligentReadingTab')?.addEventListener('click', () => {
+            this.switchFunction('intelligent-reading');
+        });
+
+        document.getElementById('factCheckingTab')?.addEventListener('click', () => {
             this.switchFunction('fact-checking');
         });
     }
@@ -137,9 +149,11 @@ class AIReaderApp {
      */
     bindSearchEvents() {
         const searchInput = document.getElementById('searchInput');
+        const textInput = document.getElementById('textInput');
         const sendButton = document.getElementById('sendButton');
+        const startAnalysisBtn = document.getElementById('startAnalysisBtn');
 
-        // 只在欢迎界面处理搜索事件
+        // 处理搜索/发送的通用函数
         const handleSearchIfWelcomeScreen = () => {
             console.log('=== handleSearchIfWelcomeScreen 被调用 ===');
             const welcomeScreen = document.getElementById('welcomeScreen');
@@ -165,6 +179,25 @@ class AIReaderApp {
 
         // 搜索输入事件 - 只在欢迎界面生效
         searchInput?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                const welcomeScreen = document.getElementById('welcomeScreen');
+                const chatScreen = document.getElementById('chatScreen');
+                
+                // 检查是否在欢迎界面
+                if (welcomeScreen && chatScreen) {
+                    const isWelcomeVisible = welcomeScreen.style.display !== 'none';
+                    const isChatHidden = chatScreen.style.display === 'none' || !chatScreen.style.display;
+                    
+                    if (isWelcomeVisible && isChatHidden) {
+                        e.preventDefault();
+                        handleSearchIfWelcomeScreen();
+                    }
+                }
+            }
+        });
+
+        // 文本输入框事件 - 只在欢迎界面生效
+        textInput?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 const welcomeScreen = document.getElementById('welcomeScreen');
                 const chatScreen = document.getElementById('chatScreen');
@@ -226,18 +259,50 @@ class AIReaderApp {
             }
         });
 
+        // 开始分析按钮事件 - 只在欢迎界面生效
+        startAnalysisBtn?.addEventListener('click', (e) => {
+            console.log('=== 开始分析按钮被点击 ===');
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            const chatScreen = document.getElementById('chatScreen');
+            
+            if (welcomeScreen && chatScreen) {
+                const welcomeDisplayStyle = window.getComputedStyle(welcomeScreen).display;
+                const chatDisplayStyle = window.getComputedStyle(chatScreen).display;
+                
+                const isWelcomeVisible = welcomeDisplayStyle !== 'none';
+                const isChatHidden = chatDisplayStyle === 'none';
+                
+                if (isWelcomeVisible && isChatHidden) {
+                    console.log('在欢迎界面，触发搜索处理');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSearchIfWelcomeScreen();
+                }
+            }
+        });
+
         // 输入框自适应高度
         searchInput?.addEventListener('input', () => {
             this.adjustTextareaHeight(searchInput);
         });
 
+        textInput?.addEventListener('input', () => {
+            this.adjustTextareaHeight(textInput);
+        });
+
         // 调试发送按钮的存在性
         console.log('=== 检查发送按钮 ===');
         console.log('sendButton 元素:', sendButton);
+        console.log('startAnalysisBtn 元素:', startAnalysisBtn);
         if (sendButton) {
             console.log('发送按钮存在，已添加事件监听器');
         } else {
             console.log('警告：发送按钮不存在！');
+        }
+        if (startAnalysisBtn) {
+            console.log('开始分析按钮存在，已添加事件监听器');
+        } else {
+            console.log('警告：开始分析按钮不存在！');
         }
     }
 
@@ -258,6 +323,36 @@ class AIReaderApp {
         // 帮助按钮
         document.getElementById('helpBtn')?.addEventListener('click', () => {
             this.openHelp();
+        });
+    }
+
+    /**
+     * 绑定模式选择事件
+     */
+    bindModeSelectionEvents() {
+        // 总结模式开关
+        const summaryModeToggle = document.getElementById('summaryModeToggle');
+        summaryModeToggle?.addEventListener('change', (e) => {
+            // 总结模式切换时不需要隐藏/显示角色选择，角色选择始终可见
+            console.log('总结模式切换:', e.target.checked);
+        });
+
+        // 角色选择 - 始终可用
+        const roleSelect = document.getElementById('roleSelect');
+        roleSelect?.addEventListener('change', (e) => {
+            if (e.target.value === '自定义') {
+                const customRole = prompt('请输入自定义角色名称（如：马云、乔布斯等）:');
+                if (customRole) {
+                    // 添加自定义选项
+                    const option = document.createElement('option');
+                    option.value = customRole;
+                    option.textContent = `${customRole} - 自定义角色`;
+                    e.target.appendChild(option);
+                    e.target.value = customRole;
+                } else {
+                    e.target.value = '';
+                }
+            }
         });
     }
 
@@ -332,6 +427,9 @@ class AIReaderApp {
 
         // 更新UI状态
         this.updateFunctionButtons(functionName);
+
+        // 根据功能显示/隐藏模式选择区域
+        this.updateModeSelectionVisibility(functionName);
 
         // 更新搜索框占位符
         this.updateSearchPlaceholder(functionName);
@@ -436,6 +534,7 @@ class AIReaderApp {
         const uploadSection = document.querySelector('.upload-section');
         const expertSelector = document.getElementById('expertSelector');
         const searchInput = document.getElementById('searchInput');
+        const textInput = document.getElementById('textInput');
 
         // --- 2. 核心修复：重置主内容区的宽度 ---
         if (mainContent) {
@@ -464,6 +563,10 @@ class AIReaderApp {
             this.updateSearchPlaceholder(this.currentFunction);
             this.adjustTextareaHeight(searchInput);
         }
+        if (textInput) {
+            textInput.value = '';
+            this.adjustTextareaHeight(textInput);
+        }
         
         // --- 6. 重置文件上传状态 ---
         if (window.fileUploadManager && typeof window.fileUploadManager.resetState === 'function') {
@@ -482,6 +585,17 @@ class AIReaderApp {
     }
 
     /**
+     * 获取功能按钮ID
+     */
+    getFunctionButtonId(functionName) {
+        const buttonIdMap = {
+            'intelligent-reading': 'intelligentReading',
+            'fact-checking': 'factChecking'
+        };
+        return buttonIdMap[functionName] || '';
+    }
+
+    /**
      * 更新功能按钮状态
      */
     updateFunctionButtons(activeFunction) {
@@ -494,19 +608,46 @@ class AIReaderApp {
                 btn.classList.add('active');
             }
         });
+
+        // 更新聊天样式功能标签
+        const functionTabs = document.querySelectorAll('.function-tab');
+        functionTabs.forEach(tab => {
+            tab.classList.remove('active');
+            
+            if (tab.dataset.function === activeFunction) {
+                tab.classList.add('active');
+            }
+        });
     }
 
     /**
-     * 获取功能按钮ID
+     * 根据功能显示/隐藏模式选择区域
      */
-    getFunctionButtonId(functionName) {
-        const mapping = {
-            'intelligent-reading': 'intelligentReading',
-            'comprehensive-analysis': 'comprehensiveAnalysis',
-            'expert-analysis': 'expertAnalysis',
-            'fact-checking': 'factChecking'
-        };
-        return mapping[functionName];
+    updateModeSelectionVisibility(functionName) {
+        // 兼容旧的模式选择区域（若仍存在）
+        const modeSelectionSection = document.querySelector('.mode-selection-section');
+        if (modeSelectionSection) {
+            modeSelectionSection.style.display = (functionName === 'intelligent-reading') ? 'block' : 'none';
+        }
+
+        // 新的控制行组件：总结模式与角色选择
+        const summaryToggleContainer = document.querySelector('.input-controls-row .mode-toggle.compact-toggle');
+        const roleSelectorWrapper = document.getElementById('roleSelectorWrapper');
+        const summaryModeToggle = document.getElementById('summaryModeToggle');
+
+        if (functionName === 'fact-checking') {
+            // 事实核查：隐藏总结模式与角色选择
+            if (summaryToggleContainer) summaryToggleContainer.style.display = 'none';
+            if (roleSelectorWrapper) roleSelectorWrapper.style.display = 'none';
+            // 保险：关闭总结模式，角色重置为AI助手
+            if (summaryModeToggle) summaryModeToggle.checked = false;
+            const roleSelect = document.getElementById('roleSelect');
+            if (roleSelect) roleSelect.value = 'AI助手';
+        } else {
+            // 其他模式（智能伴读）：显示控件
+            if (summaryToggleContainer) summaryToggleContainer.style.display = '';
+            if (roleSelectorWrapper) roleSelectorWrapper.style.display = '';
+        }
     }
 
     /**
@@ -574,8 +715,17 @@ class AIReaderApp {
         }
         console.log('当前功能模块:', this.currentFunction);
 
+        // 获取输入内容 - 优先从聊天样式输入框获取，然后是文本输入框，最后是搜索框
+        let query = '';
+        const textInput = document.getElementById('textInput');
         const searchInput = document.getElementById('searchInput');
-        const query = searchInput?.value.trim();
+        
+        if (textInput && textInput.value.trim()) {
+            query = textInput.value.trim();
+        } else if (searchInput && searchInput.value.trim()) {
+            query = searchInput.value.trim();
+        }
+        
         console.log('搜索输入框内容:', query);
 
         if (!query && !uploadManager?.hasUploadedContent()) {
@@ -606,34 +756,15 @@ class AIReaderApp {
                     console.log('请求数据:', requestData);
                     await this.handleIntelligentReading(requestData);
                     break;
-                
-                // 对于其他三个功能，我们使用uploadManager来处理
-                case 'comprehensive-analysis':
-                case 'expert-analysis':
+                    
                 case 'fact-checking':
-                    console.log(`调用 ${this.currentFunction} 的处理`);
-                    // 检查 uploadManager 是否存在
-                    if (window.uploadManager) {
-                        // 设置当前功能
-                        window.uploadManager.currentFeature = this.currentFunction;
-                        
-                        // 如果有文本输入，同步到textInput
-                        if (query) {
-                            const textInput = document.getElementById('textInput');
-                            if (textInput) {
-                                textInput.value = query;
-                                console.log('同步文本到textInput:', query);
-                            }
-                            // 确保当前内容类型是text
-                            window.uploadManager.currentContentType = 'text';
-                            window.uploadManager.switchContentType('text');
-                        }
-                        
-                        // 调用uploadManager的startAnalysis方法
-                        await window.uploadManager.startAnalysis();
-                    } else {
-                        showNotification('错误：上传管理器未初始化', 'error');
-                    }
+                    // 对于事实核查，我们显示聊天界面
+                    this.showChatInterface();
+                    console.log('调用事实核查处理');
+                    // 准备请求数据
+                    const factCheckData = await this.prepareRequestData(query);
+                    console.log('事实核查请求数据:', factCheckData);
+                    await this.handleFactChecking(factCheckData);
                     break;
                     
                 default:
@@ -643,6 +774,10 @@ class AIReaderApp {
 
             console.log('=== 清空输入框 ===');
             // 清空输入框
+            if (textInput) {
+                textInput.value = '';
+                this.adjustTextareaHeight(textInput);
+            }
             if (searchInput) {
                 searchInput.value = '';
                 this.adjustTextareaHeight(searchInput);
@@ -688,11 +823,34 @@ class AIReaderApp {
         console.log('=== 开始处理智能伴读 ===');
         console.log('处理数据:', data);
         
+        // 检查总结模式开关
+        const summaryModeToggle = document.getElementById('summaryModeToggle');
+        const isSummaryMode = summaryModeToggle?.checked || false;
+        
+        // 检查角色选择
+        const roleSelect = document.getElementById('roleSelect');
+        const selectedRole = roleSelect?.value || '';
+        
+        // 设置模式
+        let mode = 'normal';
+        if (isSummaryMode) {
+            mode = 'summary';
+        }
+        if (selectedRole && selectedRole !== 'AI助手') {
+            mode = 'expert';
+        }
+        
+        console.log('智能伴读模式:', mode, '总结模式:', isSummaryMode, '角色:', selectedRole);
+        
         if (chatManager) {
             console.log('chatManager 存在，开始处理...');
-            // 设置当前功能
+            // 设置当前功能和模式
             chatManager.setCurrentFunction('intelligent-reading');
-            console.log('已设置当前功能为 intelligent-reading');
+            chatManager.setMode(mode);
+            if (selectedRole && selectedRole !== 'AI助手') {
+                chatManager.setExpertRole(selectedRole);
+            }
+            console.log('已设置当前功能为 intelligent-reading, 模式:', mode, '角色:', selectedRole);
             
             // 发送初始消息
             console.log('准备发送初始消息:', data.text || '');
